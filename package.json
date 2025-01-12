@@ -5,15 +5,16 @@
   "main": "src/app.js",
   "repository": "git@github.com:eightshone/shhman.git",
   "author": "EIGHTSH ONE",
-  "scripts": {
-    "dev": "ts-node src/app.ts",
-    "build": "tsc"
-  },
   "license": "MIT",
   "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/app.ts",
+    "build": "tsc"
+  },
   "devDependencies": {
     "@types/node": "^22.10.5",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
