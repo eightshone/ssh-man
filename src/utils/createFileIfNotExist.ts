@@ -3,7 +3,7 @@ import { dirname } from "path";
 
 async function createFileIfNotExists(
   filePath: string,
-  content: string = "[]"
+  content: string = ""
 ): Promise<void> {
   try {
     // Get the directory path
@@ -15,10 +15,8 @@ async function createFileIfNotExists(
     // Check if the file exists, and create it if it doesn't
     try {
       await fs.access(filePath);
-      console.log("File already exists");
     } catch {
       await fs.writeFile(filePath, content);
-      console.log("File created successfully");
     }
   } catch (error) {
     console.error("Error:", error);
