@@ -19,6 +19,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@inquirer/select": "^4.0.5",
     "commander": "^13.0.0",
     "terminal-kit": "^3.1.2",
     "yocto-spinner": "^0.1.2"
