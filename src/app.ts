@@ -10,4 +10,9 @@ program
 
 program.parse();
 
-init();
+app();
+
+async function app() {
+  // intialize the cli app
+  await init();
+}
