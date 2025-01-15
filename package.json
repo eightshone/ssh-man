@@ -21,6 +21,7 @@
   "dependencies": {
     "@inquirer/select": "^4.0.5",
     "commander": "^13.0.0",
+    "ssh2": "^1.16.0",
     "terminal-kit": "^3.1.2",
     "yocto-spinner": "^0.1.2"
   }
