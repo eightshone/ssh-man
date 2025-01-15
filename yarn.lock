@@ -177,6 +177,15 @@
     "@inquirer/core" "^10.1.4"
     "@inquirer/type" "^3.0.2"
 
+"@inquirer/password@^4.0.6":
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/@inquirer/password/-/password-4.0.6.tgz#4bbee12fe7cd1d37435401098c296ddc4586861b"
+  integrity sha512-QLF0HmMpHZPPMp10WGXh6F+ZPvzWE7LX6rNoccdktv/Rov0B+0f+eyXkAcgqy5cH9V+WSpbLxu2lo3ysEVK91w==
+  dependencies:
+    "@inquirer/core" "^10.1.4"
+    "@inquirer/type" "^3.0.2"
+    ansi-escapes "^4.3.2"
+
 "@inquirer/select@^4.0.5":
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/@inquirer/select/-/select-4.0.5.tgz#f7f59e19f085d9b0b62e659b54a81d54b5740cdb"
