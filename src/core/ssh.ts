@@ -1,4 +1,5 @@
 import { Client } from "ssh2";
+import yoctoSpinner from "yocto-spinner";
 import { server } from "../utils/types";
 
 // this function creates a raw input ssh connection
@@ -8,19 +9,20 @@ function sshConnection(
   unref: boolean = false
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
     const client = new Client();
 
     client
       .on("close", () => {
-        console.log(":: Connection Closed");
+        console.log("Connection closed ⚪");
         resolve(); // resolve the promise when the connection closes
       })
       .on("error", (err) => {
-        console.error(":: Connection Error", err);
-        reject(err); // reject the promise in case of an error
+        spinner.error("Connection error! ⛔");
+        console.log("Error details", err.message);
       })
       .on("ready", function () {
-        console.log(":: Connection Ready!");
+        spinner.success("Connection ready! 🟢");
         this.shell(
           {
             term: process.env.TERM,
