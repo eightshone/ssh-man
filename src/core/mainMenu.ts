@@ -26,7 +26,7 @@ async function mainMenu(): Promise<menu> {
       new Separator(),
       {
         name: "💻 Connect now",
-        value: "ssh-new",
+        value: "ssh-connect",
         description: "Connect to a new session",
       },
       {
