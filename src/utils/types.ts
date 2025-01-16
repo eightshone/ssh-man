@@ -2,11 +2,9 @@ type connectivity =
   | {
       usePassword: true;
       password: string;
-      privateKey?: string;
     }
   | {
       usePassword: false;
-      password?: string;
       privateKey: string;
     };
 
