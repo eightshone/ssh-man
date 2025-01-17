@@ -25,6 +25,7 @@
     "@inquirer/password": "^4.0.6",
     "@inquirer/select": "^4.0.5",
     "commander": "^13.0.0",
+    "dayjs": "^1.11.13",
     "ssh2": "^1.16.0",
     "terminal-kit": "^3.1.2",
     "yocto-spinner": "^0.1.2"
