@@ -1,10 +1,12 @@
 import goodbye from "../utils/goodbye";
-import { menu } from "../utils/types";
+import { config, log, menu } from "../utils/types";
 import mainMenu from "./mainMenu";
 import newConnection from "./newConnection";
 
-async function interactive() {
-  let currentMenu: menu = "main";
+async function interactive(initialConfig: config, initialLogs: log[]) {
+  let currentMenu: menu = "main",
+    config: config = initialConfig,
+    logs: log[] = initialLogs;
 
   while (currentMenu !== "exit") {
     if (currentMenu === "main") {
@@ -12,7 +14,7 @@ async function interactive() {
     }
 
     if (currentMenu === "ssh-connect") {
-      currentMenu = await newConnection();
+      [currentMenu, config, logs] = await newConnection(config, logs);
     }
   }
 
