@@ -1,3 +1,4 @@
+import { homedir } from "os";
 import { config } from "./types";
 
 export const VERSION: string = "0.1.0";
@@ -24,3 +25,4 @@ export const GOODBYES: string[] = [
   "Bye-bye! Keep shining! ✨",
   "Goodbye! Have a fantastic day! 🥳",
 ];
+export const configDir = `${homedir()}/.sshman`;
