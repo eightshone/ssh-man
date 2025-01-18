@@ -13,6 +13,14 @@ program
 program.action(app);
 
 program
+  .command("connect")
+  .argument("<string>", "server name")
+  .description("connect to a new session")
+  .action((serverName) => {
+    console.log(serverName);
+  });
+
+program
   .command("goodbye")
   .description("says goodbye")
   .action(() => {
@@ -24,9 +32,9 @@ program.parse();
 
 async function app() {
   // intialize the cli app
-  await init();
+  const { config, logs } = await init();
 
-  await interactive();
+  await interactive(config, logs);
 }
 
 process.on("uncaughtException", (error) => {
