@@ -9,7 +9,7 @@ type connectivity =
     };
 
 export type server = {
-  name?: string;
+  name: string;
   host: string;
   port: number;
   username: string;
@@ -19,6 +19,11 @@ export type config = {
   defaultPrivateKey: string | null;
   servers: server[];
   recentServers: server[];
+};
+
+export type log = {
+  time: string;
+  server: string;
 };
 
 export type menu =
@@ -31,3 +36,7 @@ export type menu =
   | "quick-connect-0"
   | "quick-connect-1"
   | "quick-connect-2";
+
+export type json = {
+  [key: string | number]: any;
+};
