@@ -15,7 +15,6 @@
   "devDependencies": {
     "@types/node": "^22.10.5",
     "@types/ssh2": "^1.15.4",
-    "@types/terminal-kit": "^2.5.7",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
@@ -27,7 +26,6 @@
     "commander": "^13.0.0",
     "dayjs": "^1.11.13",
     "ssh2": "^1.16.0",
-    "terminal-kit": "^3.1.2",
     "yocto-spinner": "^0.1.2"
   }
 }
