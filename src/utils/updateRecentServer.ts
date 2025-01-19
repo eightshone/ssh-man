@@ -1,15 +1,14 @@
+import findServerIndex from "./findServerIndex";
 import { server } from "./types";
 
 function updateRecentServers(servers: server[], newServer: server): server[] {
   // check if the newServer exists in the servers array
-  const index = servers.findIndex(
-    (server) => JSON.stringify(server) === JSON.stringify(newServer)
-  );
+  const index = findServerIndex(servers, newServer);
 
   if (index !== -1) {
     // if the newServer exists, remove it from its current position
     servers.splice(index, 1);
-  } else {
+  } else if (servers.length === 3) {
     // if the newServer does not exist, remove the last item
     servers.pop();
   }
