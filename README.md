@@ -1,2 +1,2 @@
-# SHH MANAGER
+# SSH MANAGER
 A simple terminmal based SSH manager created in Node.js
