@@ -14,7 +14,7 @@ async function newConnection(
   initialLogs: log[]
 ): Promise<[menu, config, log[]]> {
   let config: config = { ...initialConfig };
-  let logs: log[] = { ...initialLogs };
+  let logs: log[] = [...initialLogs];
   const saveConnection: boolean | null = await select({
     message: "Save connection",
     choices: [

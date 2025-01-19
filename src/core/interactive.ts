@@ -5,8 +5,8 @@ import newConnection from "./newConnection";
 
 async function interactive(initialConfig: config, initialLogs: log[]) {
   let currentMenu: menu = "main",
-    config: config = initialConfig,
-    logs: log[] = initialLogs;
+    config: config = { ...initialConfig },
+    logs: log[] = [...initialLogs];
 
   while (currentMenu !== "exit") {
     if (currentMenu === "main") {
