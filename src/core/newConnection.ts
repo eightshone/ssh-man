@@ -7,11 +7,14 @@ import saveFile from "../utils/saveFile";
 import { configDir } from "../utils/consts";
 import updateRecentServers from "../utils/updateRecentServer";
 import { formattedTime } from "../utils/time";
+import updateConfigs from "../utils/updateConfigs";
 
 async function newConnection(
-  config: config,
-  logs: log[]
+  initialConfig: config,
+  initialLogs: log[]
 ): Promise<[menu, config, log[]]> {
+  let config: config = { ...initialConfig };
+  let logs: log[] = { ...initialLogs };
   const saveConnection: boolean | null = await select({
     message: "Save connection",
     choices: [
@@ -37,14 +40,7 @@ async function newConnection(
     const sshConfig = await promptSSHConfig(saveConnection);
     if (saveConnection) {
       // save new server config to the list of configs
-      config.servers = [...config.servers, sshConfig];
-      config.recentServers = updateRecentServers(
-        config.recentServers,
-        sshConfig
-      );
-      logs = [{ time: formattedTime, server: sshConfig.name }, ...logs];
-      saveFile(`${configDir}/config.json`, config);
-      saveFile(`${configDir}/logs.json`, logs);
+      [config, logs] = await updateConfigs(config, logs, sshConfig);
     }
     console.clear();
     await sshConnection(sshConfig);
