@@ -3,6 +3,8 @@ import init from "./core/init";
 import { VERSION } from "./utils/consts";
 import interactive from "./core/interactive";
 import goodbye from "./utils/goodbye";
+import parseConnectionString from "./utils/parseConnectionString";
+import sshConnection from "./core/ssh";
 const program = new Command();
 
 program
@@ -14,10 +16,13 @@ program.action(app);
 
 program
   .command("connect")
-  .argument("<string>", "server name")
+  .argument(
+    "<string>",
+    "credentials in the format of username[:password]@server[:port]"
+  )
   .description("connect to a new session")
-  .action((serverName) => {
-    console.log(serverName);
+  .action((creds: string) => {
+    sshConnection(parseConnectionString(creds));
   });
 
 program
