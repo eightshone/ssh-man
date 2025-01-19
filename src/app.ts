@@ -5,6 +5,9 @@ import interactive from "./core/interactive";
 import goodbye from "./utils/goodbye";
 import parseConnectionString from "./utils/parseConnectionString";
 import sshConnection from "./core/ssh";
+import { server } from "./utils/types";
+import updateConfigs from "./utils/updateConfigs";
+
 const program = new Command();
 
 program
@@ -20,9 +23,22 @@ program
     "<string>",
     "credentials in the format of username[:password]@server[:port]"
   )
+  .option("-s, --save [name]")
   .description("connect to a new session")
-  .action((creds: string) => {
-    sshConnection(parseConnectionString(creds));
+  .action(async (creds: string, options) => {
+    const sshConfig: server = parseConnectionString(creds);
+    // @ts-ignore
+    const saveConnection: string = options.save;
+    // intialize the cli app
+    let { config, logs } = await init();
+
+    if (!!saveConnection) {
+      if (!!saveConnection?.length) {
+        sshConfig.name = saveConnection;
+      }
+      [config, logs] = await updateConfigs(config, logs, sshConfig);
+    }
+    sshConnection(sshConfig);
   });
 
 program
