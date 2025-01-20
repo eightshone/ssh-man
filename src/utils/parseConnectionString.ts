@@ -1,9 +1,9 @@
 import { homedir } from "os";
 import { server } from "./types";
+import { CONNECTION_REGEX } from "./consts";
 
 function parseConnectionString(connectionString: string): server {
-  const regex = /^(.*?)(?::(.*?))?@(.*?)(?::(\d+))?$/;
-  const match = connectionString.match(regex);
+  const match = connectionString.match(CONNECTION_REGEX);
 
   const sshConfig: Partial<server> = {
     name: `${match[1]}@${match[3]}`,

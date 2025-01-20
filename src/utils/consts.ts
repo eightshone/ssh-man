@@ -26,3 +26,4 @@ export const GOODBYES: string[] = [
   "Goodbye! Have a fantastic day! 🥳",
 ];
 export const CONFIG_DIR = `${homedir()}/.sshman`;
+export const CONNECTION_REGEX = /^(.*?)(?::(.*?))?@(.*?)(?::(\d+))?$/;
