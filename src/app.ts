@@ -41,6 +41,10 @@ program
 
       if (!!saveConnection && !!saveConnection?.length) {
         sshConfig.name = saveConnection;
+      } else {
+        console.log(
+          `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
+        );
       }
     } else {
       sshConfig = findServer(config.servers, creds);
