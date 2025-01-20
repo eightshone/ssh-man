@@ -8,26 +8,20 @@ import updateRecentServers from "./updateRecentServer";
 async function updateConfigs(
   initialConfig: config,
   initialLogs: log[],
-  sshConfig: server
+  sshConfig: server,
+  saveConfig: boolean = false
 ): Promise<[config, log[]]> {
   const config: config = { ...initialConfig };
   let logs: log[] = [...initialLogs];
 
-  if (findServerIndex(config.servers, sshConfig) === -1) {
-    config.servers = [...config.servers, sshConfig];
-  } else {
-    console.info(
-      "+----------------------------------------------------------------+"
-    );
-    console.info(
-      "|⚠️ This server config exists in your list of servers!           |"
-    );
-    console.info(
-      "|   It will not be added to the list to avoid duplicate entries. |"
-    );
-    console.info(
-      "+----------------------------------------------------------------+"
-    );
+  if (saveConfig) {
+    if (findServerIndex(config.servers, sshConfig) === -1) {
+      config.servers = [...config.servers, sshConfig];
+    } else {
+      console.info(
+        "\n⚠️ This server config exists in your list of servers!\n   It will not be added to the list to avoid duplicate entries.\n"
+      );
+    }
   }
   config.recentServers = updateRecentServers(config.recentServers, sshConfig);
   logs = [{ time: formattedTime, server: sshConfig.name }, ...logs];
