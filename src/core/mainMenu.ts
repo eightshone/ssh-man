@@ -1,11 +1,27 @@
 import select, { Separator } from "@inquirer/select";
-import { menu } from "../utils/types";
+import { menu, server } from "../utils/types";
 import { inquirerTheme } from "../utils/themes";
 import title from "../utils/title";
 
-async function mainMenu(): Promise<menu> {
+async function mainMenu(
+  recentServers: server[] = []
+): Promise<[menu, string[] | null]> {
   title();
-  const answer = await select({
+  let options: string[] | null = null;
+  const recents = recentServers.length
+    ? recentServers.map((server, index) => ({
+        name: `   ${index + 1} - ${server.name}`,
+        value: `quick-connect ${JSON.stringify(server)}`,
+        description: "Connect to server",
+      }))
+    : [
+        {
+          name: "  ⚠️ No recent sessions! Add a new server or connect to one and it will appear here",
+          value: "recent-sessions",
+          disabled: " ",
+        },
+      ];
+  let answer = await select({
     message: "MAIN MENU",
     choices: [
       {
@@ -13,16 +29,7 @@ async function mainMenu(): Promise<menu> {
         value: "recent-sessions",
         disabled: "(select a session to connect quickly)",
       },
-      // {
-      //   name: "   - Server name",
-      //   value: "quick-connect-0",
-      //   description: "Connect to server",
-      // },
-      {
-        name: "  ⚠️ No recent sessions! Add a new server or connect to one and it will appear here",
-        value: "recent-sessions",
-        disabled: " ",
-      },
+      ...recents,
       new Separator(),
       {
         name: "💻 Connect now",
@@ -54,7 +61,11 @@ async function mainMenu(): Promise<menu> {
     console.clear();
   }
 
-  return answer as menu;
+  if (answer.startsWith("quick-connect")) {
+    [answer, ...options] = answer.split(" ");
+  }
+
+  return [answer as menu, options];
 }
 
 export default mainMenu;
