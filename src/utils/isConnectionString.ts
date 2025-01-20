@@ -1,7 +1,7 @@
 import { CONNECTION_REGEX } from "./consts";
 
-function testConnectionString(connection: string) {
+function isConnectionString(connection: string) {
   return CONNECTION_REGEX.test(connection);
 }
 
-export default testConnectionString;
+export default isConnectionString;
