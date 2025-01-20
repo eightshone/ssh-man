@@ -31,11 +31,13 @@ async function promptSSHConfig(saveConnection = false): Promise<server> {
 
   let name;
   if (saveConnection) {
-    name = await input({ message: `Server name(${username}@${host}):` });
+    name = await input({
+      message: `Server name(auto-save-${username}@${host}):`,
+    });
   }
 
   return {
-    name: name?.length ? name : `${username}@${host}`,
+    name: name?.length ? name : `auto-save-${username}@${host}`,
     host,
     username,
     port,

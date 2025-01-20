@@ -6,7 +6,7 @@ function parseConnectionString(connectionString: string): server {
   const match = connectionString.match(CONNECTION_REGEX);
 
   const sshConfig: Partial<server> = {
-    name: `${match[1]}@${match[3]}`,
+    name: `auto-save-${match[1]}@${match[3]}`,
     username: match[1],
     usePassword: match[2] ? true : false,
     host: match[3],
