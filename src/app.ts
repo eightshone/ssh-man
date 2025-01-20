@@ -7,6 +7,8 @@ import parseConnectionString from "./utils/parseConnectionString";
 import sshConnection from "./core/ssh";
 import { server } from "./utils/types";
 import updateConfigs from "./utils/updateConfigs";
+import isConnectionString from "./utils/isConnectionString";
+import findServer from "./utils/findServer";
 
 const program = new Command();
 
@@ -26,18 +28,35 @@ program
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(async (creds: string, options) => {
-    const sshConfig: server = parseConnectionString(creds);
-    // @ts-ignore
-    const saveConnection: string = options.save;
     // intialize the cli app
     let { config, logs } = await init();
 
-    if (!!saveConnection) {
-      if (!!saveConnection?.length) {
+    const saveConnection: string = options.save;
+    let sshConfig: server | undefined;
+
+    const newConnection = isConnectionString(creds);
+
+    if (newConnection) {
+      sshConfig = parseConnectionString(creds);
+
+      if (!!saveConnection && !!saveConnection?.length) {
         sshConfig.name = saveConnection;
       }
-      [config, logs] = await updateConfigs(config, logs, sshConfig);
+    } else {
+      sshConfig = findServer(config.servers, creds);
+      if (!sshConfig) {
+        console.log("❌ Server config not found!");
+        return;
+      }
     }
+
+    [config, logs] = await updateConfigs(
+      config,
+      logs,
+      sshConfig,
+      !!saveConnection && newConnection
+    );
+
     sshConnection(sshConfig);
   });
 
