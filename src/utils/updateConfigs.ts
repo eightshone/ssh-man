@@ -1,4 +1,4 @@
-import { configDir } from "./consts";
+import { CONFIG_DIR } from "./consts";
 import findServerIndex from "./findServerIndex";
 import saveFile from "./saveFile";
 import { formattedTime } from "./time";
@@ -31,8 +31,8 @@ async function updateConfigs(
   }
   config.recentServers = updateRecentServers(config.recentServers, sshConfig);
   logs = [{ time: formattedTime, server: sshConfig.name }, ...logs];
-  saveFile(`${configDir}/config.json`, config);
-  saveFile(`${configDir}/logs.json`, logs);
+  saveFile(`${CONFIG_DIR}/config.json`, config);
+  saveFile(`${CONFIG_DIR}/logs.json`, logs);
 
   return [config, logs];
 }

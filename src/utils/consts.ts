@@ -25,4 +25,4 @@ export const GOODBYES: string[] = [
   "Bye-bye! Keep shining! ✨",
   "Goodbye! Have a fantastic day! 🥳",
 ];
-export const configDir = `${homedir()}/.sshman`;
+export const CONFIG_DIR = `${homedir()}/.sshman`;

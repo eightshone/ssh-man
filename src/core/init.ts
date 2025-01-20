@@ -1,13 +1,13 @@
 import { existsSync } from "fs";
 import yoctoSpinner from "yocto-spinner";
 import createFileIfNotExists from "../utils/createFileIfNotExist";
-import { configDir, DEFAULT_CONFIG } from "../utils/consts";
+import { CONFIG_DIR, DEFAULT_CONFIG } from "../utils/consts";
 import loadFile from "../utils/loadFile";
 import { config, json, log } from "../utils/types";
 
 async function init(): Promise<{ config: config; logs: log[] }> {
-  const configFile = `${configDir}/config.json`;
-  const logsFile = `${configDir}/logs.json`;
+  const configFile = `${CONFIG_DIR}/config.json`;
+  const logsFile = `${CONFIG_DIR}/logs.json`;
   let spinner = yoctoSpinner({ text: "Checking config files…" }).start();
   // check for app config files
   if (!existsSync(configFile) || !existsSync(logsFile)) {
@@ -21,8 +21,8 @@ async function init(): Promise<{ config: config; logs: log[] }> {
 
   // load config and logs
   spinner.text = "Loading config files…";
-  const configObj = await loadFile(`${configDir}/config.json`);
-  const logsObj = await loadFile(`${configDir}/logs.json`);
+  const configObj = await loadFile(`${CONFIG_DIR}/config.json`);
+  const logsObj = await loadFile(`${CONFIG_DIR}/logs.json`);
   spinner.text = "Config files loaded!";
 
   spinner?.success("App started!");

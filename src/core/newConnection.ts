@@ -3,10 +3,6 @@ import select from "@inquirer/select";
 import promptSSHConfig from "./promptSSHConfig";
 import { config, log, menu } from "../utils/types";
 import sshConnection from "./ssh";
-import saveFile from "../utils/saveFile";
-import { configDir } from "../utils/consts";
-import updateRecentServers from "../utils/updateRecentServer";
-import { formattedTime } from "../utils/time";
 import updateConfigs from "../utils/updateConfigs";
 
 async function newConnection(
