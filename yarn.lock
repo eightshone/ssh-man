@@ -182,6 +182,16 @@
     "@inquirer/type" "^3.0.2"
     ansi-escapes "^4.3.2"
 
+"@inquirer/search@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@inquirer/search/-/search-3.0.6.tgz#5537e3f46b7d31ab65ca22b831cf546f88db1d5b"
+  integrity sha512-eFZ2hiAq0bZcFPuFFBmZEtXU1EarHLigE+ENCtpO+37NHCl4+Yokq1P/d09kUblObaikwfo97w+0FtG/EXl5Ng==
+  dependencies:
+    "@inquirer/core" "^10.1.4"
+    "@inquirer/figures" "^1.0.9"
+    "@inquirer/type" "^3.0.2"
+    yoctocolors-cjs "^2.1.2"
+
 "@inquirer/select@^4.0.5":
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/@inquirer/select/-/select-4.0.5.tgz#f7f59e19f085d9b0b62e659b54a81d54b5740cdb"
