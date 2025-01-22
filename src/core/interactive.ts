@@ -1,5 +1,6 @@
 import goodbye from "../utils/goodbye";
 import { config, log, menu } from "../utils/types";
+import listConnections from "./listConnections";
 import mainMenu from "./mainMenu";
 import newConnection from "./newConnection";
 import sshConnect from "./sshConnect";
@@ -19,12 +20,17 @@ async function interactive(initialConfig: config, initialLogs: log[]) {
       [currentMenu, config, logs] = await newConnection(config, logs);
     }
 
+    if (currentMenu === "ssh-list") {
+      [currentMenu, options] = await listConnections(config.servers);
+    }
+
     if (currentMenu === "ssh-connect") {
       [currentMenu, config, logs] = await sshConnect(
         config,
         logs,
         JSON.parse(options[0])
       );
+      console.clear();
     }
   }
 
