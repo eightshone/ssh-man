@@ -2,7 +2,7 @@ import { config, log, menu, server } from "../utils/types";
 import updateConfigs from "../utils/updateConfigs";
 import sshConnection from "./ssh";
 
-async function quickConnect(
+async function sshConnect(
   config: config,
   logs: log[],
   sshConfig: server
@@ -20,4 +20,4 @@ async function quickConnect(
   return ["main", updatedConfig, updatedLogs];
 }
 
-export default quickConnect;
+export default sshConnect;

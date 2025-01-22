@@ -32,8 +32,7 @@ export type menu =
   | "settings"
   | "ssh-new"
   | "ssh-list"
-  | "ssh-connect"
-  | "quick-connect";
+  | "ssh-connect";
 
 export type json = {
   [key: string | number]: any;

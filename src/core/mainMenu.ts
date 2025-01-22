@@ -11,7 +11,7 @@ async function mainMenu(
   const recents = recentServers.length
     ? recentServers.map((server, index) => ({
         name: `   ${index + 1} - ${server.name}`,
-        value: `quick-connect ${JSON.stringify(server)}`,
+        value: `ssh-connect ${JSON.stringify(server)}`,
         description: "Connect to server",
       }))
     : [
@@ -32,8 +32,8 @@ async function mainMenu(
       ...recents,
       new Separator(),
       {
-        name: "💻 Connect now",
-        value: "ssh-connect",
+        name: "💻 New connection",
+        value: "ssh-new",
         description: "Connect to a new session",
       },
       {
@@ -61,7 +61,7 @@ async function mainMenu(
     console.clear();
   }
 
-  if (answer.startsWith("quick-connect")) {
+  if (answer.startsWith("ssh-connect")) {
     [answer, ...options] = answer.split(" ");
   }
 
