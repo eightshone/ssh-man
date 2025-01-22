@@ -32,7 +32,10 @@ export type menu =
   | "settings"
   | "ssh-new"
   | "ssh-list"
-  | "ssh-connect";
+  | "ssh-connect"
+  | "ssh-display"
+  | "ssh-delete"
+  | "sshe-edit";
 
 export type json = {
   [key: string | number]: any;
