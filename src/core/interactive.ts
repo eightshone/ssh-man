@@ -1,5 +1,6 @@
 import goodbye from "../utils/goodbye";
 import { config, log, menu } from "../utils/types";
+import displayConnection from "./displayConnection";
 import listConnections from "./listConnections";
 import mainMenu from "./mainMenu";
 import newConnection from "./newConnection";
@@ -22,6 +23,10 @@ async function interactive(initialConfig: config, initialLogs: log[]) {
 
     if (currentMenu === "ssh-list") {
       [currentMenu, options] = await listConnections(config.servers);
+    }
+
+    if (currentMenu === "ssh-display") {
+      [currentMenu, options] = await displayConnection(JSON.parse(options[0]));
     }
 
     if (currentMenu === "ssh-connect") {
