@@ -2,6 +2,7 @@ import goodbye from "../utils/goodbye";
 import { config, log, menu } from "../utils/types";
 import mainMenu from "./mainMenu";
 import newConnection from "./newConnection";
+import quickConnect from "./quickConnect";
 
 async function interactive(initialConfig: config, initialLogs: log[]) {
   let currentMenu: menu = "main",
@@ -16,6 +17,14 @@ async function interactive(initialConfig: config, initialLogs: log[]) {
 
     if (currentMenu === "ssh-connect") {
       [currentMenu, config, logs] = await newConnection(config, logs);
+    }
+
+    if (currentMenu === "quick-connect") {
+      [currentMenu, config, logs] = await quickConnect(
+        config,
+        logs,
+        JSON.parse(options[0])
+      );
     }
   }
 
