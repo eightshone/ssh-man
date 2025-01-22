@@ -1,6 +1,6 @@
 function stringPadding(
   input: string,
-  totalLength = 30,
+  totalLength = 40,
   paddingPosition: "start" | "end" = "end",
   paddingCharacter: string = " "
 ): string {
