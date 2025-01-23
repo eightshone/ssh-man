@@ -6,7 +6,10 @@ import { homedir } from "os";
 import { server } from "../utils/types";
 import validateServerName from "../utils/validateServerName";
 
-async function promptSSHConfig(saveConnection = false): Promise<server> {
+async function promptSSHConfig(
+  saveConnection = false,
+  servers: server[]
+): Promise<server> {
   const host = await input({ message: "Hostname:", required: true });
   const username = await input({ message: "Username:", required: true });
   const port = await number({ message: "Port(22):", default: 22 });
@@ -34,7 +37,7 @@ async function promptSSHConfig(saveConnection = false): Promise<server> {
   if (saveConnection) {
     name = await input({
       message: `Server name(auto-save-${username}@${host}):`,
-      validate: validateServerName,
+      validate: (value) => validateServerName(value, servers),
     });
   }
 

@@ -33,7 +33,7 @@ async function newConnection(
   });
 
   if (saveConnection !== null) {
-    const sshConfig = await promptSSHConfig(saveConnection);
+    const sshConfig = await promptSSHConfig(saveConnection, config.servers);
     if (saveConnection) {
       // save new server config to the list of configs
       [config, logs] = await updateConfigs(

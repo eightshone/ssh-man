@@ -21,7 +21,7 @@ async function editConnection(
   while (confirmChanges === false) {
     const name = await input({
       message: `Server name(${sshConfig.name}):`,
-      validate: validateServerName,
+      validate: (value) => validateServerName(value, config.servers),
     });
     const host = await input({ message: `Hostname(${sshConfig.host})` });
     const username = await input({
