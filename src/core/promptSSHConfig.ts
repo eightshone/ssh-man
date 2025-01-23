@@ -4,6 +4,7 @@ import password from "@inquirer/password";
 import number from "@inquirer/number";
 import { homedir } from "os";
 import { server } from "../utils/types";
+import validateServerName from "../utils/validateServerName";
 
 async function promptSSHConfig(saveConnection = false): Promise<server> {
   const host = await input({ message: "Hostname:", required: true });
@@ -33,6 +34,7 @@ async function promptSSHConfig(saveConnection = false): Promise<server> {
   if (saveConnection) {
     name = await input({
       message: `Server name(auto-save-${username}@${host}):`,
+      validate: validateServerName,
     });
   }
 
