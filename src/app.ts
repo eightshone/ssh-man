@@ -9,6 +9,7 @@ import { server } from "./utils/types";
 import updateConfigs from "./utils/updateConfigs";
 import isConnectionString from "./utils/isConnectionString";
 import findServer from "./utils/findServer";
+import validateServerName from "./utils/validateServerName";
 
 const program = new Command();
 
@@ -31,7 +32,8 @@ program
     // intialize the cli app
     let { config, logs } = await init();
 
-    const saveConnection: string = options.save;
+    // save connection may contains the server name
+    const saveConnection: string | boolean = options.save;
     let sshConfig: server | undefined;
 
     const newConnection = isConnectionString(creds);
@@ -39,8 +41,22 @@ program
     if (newConnection) {
       sshConfig = parseConnectionString(creds);
 
-      if (!!saveConnection && !!saveConnection?.length) {
-        sshConfig.name = saveConnection;
+      if (
+        !!saveConnection &&
+        typeof saveConnection === "string" &&
+        !!saveConnection?.length
+      ) {
+        const isValid: boolean | string = validateServerName(
+          saveConnection,
+          config.servers
+        );
+
+        if (isValid === true) {
+          sshConfig.name = saveConnection;
+        } else {
+          console.log(`❌ ${isValid}`);
+          return;
+        }
       } else {
         console.log(
           `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
