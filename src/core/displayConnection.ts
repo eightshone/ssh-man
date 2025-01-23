@@ -2,9 +2,11 @@ import select from "@inquirer/select";
 import colors from "yoctocolors-cjs";
 import { menu, server } from "../utils/types";
 import stringPadding from "../utils/stringPadding";
-import { inquirerTheme } from "../utils/themes";
 
-async function displayConnection(sshConfig: server): Promise<[menu, string[]]> {
+async function displayConnection(
+  sshConfig: server,
+  index: number
+): Promise<[menu, string[]]> {
   console.log(colors.dim("🖥️ Server name"));
   console.log(`   ${sshConfig.name}
     `);
@@ -37,7 +39,6 @@ async function displayConnection(sshConfig: server): Promise<[menu, string[]]> {
         name: "✍️ Edit",
         value: "ssh-edit",
         description: "Edit server configuration",
-        disabled: "(Coming soon…)",
       },
       {
         name: "❌ Delete",
@@ -57,7 +58,7 @@ async function displayConnection(sshConfig: server): Promise<[menu, string[]]> {
 
   console.clear();
 
-  return [answer as menu, [JSON.stringify(sshConfig)]];
+  return [answer as menu, [JSON.stringify(sshConfig), `${index}`]];
 }
 
 export default displayConnection;
