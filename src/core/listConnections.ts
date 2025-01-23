@@ -23,7 +23,7 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
           )}  ${stringPadding(server.name)}  ${server.username}:[redacted]@${
             server.host
           }:${server.port}`,
-          value: `ssh-display ${JSON.stringify(server)}`,
+          value: `ssh-display#-_-#${JSON.stringify(server)}#-_-#${index}`,
           description: "Connect to server",
         })),
       ]
@@ -62,7 +62,7 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
   }
 
   if (answer.startsWith("ssh-display")) {
-    [answer, ...options] = answer.split(" ");
+    [answer, ...options] = answer.split("#-_-#");
   }
 
   return [answer as menu, options];

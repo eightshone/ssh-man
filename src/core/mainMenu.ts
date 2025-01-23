@@ -11,7 +11,7 @@ async function mainMenu(
   const recents = recentServers.length
     ? recentServers.map((server, index) => ({
         name: `   ${index + 1} - ${server.name}`,
-        value: `ssh-connect ${JSON.stringify(server)}`,
+        value: `ssh-connect#-_-#${JSON.stringify(server)}`,
         description: "Connect to server",
       }))
     : [
@@ -62,7 +62,7 @@ async function mainMenu(
   }
 
   if (answer.startsWith("ssh-connect")) {
-    [answer, ...options] = answer.split(" ");
+    [answer, ...options] = answer.split("#-_-#");
   }
 
   return [answer as menu, options];
