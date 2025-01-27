@@ -1,5 +1,6 @@
 import goodbye from "../utils/goodbye";
 import { config, log, menu } from "../utils/types";
+import deleteConnection from "./deleteConnection";
 import displayConnection from "./displayConnection";
 import editConnection from "./editConnection";
 import listConnections from "./listConnections";
@@ -52,6 +53,14 @@ async function interactive(initialConfig: config, initialLogs: log[]) {
         config,
         parseInt(options[1]),
         logs
+      );
+    }
+
+    if (currentMenu === "ssh-delete") {
+      [currentMenu, options] = await deleteConnection(
+        config,
+        JSON.parse(options[0]),
+        parseInt(options[1])
       );
     }
   }
