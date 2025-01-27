@@ -3,7 +3,7 @@ import yoctoSpinner from "yocto-spinner";
 import createFileIfNotExists from "../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG } from "../utils/consts";
 import loadFile from "../utils/loadFile";
-import { config, json, log } from "../utils/types";
+import { config, log } from "../utils/types";
 
 async function init(): Promise<{ config: config; logs: log[] }> {
   const configFile = `${CONFIG_DIR}/config.json`;
