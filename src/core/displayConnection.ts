@@ -44,7 +44,6 @@ async function displayConnection(
         name: "❌ Delete",
         value: "ssh-delete",
         description: "Delete server config",
-        disabled: "(Coming soon…)",
       },
 
       {
