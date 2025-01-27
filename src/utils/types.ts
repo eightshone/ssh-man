@@ -16,6 +16,7 @@ export type server = {
 } & connectivity;
 
 export type config = {
+  version?: string;
   defaultPrivateKey: string | null;
   servers: server[];
   recentServers: server[];
