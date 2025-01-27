@@ -40,6 +40,7 @@ async function init(): Promise<{ config: config; logs: log[] }> {
       await saveFile(`${CONFIG_DIR}/logs.json`, logsObj);
 
       // assign server ids
+      configObj.recentServers = [];
       configObj.servers.forEach((srv) => {
         srv.id = nanoid();
       });
