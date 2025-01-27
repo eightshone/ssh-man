@@ -35,7 +35,8 @@ export type menu =
   | "ssh-connect"
   | "ssh-display"
   | "ssh-delete"
-  | "ssh-edit";
+  | "ssh-edit"
+  | "ssh-search";
 
 export type json = {
   [key: string | number]: any;
