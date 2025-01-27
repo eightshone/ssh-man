@@ -48,7 +48,7 @@ async function displayConnection(
       },
 
       {
-        name: "↩️ Server list",
+        name: "↩️ Servers list",
         value: "ssh-list",
         description: "Return to servers list",
       },
