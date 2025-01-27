@@ -26,6 +26,7 @@
     "@inquirer/select": "^4.0.5",
     "commander": "^13.0.0",
     "dayjs": "^1.11.13",
+    "nanoid": "^5.0.9",
     "ssh2": "^1.16.0",
     "yocto-spinner": "^0.1.2",
     "yoctocolors-cjs": "^2.1.2"
