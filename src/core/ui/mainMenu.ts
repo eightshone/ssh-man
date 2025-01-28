@@ -1,7 +1,7 @@
 import select, { Separator } from "@inquirer/select";
-import { menu, server } from "../utils/types";
-import { inquirerTheme } from "../utils/themes";
-import title from "../utils/title";
+import { menu, server } from "../../utils/types";
+import { inquirerTheme } from "../../utils/themes";
+import title from "../../utils/title";
 
 async function mainMenu(
   recentServers: server[] = []
