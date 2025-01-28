@@ -1,10 +1,10 @@
 import { Command } from "commander";
-import init from "./core/init";
+import init from "./core/functions/init";
 import { VERSION } from "./utils/consts";
 import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
 import parseConnectionString from "./utils/parseConnectionString";
-import sshConnection from "./core/ssh";
+import sshConnection from "./core/functions/ssh";
 import { server } from "./utils/types";
 import updateConfigs from "./utils/updateConfigs";
 import isConnectionString from "./utils/isConnectionString";

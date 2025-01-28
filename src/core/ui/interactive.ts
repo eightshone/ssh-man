@@ -7,7 +7,7 @@ import listConnections from "./connections/list";
 import mainMenu from "./mainMenu";
 import newConnection from "./connections/new";
 import searchConnections from "./connections/search";
-import sshConnect from "../sshConnect";
+import sshConnect from "../functions/sshConnect";
 
 async function interactive(initialConfig: config, initialLogs: log[]) {
   let currentMenu: menu = "main",

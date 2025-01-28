@@ -4,8 +4,8 @@ import parseConnectionString from "../../utils/parseConnectionString";
 import { server } from "../../utils/types";
 import updateConfigs from "../../utils/updateConfigs";
 import validateServerName from "../../utils/validateServerName";
-import init from "../init";
-import sshConnection from "../ssh";
+import init from "../functions/init";
+import sshConnection from "../functions/ssh";
 
 async function connectCommand(creds: string, options) {
   // intialize the cli app

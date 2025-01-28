@@ -3,8 +3,8 @@ import select from "@inquirer/select";
 import password from "@inquirer/password";
 import number from "@inquirer/number";
 import { homedir } from "os";
-import { server } from "../utils/types";
-import validateServerName from "../utils/validateServerName";
+import { server } from "../../utils/types";
+import validateServerName from "../../utils/validateServerName";
 import { nanoid } from "nanoid";
 
 async function promptSSHConfig(

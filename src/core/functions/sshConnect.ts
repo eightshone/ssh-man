@@ -1,5 +1,5 @@
-import { config, log, menu, server } from "../utils/types";
-import updateConfigs from "../utils/updateConfigs";
+import { config, log, menu, server } from "../../utils/types";
+import updateConfigs from "../../utils/updateConfigs";
 import sshConnection from "./ssh";
 
 async function sshConnect(
