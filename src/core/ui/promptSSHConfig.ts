@@ -32,7 +32,7 @@ async function promptSSHConfig(
 
   const auth = usePassword
     ? await password({ message: "Password:" })
-    : await input({ message: `Key path(${homedir}/.shh/id_rsa):` });
+    : await input({ message: `Key path(${homedir()}/.shh/id_rsa):` });
 
   let name;
   if (saveConnection) {
