@@ -30,7 +30,7 @@ async function mainMenu(
         disabled: "(select a session to connect quickly)",
       },
       ...recents,
-      new Separator(),
+      new Separator(" "),
       {
         name: "💻 New connection",
         value: "ssh-new",
@@ -53,7 +53,6 @@ async function mainMenu(
       },
     ],
     theme: inquirerTheme,
-    loop: false,
     pageSize: 10,
   });
 
