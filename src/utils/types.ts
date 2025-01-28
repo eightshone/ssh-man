@@ -9,7 +9,7 @@ type connectivity =
     };
 
 export type server = {
-  id?: string;
+  id: string;
   name: string;
   host: string;
   port: number;
