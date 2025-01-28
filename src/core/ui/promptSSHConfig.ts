@@ -42,16 +42,15 @@ async function promptSSHConfig(
   let name;
   if (saveConnection) {
     name = await input({
-      message: `Server name(${config.defaults.autoSavePrefix}-${username}@${host}):`,
+      message: `Server name:`,
+      default: `${config.defaults.autoSavePrefix}-${username}@${host}`,
       validate: (value) => validateServerName(value, config.servers),
     });
   }
 
   return {
     id: nanoid(),
-    name: name?.length
-      ? name
-      : `${config.defaults.autoSavePrefix}-${username}@${host}`,
+    name,
     host,
     username,
     port,
