@@ -7,6 +7,7 @@ import loadFile from "../../utils/loadFile";
 import { config, log } from "../../utils/types";
 import compareVersions from "../../utils/compareVersions";
 import saveFile from "../../utils/saveFile";
+import migrate from "./migrate";
 
 async function init(): Promise<{ config: config; logs: log[] }> {
   const configFile = `${CONFIG_DIR}/config.json`;
@@ -24,29 +25,16 @@ async function init(): Promise<{ config: config; logs: log[] }> {
 
   // load config and logs
   spinner.text = "Loading config files…";
-  const configObj: config = await loadFile(`${CONFIG_DIR}/config.json`);
-  let logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
+  let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`),
+    logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
   spinner.text = "Config files loaded!";
 
   spinner.text = "Checking config compatibility…";
   if (
     !configObj.version ||
-    (!!configObj.version && compareVersions(VERSION, configObj.version) === -1)
+    (!!configObj.version && compareVersions(VERSION, configObj.version) === 1)
   ) {
-    spinner.text = "Migrating configs…";
-    if (!configObj.version) {
-      // this will only work for certain pre logs integrations version
-      logsObj = [];
-      await saveFile(`${CONFIG_DIR}/logs.json`, logsObj);
-
-      // assign server ids
-      configObj.recentServers = [];
-      configObj.servers.forEach((srv) => {
-        srv.id = nanoid();
-      });
-    }
-    configObj.version = VERSION;
-    await saveFile(`${CONFIG_DIR}/config.json`, configObj);
+    [configObj, logsObj] = await migrate(configObj, logsObj, spinner);
   }
 
   spinner?.success("App started!");
