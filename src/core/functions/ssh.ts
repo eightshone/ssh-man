@@ -1,6 +1,7 @@
 import { Client } from "ssh2";
 import yoctoSpinner from "yocto-spinner";
 import { server } from "../../utils/types";
+import { readFileSync } from "fs";
 
 // this function creates a raw input ssh connection
 
@@ -11,6 +12,10 @@ function sshConnection(
   return new Promise((resolve, reject) => {
     const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
     const client = new Client();
+    const config: any = { ...sshConfig };
+    if (config.usePassword === false) {
+      config.privateKey = readFileSync(config.privateKey);
+    }
 
     client
       .on("close", () => {
@@ -57,7 +62,7 @@ function sshConnection(
           }
         );
       })
-      .connect(sshConfig);
+      .connect(config);
   });
 }
 

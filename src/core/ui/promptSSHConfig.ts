@@ -3,17 +3,20 @@ import select from "@inquirer/select";
 import password from "@inquirer/password";
 import number from "@inquirer/number";
 import { homedir } from "os";
-import { server } from "../../utils/types";
+import { config, server } from "../../utils/types";
 import validateServerName from "../../utils/validateServerName";
 import { nanoid } from "nanoid";
 
 async function promptSSHConfig(
   saveConnection = false,
-  servers: server[]
+  config: config
 ): Promise<server> {
   const host = await input({ message: "Hostname:", required: true });
   const username = await input({ message: "Username:", required: true });
-  const port = await number({ message: "Port(22):", default: 22 });
+  const port = await number({
+    message: `Port(${config.defaults.port}):`,
+    default: config.defaults.port,
+  });
   const usePassword = await select({
     message: "Authentication method:",
     choices: [
@@ -32,19 +35,21 @@ async function promptSSHConfig(
 
   const auth = usePassword
     ? await password({ message: "Password:" })
-    : await input({ message: `Key path(${homedir()}/.shh/id_rsa):` });
+    : await input({ message: `Key path(${config.defaults.privateKey}):` });
 
   let name;
   if (saveConnection) {
     name = await input({
-      message: `Server name(auto-save-${username}@${host}):`,
-      validate: (value) => validateServerName(value, servers),
+      message: `Server name(${config.defaults.autoSavePrefix}-${username}@${host}):`,
+      validate: (value) => validateServerName(value, config.servers),
     });
   }
 
   return {
     id: nanoid(),
-    name: name?.length ? name : `auto-save-${username}@${host}`,
+    name: name?.length
+      ? name
+      : `${config.defaults.autoSavePrefix}-${username}@${host}`,
     host,
     username,
     port,
@@ -52,7 +57,7 @@ async function promptSSHConfig(
       ? { usePassword: true, password: auth }
       : {
           usePassword: false,
-          privateKey: auth?.length ? auth : `${homedir}/.shh/id_rsa`,
+          privateKey: auth?.length ? auth : config.defaults.privateKey,
         }),
   };
 }

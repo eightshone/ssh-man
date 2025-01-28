@@ -6,7 +6,7 @@ export const DEFAULT_CONFIG: config = {
   servers: [],
   recentServers: [],
   defaults: {
-    privateKey: `${homedir()}/.shh/id_rsa`,
+    privateKey: `${homedir()}/.ssh/id_rsa`,
     port: 22,
     autoSavePrefix: "auto-save",
   },
