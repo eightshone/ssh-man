@@ -44,7 +44,8 @@ export type menu =
   | "ssh-delete"
   | "ssh-edit"
   | "ssh-search"
-  | "manual";
+  | "manual"
+  | "settings-defaults-edit";
 
 export type json = {
   [key: string | number]: any;

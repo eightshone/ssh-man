@@ -10,6 +10,7 @@ import searchConnections from "./connections/search";
 import sshConnect from "../functions/sshConnect";
 import { Command } from "commander";
 import manual from "./manual";
+import settings from "./settings/settings";
 
 async function interactive(
   initialConfig: config,
@@ -72,6 +73,10 @@ async function interactive(
 
     if (currentMenu === "manual") {
       [currentMenu] = await manual(program);
+    }
+
+    if (currentMenu === "settings") {
+      [currentMenu, options] = await settings(config);
     }
   }
 
