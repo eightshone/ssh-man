@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import init from "./core/init";
 import { VERSION } from "./utils/consts";
-import interactive from "./core/interactive";
+import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
 import parseConnectionString from "./utils/parseConnectionString";
 import sshConnection from "./core/ssh";

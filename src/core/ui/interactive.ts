@@ -1,13 +1,13 @@
-import goodbye from "../utils/goodbye";
-import { config, log, menu } from "../utils/types";
-import deleteConnection from "./deleteConnection";
-import displayConnection from "./displayConnection";
-import editConnection from "./editConnection";
-import listConnections from "./listConnections";
-import mainMenu from "./ui/mainMenu";
-import newConnection from "./newConnection";
-import searchConnections from "./searchConnections";
-import sshConnect from "./sshConnect";
+import goodbye from "../../utils/goodbye";
+import { config, log, menu } from "../../utils/types";
+import deleteConnection from "./connections/deleteConnection";
+import displayConnection from "../displayConnection";
+import editConnection from "../editConnection";
+import listConnections from "../listConnections";
+import mainMenu from "./mainMenu";
+import newConnection from "../newConnection";
+import searchConnections from "../searchConnections";
+import sshConnect from "../sshConnect";
 
 async function interactive(initialConfig: config, initialLogs: log[]) {
   let currentMenu: menu = "main",
