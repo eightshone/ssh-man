@@ -1,8 +1,8 @@
 import search from "@inquirer/search";
 import colors from "yoctocolors-cjs";
-import { menu, server } from "../utils/types";
-import stringPadding from "../utils/stringPadding";
-import { inquirerTheme } from "../utils/themes";
+import { menu, server } from "../../../utils/types";
+import stringPadding from "../../../utils/stringPadding";
+import { inquirerTheme } from "../../../utils/themes";
 
 const defaultChoice = [
   {

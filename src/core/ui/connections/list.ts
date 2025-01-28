@@ -1,8 +1,8 @@
 import select, { Separator } from "@inquirer/select";
 import colors from "yoctocolors-cjs";
-import { menu, server } from "../utils/types";
-import { inquirerTheme } from "../utils/themes";
-import stringPadding from "../utils/stringPadding";
+import { menu, server } from "../../../utils/types";
+import { inquirerTheme } from "../../../utils/themes";
+import stringPadding from "../../../utils/stringPadding";
 
 async function listConnections(servers: server[]): Promise<[menu, string[]]> {
   let options: string[] | null = null;

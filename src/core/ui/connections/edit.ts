@@ -3,10 +3,10 @@ import select from "@inquirer/select";
 import password from "@inquirer/password";
 import number from "@inquirer/number";
 import { homedir } from "os";
-import { config, log, menu, server } from "../utils/types";
-import saveFile from "../utils/saveFile";
-import { CONFIG_DIR } from "../utils/consts";
-import validateServerName from "../utils/validateServerName";
+import { config, log, menu, server } from "../../../utils/types";
+import saveFile from "../../../utils/saveFile";
+import { CONFIG_DIR } from "../../../utils/consts";
+import validateServerName from "../../../utils/validateServerName";
 
 async function editConnection(
   config: config,
@@ -87,6 +87,7 @@ async function editConnection(
     }
 
     updatedSshConfig = {
+      id: sshConfig.id,
       name: name.length ? name : sshConfig.name,
       host: host.length ? host : sshConfig.host,
       username: username.length ? username : sshConfig.username,

@@ -1,7 +1,7 @@
 import select from "@inquirer/select";
-import { CONFIG_DIR } from "../utils/consts";
-import saveFile from "../utils/saveFile";
-import { config, menu, server } from "../utils/types";
+import { CONFIG_DIR } from "../../../utils/consts";
+import saveFile from "../../../utils/saveFile";
+import { config, menu, server } from "../../../utils/types";
 
 async function deleteConnection(
   initialConfig: config,

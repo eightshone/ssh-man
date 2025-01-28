@@ -1,7 +1,7 @@
 import select from "@inquirer/select";
 import colors from "yoctocolors-cjs";
-import { menu, server } from "../utils/types";
-import stringPadding from "../utils/stringPadding";
+import { menu, server } from "../../../utils/types";
+import stringPadding from "../../../utils/stringPadding";
 
 async function displayConnection(
   sshConfig: server,

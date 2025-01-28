@@ -1,12 +1,12 @@
 import goodbye from "../../utils/goodbye";
 import { config, log, menu } from "../../utils/types";
-import deleteConnection from "./connections/deleteConnection";
-import displayConnection from "../displayConnection";
-import editConnection from "../editConnection";
-import listConnections from "../listConnections";
+import deleteConnection from "./connections/delete";
+import displayConnection from "./connections/display";
+import editConnection from "./connections/edit";
+import listConnections from "./connections/list";
 import mainMenu from "./mainMenu";
-import newConnection from "../newConnection";
-import searchConnections from "../searchConnections";
+import newConnection from "./connections/new";
+import searchConnections from "./connections/search";
 import sshConnect from "../sshConnect";
 
 async function interactive(initialConfig: config, initialLogs: log[]) {

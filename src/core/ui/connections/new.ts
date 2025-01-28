@@ -1,9 +1,9 @@
 import select from "@inquirer/select";
 
-import promptSSHConfig from "./promptSSHConfig";
-import { config, log, menu } from "../utils/types";
-import sshConnection from "./ssh";
-import updateConfigs from "../utils/updateConfigs";
+import promptSSHConfig from "../../promptSSHConfig";
+import { config, log, menu } from "../../../utils/types";
+import sshConnection from "../../ssh";
+import updateConfigs from "../../../utils/updateConfigs";
 
 async function newConnection(
   initialConfig: config,
