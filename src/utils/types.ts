@@ -18,7 +18,11 @@ export type server = {
 
 export type config = {
   version?: string;
-  defaultPrivateKey: string | null;
+  defaults: {
+    privateKey?: string;
+    port?: number;
+    autoSavePrefix?: string;
+  };
   servers: server[];
   recentServers: server[];
 };

@@ -3,9 +3,13 @@ import { config } from "./types";
 
 export const VERSION: string = "0.1.1";
 export const DEFAULT_CONFIG: config = {
-  defaultPrivateKey: null,
   servers: [],
   recentServers: [],
+  defaults: {
+    privateKey: `${homedir()}/.shh/id_rsa`,
+    port: 22,
+    autoSavePrefix: "auto-save",
+  },
 };
 export const GOODBYES: string[] = [
   "Thanks for stopping by! Take care! 😊",
