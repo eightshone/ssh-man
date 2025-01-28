@@ -38,7 +38,8 @@ export type menu =
   | "ssh-display"
   | "ssh-delete"
   | "ssh-edit"
-  | "ssh-search";
+  | "ssh-search"
+  | "manual";
 
 export type json = {
   [key: string | number]: any;

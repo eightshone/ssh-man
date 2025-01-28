@@ -1,12 +1,15 @@
 import select, { Separator } from "@inquirer/select";
+import colors from "yoctocolors-cjs";
 import { menu, server } from "../../utils/types";
 import { inquirerTheme } from "../../utils/themes";
 import title from "../../utils/title";
+import stringPadding from "../../utils/stringPadding";
 
 async function mainMenu(
   recentServers: server[] = []
 ): Promise<[menu, string[] | null]> {
   title();
+  const separatorLength = Math.floor((process.stdout.columns / 3) * 2);
   let options: string[] | null = null;
   const recents = recentServers.length
     ? recentServers.map((server, index) => ({
@@ -30,7 +33,16 @@ async function mainMenu(
         disabled: "(select a session to connect quickly)",
       },
       ...recents,
-      new Separator(" "),
+      new Separator(
+        colors.dim(
+          stringPadding(
+            "-",
+            separatorLength % 2 === 0 ? separatorLength + 1 : separatorLength,
+            "start",
+            "-_"
+          )
+        )
+      ),
       {
         name: "💻 New connection",
         value: "ssh-new",
@@ -45,6 +57,11 @@ async function mainMenu(
         name: "⚙️ Settings",
         value: "settings",
         description: "User settings",
+      },
+      {
+        name: "📖 Manual",
+        value: "manual",
+        description: "Help manual",
       },
       {
         name: "🚪 Quit",

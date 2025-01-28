@@ -8,8 +8,14 @@ import mainMenu from "./mainMenu";
 import newConnection from "./connections/new";
 import searchConnections from "./connections/search";
 import sshConnect from "../functions/sshConnect";
+import { Command } from "commander";
+import manual from "./manual";
 
-async function interactive(initialConfig: config, initialLogs: log[]) {
+async function interactive(
+  initialConfig: config,
+  initialLogs: log[],
+  program: Command
+) {
   let currentMenu: menu = "main",
     options: string[] | null = null,
     config: config = { ...initialConfig },
@@ -62,6 +68,10 @@ async function interactive(initialConfig: config, initialLogs: log[]) {
         JSON.parse(options[0]),
         parseInt(options[1])
       );
+    }
+
+    if (currentMenu === "manual") {
+      [currentMenu] = await manual(program);
     }
   }
 

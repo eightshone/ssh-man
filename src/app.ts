@@ -3,13 +3,6 @@ import init from "./core/functions/init";
 import { VERSION } from "./utils/consts";
 import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
-import parseConnectionString from "./utils/parseConnectionString";
-import sshConnection from "./core/functions/ssh";
-import { server } from "./utils/types";
-import updateConfigs from "./utils/updateConfigs";
-import isConnectionString from "./utils/isConnectionString";
-import findServer from "./utils/findServer";
-import validateServerName from "./utils/validateServerName";
 import connectCommand from "./core/commands/connect";
 
 const program = new Command();
@@ -45,7 +38,7 @@ async function app() {
   // intialize the cli app
   const { config, logs } = await init();
 
-  await interactive(config, logs);
+  await interactive(config, logs, program);
 }
 
 process.on("uncaughtException", (error) => {
