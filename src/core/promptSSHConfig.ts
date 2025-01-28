@@ -5,6 +5,7 @@ import number from "@inquirer/number";
 import { homedir } from "os";
 import { server } from "../utils/types";
 import validateServerName from "../utils/validateServerName";
+import { nanoid } from "nanoid";
 
 async function promptSSHConfig(
   saveConnection = false,
@@ -42,6 +43,7 @@ async function promptSSHConfig(
   }
 
   return {
+    id: nanoid(),
     name: name?.length ? name : `auto-save-${username}@${host}`,
     host,
     username,
