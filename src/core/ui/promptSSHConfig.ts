@@ -14,7 +14,7 @@ async function promptSSHConfig(
   const host = await input({ message: "Hostname:", required: true });
   const username = await input({ message: "Username:", required: true });
   const port = await number({
-    message: `Port(${config.defaults.port}):`,
+    message: "Port:",
     default: config.defaults.port,
   });
   const usePassword = await select({
@@ -35,7 +35,10 @@ async function promptSSHConfig(
 
   const auth = usePassword
     ? await password({ message: "Password:" })
-    : await input({ message: `Key path(${config.defaults.privateKey}):` });
+    : await input({
+        message: "Key path:",
+        default: config.defaults.privateKey,
+      });
 
   let name;
   if (saveConnection) {
