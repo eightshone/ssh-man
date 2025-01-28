@@ -10,6 +10,7 @@ import updateConfigs from "./utils/updateConfigs";
 import isConnectionString from "./utils/isConnectionString";
 import findServer from "./utils/findServer";
 import validateServerName from "./utils/validateServerName";
+import connectCommand from "./core/commands/connect";
 
 const program = new Command();
 
@@ -28,57 +29,7 @@ program
   )
   .option("-s, --save [name]")
   .description("connect to a new session")
-  .action(async (creds: string, options) => {
-    // intialize the cli app
-    let { config, logs } = await init();
-
-    // save connection may contains the server name
-    const saveConnection: string | boolean = options.save;
-    let sshConfig: server | undefined;
-
-    const newConnection = isConnectionString(creds);
-
-    if (newConnection) {
-      sshConfig = parseConnectionString(creds);
-
-      if (
-        !!saveConnection &&
-        typeof saveConnection === "string" &&
-        !!saveConnection?.length
-      ) {
-        const isValid: boolean | string = validateServerName(
-          saveConnection,
-          config.servers
-        );
-
-        if (isValid === true) {
-          sshConfig.name = saveConnection;
-        } else {
-          console.log(`❌ ${isValid}`);
-          return;
-        }
-      } else {
-        console.log(
-          `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
-        );
-      }
-    } else {
-      sshConfig = findServer(config.servers, creds);
-      if (!sshConfig) {
-        console.log("❌ Server config not found!");
-        return;
-      }
-    }
-
-    [config, logs] = await updateConfigs(
-      config,
-      logs,
-      sshConfig,
-      !!saveConnection && newConnection
-    );
-
-    sshConnection(sshConfig);
-  });
+  .action(connectCommand);
 
 program
   .command("goodbye")
