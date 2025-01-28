@@ -2,7 +2,6 @@ import input from "@inquirer/input";
 import select from "@inquirer/select";
 import password from "@inquirer/password";
 import number from "@inquirer/number";
-import { homedir } from "os";
 import { config, server } from "../../utils/types";
 import validateServerName from "../../utils/validateServerName";
 import { nanoid } from "nanoid";
@@ -60,7 +59,7 @@ async function promptSSHConfig(
       ? { usePassword: true, password: auth }
       : {
           usePassword: false,
-          privateKey: auth?.length ? auth : config.defaults.privateKey,
+          privateKey: auth,
         }),
   };
 }
