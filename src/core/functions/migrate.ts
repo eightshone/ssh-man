@@ -1,6 +1,6 @@
 import { Spinner } from "yocto-spinner";
 import { config, log } from "../../utils/types";
-import { CONFIG_DIR, VERSION } from "../../utils/consts";
+import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
 import saveFile from "../../utils/saveFile";
 import { nanoid } from "nanoid";
 import compareVersions from "../../utils/compareVersions";
@@ -36,6 +36,16 @@ async function migrate(
       servers[srv.id] = srv.name;
     });
     logsObj = logsObj.map((lg) => ({ ...lg, serverName: servers[lg.server] }));
+  }
+
+  if (!configObj.version || compareVersions("0.1.2", configObj.version) === 1) {
+    // remove depricated field from initial config
+    if (configObj["defaultPrivateKey"]) {
+      delete configObj["defaultPrivateKey"];
+    }
+
+    // set config defaults
+    configObj.defaults = DEFAULT_CONFIG.defaults;
   }
   configObj.version = VERSION;
   await saveFile(`${CONFIG_DIR}/config.json`, configObj);
