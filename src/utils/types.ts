@@ -26,6 +26,7 @@ export type config = {
 export type log = {
   time: string;
   server: string;
+  serverName: string;
 };
 
 export type menu =

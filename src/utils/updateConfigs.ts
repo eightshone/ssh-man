@@ -24,7 +24,10 @@ async function updateConfigs(
     }
   }
   config.recentServers = updateRecentServers(config.recentServers, sshConfig);
-  logs = [{ time: formattedTime, server: sshConfig.id }, ...logs];
+  logs = [
+    { time: formattedTime, server: sshConfig.id, serverName: sshConfig.name },
+    ...logs,
+  ];
   await saveFile(`${CONFIG_DIR}/config.json`, config);
   await saveFile(`${CONFIG_DIR}/logs.json`, logs);
 
