@@ -92,7 +92,7 @@ async function settings(config: config): Promise<[menu, string[]]> {
 
   console.clear();
 
-  if (answer.startsWith("ssh-display")) {
+  if (answer.startsWith("settings-defaults-edit")) {
     [answer, ...options] = answer.split("#-_-#");
   }
 

@@ -50,3 +50,17 @@ export type menu =
 export type json = {
   [key: string | number]: any;
 };
+
+type editDefaultOptionsVar =
+  | {
+      defaultValue: number;
+      type: "number";
+    }
+  | {
+      defaultValue: string;
+      type: "private-key" | "server-name";
+    };
+
+export type editDefaultOptions = {
+  message: string;
+} & editDefaultOptionsVar;
