@@ -36,7 +36,7 @@ async function connectCommand(creds: string, options) {
         console.log(`❌ ${isValid}`);
         return;
       }
-    } else {
+    } else if (!!saveConnection && typeof saveConnection === "boolean") {
       console.log(
         `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
       );
