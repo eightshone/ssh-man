@@ -59,6 +59,11 @@ async function mainMenu(
         description: "User settings",
       },
       {
+        name: "📰 Logs [Exiperimental]",
+        value: "logs",
+        description: "Connection logs",
+      },
+      {
         name: "📖 Manual",
         value: "manual",
         description: "Help manual",
@@ -70,7 +75,7 @@ async function mainMenu(
       },
     ],
     theme: inquirerTheme,
-    pageSize: 10,
+    pageSize: 12,
   });
 
   if (answer !== "exit") {

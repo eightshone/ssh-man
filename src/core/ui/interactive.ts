@@ -12,6 +12,7 @@ import { Command } from "commander";
 import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
+import displayLogs from "./logs/scrollableList";
 
 async function interactive(
   initialConfig: config,
@@ -82,6 +83,10 @@ async function interactive(
 
     if (currentMenu === "settings-defaults-edit") {
       [currentMenu, config] = await editDefault(JSON.parse(options[0]), config);
+    }
+
+    if (currentMenu === "logs") {
+      [currentMenu] = await displayLogs(logs);
     }
   }
 

@@ -45,7 +45,8 @@ export type menu =
   | "ssh-edit"
   | "ssh-search"
   | "manual"
-  | "settings-defaults-edit";
+  | "settings-defaults-edit"
+  | "logs";
 
 export type json = {
   [key: string | number]: any;
