@@ -4,7 +4,7 @@ import { log } from "./types";
 function transformLogs(logs: log[]) {
   return logs.map(
     (lg) =>
-      `${lg.time}   ${stringPadding(
+      `${lg.time} - ${stringPadding(
         lg.serverName,
         process.stdout.columns - 24
       )}`

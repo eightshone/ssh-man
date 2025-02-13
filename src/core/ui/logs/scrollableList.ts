@@ -1,11 +1,12 @@
 import search from "@inquirer/search";
+import colors from "yoctocolors-cjs";
 import { log, menu } from "../../../utils/types";
 import transformLogs from "../../../utils/transformLogs";
 import { logsTheme } from "../../../utils/themes";
 
 async function scrollableList(logs: log[] = []): Promise<[menu]> {
   console.clear();
-  console.log("SERVER CONNECTION LOGS");
+  console.log(colors.blueBright("📰 SERVER CONNECTION LOGS"));
   await search({
     message: "Search:",
     source: async (input, { signal }) => {
