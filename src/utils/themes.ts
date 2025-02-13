@@ -2,8 +2,8 @@ import colors from "yoctocolors-cjs";
 
 export const inquirerTheme = {
   prefix: {
-    idle: colors.blue(""),
-    done: colors.green(""),
+    idle: "",
+    done: "",
   },
   spinner: {
     interval: 80,
