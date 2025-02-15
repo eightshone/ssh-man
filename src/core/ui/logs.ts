@@ -1,8 +1,8 @@
 import search from "@inquirer/search";
 import colors from "yoctocolors-cjs";
-import { log, menu } from "../../../utils/types";
-import transformLogs from "../../../utils/transformLogs";
-import { logsTheme } from "../../../utils/themes";
+import { log, menu } from "../../utils/types";
+import transformLogs from "../../utils/transformLogs";
+import { logsTheme } from "../../utils/themes";
 
 async function scrollableList(logs: log[] = []): Promise<[menu]> {
   console.clear();

@@ -12,7 +12,7 @@ import { Command } from "commander";
 import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
-import displayLogs from "./logs/scrollableList";
+import displayLogs from "./scrollableList";
 
 async function interactive(
   initialConfig: config,
