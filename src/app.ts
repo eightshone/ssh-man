@@ -25,7 +25,12 @@ program
   .description("connect to a new session")
   .action(connectCommand);
 
-program.command("logs").description("print logs").action(logs);
+program
+  .command("logs")
+  .option("-i, --interactive")
+  .option("-s, --search <terms>")
+  .description("print logs")
+  .action(logs);
 
 program
   .command("goodbye")
