@@ -4,6 +4,7 @@ import { VERSION } from "./utils/consts";
 import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
 import connectCommand from "./core/commands/connect";
+import logs from "./core/commands/logs";
 
 const program = new Command();
 
@@ -23,6 +24,8 @@ program
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(connectCommand);
+
+program.command("logs").description("print logs").action(logs);
 
 program
   .command("goodbye")
