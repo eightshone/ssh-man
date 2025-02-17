@@ -4,7 +4,7 @@ import { log, menu } from "../../utils/types";
 import transformLogs from "../../utils/transformLogs";
 import { logsTheme } from "../../utils/themes";
 
-async function scrollableList(logs: log[] = []): Promise<[menu]> {
+async function interactiveLogs(logs: log[] = []): Promise<[menu]> {
   console.clear();
   console.log(colors.blueBright("📰 SERVER CONNECTION LOGS"));
   await search({
@@ -44,4 +44,4 @@ async function scrollableList(logs: log[] = []): Promise<[menu]> {
   return ["main"];
 }
 
-export default scrollableList;
+export default interactiveLogs;
