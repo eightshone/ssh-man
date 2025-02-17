@@ -9,27 +9,49 @@ import compareVersions from "../../utils/compareVersions";
 import saveFile from "../../utils/saveFile";
 import migrate from "./migrate";
 
-async function init(): Promise<{ config: config; logs: log[] }> {
+type options = {
+  silent?: boolean;
+};
+
+async function init(
+  options: options = { silent: false }
+): Promise<{ config: config; logs: log[] }> {
+  const { silent } = options;
   const configFile = `${CONFIG_DIR}/config.json`;
   const logsFile = `${CONFIG_DIR}/logs.json`;
-  let spinner = yoctoSpinner({ text: "Checking config files…" }).start();
+
+  let spinner;
+  if (!silent) {
+    spinner = yoctoSpinner({ text: "Checking config files…" }).start();
+  }
+
   // check for app config files
   if (!existsSync(configFile) || !existsSync(logsFile)) {
-    spinner.text = "Creating config files…";
+    if (!silent) {
+      spinner.text = "Creating config files…";
+    }
     await createFileIfNotExists(configFile, JSON.stringify(DEFAULT_CONFIG));
     await createFileIfNotExists(logsFile, "[]");
-    spinner.text = "Config files created!";
+    if (!silent) {
+      spinner.text = "Config files created!";
+    }
   }
 
   // todo: add config files validations
 
   // load config and logs
-  spinner.text = "Loading config files…";
+  if (!silent) {
+    spinner.text = "Loading config files…";
+  }
   let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
-  spinner.text = "Config files loaded!";
+  if (!silent) {
+    spinner.text = "Config files loaded!";
+  }
 
-  spinner.text = "Checking config compatibility…";
+  if (!silent) {
+    spinner.text = "Checking config compatibility…";
+  }
   if (
     !configObj.version ||
     (!!configObj.version && compareVersions(VERSION, configObj.version) === 1)
@@ -37,7 +59,9 @@ async function init(): Promise<{ config: config; logs: log[] }> {
     [configObj, logsObj] = await migrate(configObj, logsObj, spinner);
   }
 
-  spinner?.success("App started!");
+  if (!silent) {
+    spinner?.success("App started!");
+  }
 
   return {
     config: configObj,
