@@ -1,7 +1,7 @@
 {
-  "name": "sshman",
+  "name": "@eightshone/sshman",
   "version": "0.1.4",
-  "description": "a simple cli ssh manager",
+  "description": "A simple cli ssh manager",
   "main": "src/app.js",
   "repository": "git@github.com:eightshone/shhman.git",
   "author": "EIGHTSH ONE",
