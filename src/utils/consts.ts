@@ -1,7 +1,7 @@
 import { homedir } from "os";
 import { config } from "./types";
 
-export const VERSION: string = "0.1.4";
+export const VERSION: string = "0.1.5";
 export const DEFAULT_CONFIG: config = {
   servers: [],
   recentServers: [],
