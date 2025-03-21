@@ -6,9 +6,6 @@
   "repository": "git@github.com:eightshone/shhman.git",
   "author": "EIGHTSH ONE",
   "keywords": [
-    "ssh",
-    "ssh2",
-    "manager",
     "cli-ssh-manager",
     "ssh-connection-manager",
     "server-management",
@@ -26,14 +23,9 @@
     "ssh-connection-history",
     "ssh-session-management",
     "ssh-connection-tool",
-    "ssh-client-management",
     "server-log-monitoring",
     "cli-server-tool",
-    "ssh-configuration-management",
-    "ssh-command-line-interface",
-    "terminal-ssh-tool",
-    "ssh-protocol",
-    "secure-server-connections"
+    "ssh-protocol"
   ],
   "license": "MIT",
   "private": false,
