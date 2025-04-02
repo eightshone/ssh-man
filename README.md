@@ -4,6 +4,13 @@
 A simple terminmal based SSH manager created in Node.js
 
 # Quick start
+
+## Installation
+To get started with `SSH MANAGER` you have to simply install it using your favorite package manager.
+| Yarn                                 | NPM                                 | PNPM                             |
+| ------------------------------------ | ----------------------------------- | -------------------------------- |
+| `yarn global add @eightshone/sshman` | `npm install -g @eightshone/sshman` | `pnpm add -g @eightshone/sshman` |
+
 ## Usage
 The build of this project exposes the command named `sshman`
 ### Interactive mode
@@ -36,19 +43,19 @@ The command doesn't care if the server name contains uppercase or spaces. `Serve
 `git clone git@github.com:eightshone/ssh-man.git`
 
 ### Install dependencies
-| Yarn           | NPM     |
-| -------------- | ------- |
-| `yarn install` | `npm i` |
+| Yarn           | NPM           | PNPM           |
+| -------------- | ------------- | -------------- |
+| `yarn install` | `npm install` | `pnpm install` |
 
 ### Start the project
-| Yarn       | NPM           |
-| ---------- | ------------- |
-| `yarn dev` | `npm run dev` |
+| Yarn       | NPM           | PNPM       |
+| ---------- | ------------- | ---------- |
+| `yarn dev` | `npm run dev` | `pnpm dev` |
 
 ### Build the project
-| Yarn         | NPM             |
-| ------------ | --------------- |
-| `yarn build` | `npm run build` |
+| Yarn         | NPM             | PNPM         |
+| ------------ | --------------- | ------------ |
+| `yarn build` | `npm run build` | `pnpm build` |
 
 # Roadmap
 - [ ] Add delete server command
