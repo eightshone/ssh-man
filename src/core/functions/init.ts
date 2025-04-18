@@ -1,12 +1,10 @@
 import { existsSync } from "fs";
 import yoctoSpinner from "yocto-spinner";
-import { nanoid } from "nanoid";
 import createFileIfNotExists from "../../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
 import loadFile from "../../utils/loadFile";
 import { config, log } from "../../utils/types";
 import compareVersions from "../../utils/compareVersions";
-import saveFile from "../../utils/saveFile";
 import migrate from "./migrate";
 
 type options = {
