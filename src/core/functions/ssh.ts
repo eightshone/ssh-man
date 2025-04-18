@@ -30,7 +30,7 @@ function sshConnection(
         spinner.success("Connection ready! 🟢");
         this.shell(
           {
-            term: process.env.TERM,
+            term: process.env.TERM ?? "xterm-256color",
             rows: process.stdout.rows,
             cols: process.stdout.columns,
           },
