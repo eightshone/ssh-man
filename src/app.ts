@@ -7,6 +7,7 @@ import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
 import connectCommand from "./core/commands/connect";
 import logs from "./core/commands/logs";
+import exportServers from "./core/commands/exportServers";
 
 const program = new Command();
 
@@ -33,6 +34,18 @@ program
   .option("-s, --search <terms>")
   .description("print logs")
   .action(logs);
+
+program
+  .command("export")
+  .argument("[servers...]", "server names separated by spaces")
+  .option(
+    "-a, --all",
+    "export all server configurations (ignores any input server names)"
+  )
+  .option("-n, --name <file name>", "custom name for output file")
+  .option("-f, --force", "replace existing file")
+  .description("exports server configurations")
+  .action(exportServers);
 
 program
   .command("goodbye")
