@@ -6,6 +6,8 @@ import loadFile from "../../utils/loadFile";
 import { config, log } from "../../utils/types";
 import compareVersions from "../../utils/compareVersions";
 import migrate from "./migrate";
+import isSameVersion from "./isSameVersion";
+import showUpdateMessage from "./showUpdateMessage";
 
 type options = {
   silent?: boolean;
@@ -57,9 +59,13 @@ async function init(
     [configObj, logsObj] = await migrate(configObj, logsObj, spinner);
   }
 
+  const [isUptodate, manager] = await isSameVersion();
+
   if (!silent) {
     spinner?.success("App started!");
   }
+
+  showUpdateMessage(isUptodate, manager, true);
 
   return {
     config: configObj,
