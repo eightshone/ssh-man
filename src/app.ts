@@ -8,6 +8,8 @@ import goodbye from "./utils/goodbye";
 import connectCommand from "./core/commands/connect";
 import logs from "./core/commands/logs";
 import exportServers from "./core/commands/exportServers";
+import isSameVersion from "./core/functions/isSameVersion";
+import showUpdateMessage from "./core/functions/showUpdateMessage";
 
 const program = new Command();
 
@@ -53,6 +55,14 @@ program
   .action(() => {
     goodbye();
     process.exit();
+  });
+
+program
+  .command("check-updates")
+  .description("check for updates")
+  .action(async () => {
+    const [isUptodate, manager] = await isSameVersion();
+    showUpdateMessage(isUptodate, manager);
   });
 
 program.parse();
