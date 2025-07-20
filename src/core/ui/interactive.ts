@@ -45,7 +45,8 @@ async function interactive(
     if (currentMenu === "ssh-display") {
       [currentMenu, options] = await displayConnection(
         JSON.parse(options[0]),
-        parseInt(options[1])
+        parseInt(options[1]),
+        options.length === 3 && options[2] === "true"
       );
     }
 

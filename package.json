@@ -53,6 +53,7 @@
     "@inquirer/password": "^4.0.6",
     "@inquirer/search": "^3.0.6",
     "@inquirer/select": "^4.0.5",
+    "clipboardy": "^4.0.0",
     "commander": "^13.0.0",
     "dayjs": "^1.11.13",
     "nanoid": "^5.0.9",

@@ -1,11 +1,13 @@
 import select from "@inquirer/select";
 import colors from "yoctocolors-cjs";
+import clipboard from "clipboardy";
 import { menu, server } from "../../../utils/types";
 import stringPadding from "../../../utils/stringPadding";
 
 async function displayConnection(
   sshConfig: server,
-  index: number
+  index: number,
+  passwordCopied?: boolean
 ): Promise<[menu, string[]]> {
   console.log(colors.dim("🖥️ Server name"));
   console.log(`   ${sshConfig.name}
@@ -27,7 +29,7 @@ async function displayConnection(
   console.log(`   ${stringPadding(sshConfig.host)}     ${sshConfig.port}
   `);
 
-  const answer = await select({
+  let answer = await select({
     message: "Select action",
     choices: [
       {
@@ -35,6 +37,17 @@ async function displayConnection(
         value: "ssh-connect",
         description: "Connect to server",
       },
+      ...(sshConfig.usePassword
+        ? [
+            {
+              name: passwordCopied
+                ? "✅ Password copied to clipboard"
+                : "📋 Copy password to clipborad",
+              value: "ssh-password",
+              description: "Edit server password to clipboard",
+            },
+          ]
+        : []),
       {
         name: "✍️ Edit",
         value: "ssh-edit",
@@ -53,11 +66,22 @@ async function displayConnection(
       },
     ],
     loop: false,
+    default: passwordCopied ? "ssh-password" : "ssh-connect",
   });
 
   console.clear();
 
-  return [answer as menu, [JSON.stringify(sshConfig), `${index}`]];
+  let copyPassword = false;
+  if (answer === "ssh-password" && sshConfig.usePassword) {
+    clipboard.writeSync(sshConfig.password);
+    copyPassword = true;
+    answer = "ssh-display";
+  }
+
+  return [
+    answer as menu,
+    [JSON.stringify(sshConfig), `${index}`, `${copyPassword}`],
+  ];
 }
 
 export default displayConnection;
