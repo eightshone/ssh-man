@@ -31,12 +31,12 @@
   "private": false,
   "type": "module",
   "bin": {
-    "sshman": "./dist/app.js"
+    "sshman": "./dist/src/app.js"
   },
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist/app.js"
+    "postbuild": "fix-esm-import-path dist/src/app.js"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
