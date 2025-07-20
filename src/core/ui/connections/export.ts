@@ -22,17 +22,19 @@ async function exportConnections(
     ],
   });
 
-  let fileName: string | undefined;
-  while (!fileName?.length) {
-    const proposedName = await filename();
+  if (selectedConfigs.length) {
+    let fileName: string | undefined;
+    while (!fileName?.length) {
+      const proposedName = await filename();
 
-    if (!proposedName.length) continue;
+      if (!proposedName.length) continue;
 
-    const fileExists = existsSync(proposedName);
+      const fileExists = existsSync(proposedName);
 
-    if (!fileExists || (fileExists && (await overWriteFile(proposedName)))) {
-      await saveFile(proposedName, selectedConfigs);
-      fileName = proposedName;
+      if (!fileExists || (fileExists && (await overWriteFile(proposedName)))) {
+        await saveFile(proposedName, selectedConfigs);
+        fileName = proposedName;
+      }
     }
   }
 
