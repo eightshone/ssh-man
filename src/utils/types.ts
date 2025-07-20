@@ -44,6 +44,8 @@ export type menu =
   | "ssh-delete"
   | "ssh-edit"
   | "ssh-search"
+  | "ssh-export"
+  | "ssh-export-filename"
   | "manual"
   | "settings-defaults-edit"
   | "logs";
