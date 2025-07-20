@@ -13,6 +13,7 @@ import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
 import displayLogs from "./logs";
+import exportConnections from "./connections/export";
 
 async function interactive(
   initialConfig: config,
@@ -44,7 +45,8 @@ async function interactive(
     if (currentMenu === "ssh-display") {
       [currentMenu, options] = await displayConnection(
         JSON.parse(options[0]),
-        parseInt(options[1])
+        parseInt(options[1]),
+        options.length === 3 && options[2] === "true"
       );
     }
 
@@ -71,6 +73,10 @@ async function interactive(
         JSON.parse(options[0]),
         parseInt(options[1])
       );
+    }
+
+    if (currentMenu === "ssh-export") {
+      [currentMenu, options] = await exportConnections(config.servers);
     }
 
     if (currentMenu === "manual") {

@@ -7,6 +7,9 @@ import interactive from "./core/ui/interactive";
 import goodbye from "./utils/goodbye";
 import connectCommand from "./core/commands/connect";
 import logs from "./core/commands/logs";
+import exportServers from "./core/commands/exportServers";
+import isSameVersion from "./core/functions/isSameVersion";
+import showUpdateMessage from "./core/functions/showUpdateMessage";
 
 const program = new Command();
 
@@ -35,11 +38,31 @@ program
   .action(logs);
 
 program
+  .command("export")
+  .argument("[servers...]", "server names separated by spaces")
+  .option(
+    "-a, --all",
+    "export all server configurations (ignores any input server names)"
+  )
+  .option("-n, --name <file name>", "custom name for output file")
+  .option("-f, --force", "replace existing file")
+  .description("exports server configurations")
+  .action(exportServers);
+
+program
   .command("goodbye")
   .description("says goodbye")
   .action(() => {
     goodbye();
     process.exit();
+  });
+
+program
+  .command("check-updates")
+  .description("check for updates")
+  .action(async () => {
+    const [isUptodate, manager] = await isSameVersion();
+    showUpdateMessage(isUptodate, manager);
   });
 
 program.parse();

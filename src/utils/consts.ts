@@ -1,7 +1,8 @@
 import { homedir } from "os";
 import { config } from "./types";
+import packageJson from "../../package.json";
 
-export const VERSION: string = "0.1.5";
+export const VERSION: string = packageJson.version;
 export const DEFAULT_CONFIG: config = {
   servers: [],
   recentServers: [],
@@ -31,3 +32,8 @@ export const GOODBYES: string[] = [
 ];
 export const CONFIG_DIR = `${homedir()}/.sshman`;
 export const CONNECTION_REGEX = /^(.*?)(?::(.*?))?@(.*?)(?::(\d+))?$/;
+export const UPDATE_COMMANDS = {
+  yarn: "yarn global add @eightshone/sshman",
+  npm: "npm install -g @eightshone/sshman",
+  pnpm: "pnpm add -g @eightshone/sshman",
+};
