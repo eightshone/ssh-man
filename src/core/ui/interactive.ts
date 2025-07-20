@@ -13,6 +13,7 @@ import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
 import displayLogs from "./logs";
+import exportConnections from "./connections/export";
 
 async function interactive(
   initialConfig: config,
@@ -71,6 +72,10 @@ async function interactive(
         JSON.parse(options[0]),
         parseInt(options[1])
       );
+    }
+
+    if (currentMenu === "ssh-export") {
+      [currentMenu, options] = await exportConnections(config.servers);
     }
 
     if (currentMenu === "manual") {
