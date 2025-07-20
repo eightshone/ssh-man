@@ -7,7 +7,7 @@ import stringPadding from "../../../utils/stringPadding";
 async function listConnections(servers: server[]): Promise<[menu, string[]]> {
   let options: string[] | null = null;
 
-  const recents = servers.length
+  const saved = servers.length
     ? [
         {
           name: colors.dim(`  #  ${stringPadding("Name")}  Config`),
@@ -56,7 +56,7 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
         description: "Return to main menu",
       },
       new Separator(" "),
-      ...recents,
+      ...saved,
     ],
     theme: inquirerTheme,
     pageSize: 13,
