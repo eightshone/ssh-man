@@ -60,6 +60,7 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
     ],
     theme: inquirerTheme,
     pageSize: 13,
+    default: servers.length ? saved[1].value : "main",
   });
 
   if (answer !== "exit") {
