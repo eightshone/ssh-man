@@ -46,6 +46,11 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
         description: "Enter search mode",
       },
       {
+        name: "📤 Export configurations",
+        value: "ssh-export",
+        description: "Export server configurations",
+      },
+      {
         name: "↩️ Main menu",
         value: "main",
         description: "Return to main menu",
@@ -54,7 +59,7 @@ async function listConnections(servers: server[]): Promise<[menu, string[]]> {
       ...recents,
     ],
     theme: inquirerTheme,
-    pageSize: 14,
+    pageSize: 13,
   });
 
   if (answer !== "exit") {
