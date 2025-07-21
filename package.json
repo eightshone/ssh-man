@@ -1,6 +1,6 @@
 {
   "name": "@eightshone/sshman",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A simple cli ssh manager",
   "main": "src/app.js",
   "repository": "git@github.com:eightshone/shhman.git",
@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist/src/app.js"
+    "postbuild": "fix-esm-import-path dist/src/app.js && node scripts/update-utils.js"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
