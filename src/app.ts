@@ -10,6 +10,7 @@ import logs from "./core/commands/logs";
 import exportServers from "./core/commands/exportServers";
 import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
+import reconnectCommand from "./core/commands/reconnect";
 
 const program = new Command();
 
@@ -29,6 +30,11 @@ program
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(connectCommand);
+
+program
+  .command("reconnect")
+  .description("reconnect to the last session")
+  .action(reconnectCommand);
 
 program
   .command("logs")
