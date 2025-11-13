@@ -27,6 +27,7 @@ program
     "<string>",
     "credentials in the format of username[:password]@server[:port]"
   )
+  .option("-p, --password")
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(connectCommand);
