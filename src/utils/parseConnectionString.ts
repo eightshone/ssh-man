@@ -1,4 +1,5 @@
 import { homedir } from "os";
+import colors from "yoctocolors-cjs";
 import { server } from "./types";
 import { CONNECTION_REGEX } from "./consts";
 
@@ -13,7 +14,9 @@ function parseConnectionString(connectionString: string): server {
 
   if (match[2]) {
     console.log(
-      "⚠️ Please avoid writing your passwords directly into the terminal!"
+      colors.yellow(
+        "⚠️ Please avoid writing your passwords directly into the terminal!"
+      )
     );
   }
 
