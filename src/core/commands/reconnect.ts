@@ -15,7 +15,11 @@ async function reconnectCommand() {
   // get last config
   const connectTo = config.recentServers[0];
 
-  console.log(`🔄 Reconnecting to "${connectTo}"`);
+  console.log(
+    `🔄 Reconnecting to "${
+      connectTo.name ?? connectTo.username + "@" + connectTo.host
+    }"`
+  );
 
   // update logs
   await updateConfigs(config, logs, connectTo, false);
