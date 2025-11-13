@@ -27,12 +27,12 @@ async function init(
 
   // check for app config files
   if (!existsSync(configFile) || !existsSync(logsFile)) {
-    if (!silent) {
+    if (!silent && spinner) {
       spinner.text = "Creating config files…";
     }
     await createFileIfNotExists(configFile, JSON.stringify(DEFAULT_CONFIG));
     await createFileIfNotExists(logsFile, "[]");
-    if (!silent) {
+    if (!silent && spinner) {
       spinner.text = "Config files created!";
     }
   }
@@ -40,29 +40,36 @@ async function init(
   // todo: add config files validations
 
   // load config and logs
-  if (!silent) {
+  if (!silent && spinner) {
     spinner.text = "Loading config files…";
   }
   let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
-  if (!silent) {
+  if (!silent && spinner) {
     spinner.text = "Config files loaded!";
-  }
-
-  if (!silent) {
     spinner.text = "Checking config compatibility…";
   }
+  // migrate config files
   if (
     !configObj.version ||
     (!!configObj.version && compareVersions(VERSION, configObj.version) === 1)
   ) {
+    if (!silent && spinner) {
+      spinner.text = "Migrating config files…";
+    }
     [configObj, logsObj] = await migrate(configObj, logsObj, spinner);
+    if (!silent && spinner) {
+      spinner.text = "Config files migrated!";
+    }
   }
 
+  if (!silent && spinner) {
+    spinner.text = "Checking for updates…";
+  }
   const [isUptodate, manager] = await isSameVersion();
 
-  if (!silent) {
-    spinner?.success("App started!");
+  if (!silent && spinner) {
+    spinner.success("App started!");
   }
 
   showUpdateMessage(isUptodate, manager, true);
