@@ -13,12 +13,13 @@ async function connectCommand(creds: string, options) {
 
   // save connection may contains the server name
   const saveConnection: string | boolean = options.save;
+  const promptPassword: boolean = options.password;
   let sshConfig: server | undefined;
 
   const newConnection = isConnectionString(creds);
 
   if (newConnection) {
-    sshConfig = parseConnectionString(creds);
+    sshConfig = await parseConnectionString(creds, promptPassword);
 
     if (
       !!saveConnection &&
