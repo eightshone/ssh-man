@@ -14,7 +14,11 @@ async function migrate(
   let logsObj = [...logs];
   spinner.text = "Migrating configs…";
 
-  if (!configObj.version || compareVersions("0.1.1", configObj.version) === 1) {
+  if (
+    !configObj.version ||
+    compareVersions("0.1.1", configObj.version) === 1 ||
+    compareVersions("0.1.8", configObj.version) === 1
+  ) {
     let missingId: boolean = false;
     // assign server ids
     configObj.servers.forEach((srv, index) => {
