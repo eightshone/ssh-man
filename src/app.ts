@@ -11,6 +11,7 @@ import exportServers from "./core/commands/exportServers";
 import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
+import importServers from "./core/commands/importServers";
 
 const program = new Command();
 
@@ -55,6 +56,13 @@ program
   .option("-f, --force", "replace existing file")
   .description("exports server configurations")
   .action(exportServers);
+
+program
+  .command("import")
+  .argument("<config file>", "config file containing server configs")
+  .option("-f, --force", "replace configs with the same name")
+  .description("import server configurations")
+  .action(importServers);
 
 program
   .command("goodbye")
