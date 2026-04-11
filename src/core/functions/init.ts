@@ -45,13 +45,30 @@ async function init(
   }
 
   // todo: add config files validations
-
   // load config and logs
   if (!silent && spinner) {
     spinner.text = "Loading config files…";
   }
   let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`, true),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
+
+  // sanitize server objects to ensure mandatory string fields are present
+  configObj.servers = (configObj.servers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
+  configObj.recentServers = (configObj.recentServers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
   if (!silent && spinner) {
     spinner.text = "Config files loaded!";
     spinner.text = "Checking config compatibility…";

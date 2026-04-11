@@ -13,7 +13,7 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
   let filteredServers: (server & { originalIndex: number })[] = [];
 
   const getSearchableString = (srv: server) =>
-    `${srv.username}@${srv.host}:${srv.port}`.toLowerCase();
+    `${srv.username ?? ""}@${srv.host ?? ""}:${srv.port ?? ""}`.toLowerCase();
 
   if (fuzzy) {
     const fuzzyRegex = new RegExp(query.split("").join(".*"), "i");

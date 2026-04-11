@@ -31,10 +31,10 @@ export default function listConnections(
         .map((srv, idx) => ({ ...srv, originalIndex: idx }))
         .filter(
           (srv) =>
-            srv.name.toLowerCase().includes(q) ||
-            srv.host.toLowerCase().includes(q) ||
-            srv.username.toLowerCase().includes(q) ||
-            String(srv.port).includes(q),
+            (srv.name ?? "").toLowerCase().includes(q) ||
+            (srv.host ?? "").toLowerCase().includes(q) ||
+            (srv.username ?? "").toLowerCase().includes(q) ||
+            String(srv.port ?? "").includes(q),
         );
     };
 
@@ -58,7 +58,7 @@ export default function listConnections(
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-        buf.moveTo(1, 3).write(ansi.fg("255", " Saved Servers "));
+        buf.moveTo(1, 3).write(ansi.fg("255", " Saved Conenctions "));
 
         const footerMsg =
           "Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
@@ -102,10 +102,10 @@ export default function listConnections(
         const displayIdx = colors.dim(
           stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
         );
-        const paddedName = stringPadding(srv.name);
-        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(srv.username)}@${colors.blue(
-          srv.host,
-        )}:${colors.magenta(`${srv.port}`)}`;
+        const paddedName = stringPadding(srv.name ?? "");
+        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(
+          srv.username ?? "",
+        )}@${colors.blue(srv.host ?? "")}:${colors.magenta(`${srv.port ?? ""}`)}`;
 
         let displayStr = padOrTruncate(srvStr, maxColWidth);
 

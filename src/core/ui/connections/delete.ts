@@ -6,13 +6,13 @@ import { config, menu, server } from "../../../utils/types";
 async function deleteConnection(
   initialConfig: config,
   selectedServer: server,
-  serverIndex: number
+  serverIndex: number,
 ): Promise<[menu, string[]?]> {
   const deleteServer: boolean = await select({
     message: `Delete ${selectedServer.name}`,
     choices: [
       {
-        name: "️ Confirm and delete",
+        name: "Confirm and delete",
         value: true,
       },
       {
