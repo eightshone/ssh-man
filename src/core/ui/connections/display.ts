@@ -7,23 +7,23 @@ import stringPadding from "../../../utils/stringPadding";
 async function displayConnection(
   sshConfig: server,
   index: number,
-  passwordCopied?: boolean
+  passwordCopied?: boolean,
 ): Promise<[menu, string[]]> {
-  console.log(colors.dim("️ Server name"));
+  console.log(colors.dim("Server name"));
   console.log(`   ${sshConfig.name}
     `);
   console.log(
     colors.dim(
       `${stringPadding("Username", 44)} ${
         sshConfig.usePassword ? "Password" : "Key"
-      }`
-    )
+      }`,
+    ),
   );
   console.log(
     `   ${stringPadding(sshConfig.username)}     ${
       sshConfig.usePassword === true ? "********" : sshConfig.privateKey
     }
-    `
+    `,
   );
   console.log(colors.dim(`${stringPadding("Hostname", 44)} Port`));
   console.log(`   ${stringPadding(sshConfig.host)}     ${sshConfig.port}
@@ -49,7 +49,7 @@ async function displayConnection(
           ]
         : []),
       {
-        name: "️ Edit",
+        name: "Edit",
         value: "ssh-edit",
         description: "Edit server configuration",
       },
@@ -60,7 +60,7 @@ async function displayConnection(
       },
 
       {
-        name: "↩️ Servers list",
+        name: "Back to servers list",
         value: "ssh-list",
         description: "Return to servers list",
       },
