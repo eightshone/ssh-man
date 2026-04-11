@@ -9,6 +9,7 @@ import {
   padOrTruncate,
   getTermSize,
   drawScrollbar,
+  drawFooter,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
 
@@ -60,8 +61,8 @@ export default function listConnections(
         buf.moveTo(1, 3).write(ansi.fg("208", " Saved Servers "));
 
         const footerMsg =
-          " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
-        buf.moveTo(rows, 2).write(ansi.bg("236", ansi.fg("250", footerMsg)));
+          "Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
+        drawFooter(buf, cols, rows, footerMsg);
       }
 
       // Search Bar area (rows 2, 3, 4)

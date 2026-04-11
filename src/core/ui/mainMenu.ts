@@ -9,6 +9,7 @@ import {
   padOrTruncate,
   getTermSize,
   visibleLength,
+  drawFooter,
 } from "../../utils/tui/index";
 
 type MenuItem = {
@@ -34,9 +35,7 @@ const ASCII_ART_MEDIUM = [
   "░▀▀▀░▀▀▀░▀░▀░▀░▀░▀░▀░▀░▀",
 ];
 
-const ASCII_ART_SMALL = [
-  "SSHMAN",
-];
+const ASCII_ART_SMALL = ["SSHMAN"];
 
 export default function mainMenu(
   recentServers: server[] = [],
@@ -92,7 +91,7 @@ export default function mainMenu(
 
     let selectedIndex = items.findIndex((i) => i.selectable);
     if (selectedIndex === -1) selectedIndex = 0;
-    
+
     let listOffset = 0;
 
     const render = (fullRender: boolean = false) => {
@@ -100,10 +99,12 @@ export default function mainMenu(
       const buf = new ScreenBuffer();
 
       const availableInnerRows = rows - 3;
-      
+
       let activeArt = ASCII_ART_LARGE;
-      if (availableInnerRows < activeArt.length + 1 + items.length) activeArt = ASCII_ART_MEDIUM;
-      if (availableInnerRows < activeArt.length + 1 + items.length) activeArt = ASCII_ART_SMALL;
+      if (availableInnerRows < activeArt.length + 1 + items.length)
+        activeArt = ASCII_ART_MEDIUM;
+      if (availableInnerRows < activeArt.length + 1 + items.length)
+        activeArt = ASCII_ART_SMALL;
 
       const totalRequiredRows = activeArt.length + 1 + items.length;
       let listHeight = items.length;
@@ -116,7 +117,7 @@ export default function mainMenu(
       if (availableInnerRows > totalRequiredRows) {
         startRow = 2 + Math.floor((availableInnerRows - totalRequiredRows) / 2);
       }
-      
+
       let currentLine = startRow;
 
       // Adjust scroll offset
@@ -136,18 +137,16 @@ export default function mainMenu(
             writeTextCentered(buf, currentLine++, 1, cols - 2, line);
           }
         }
-        
+
         const footerMsg =
-          " Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
-        buf
-          .moveTo(rows, 2)
-          .write(ansi.bg("236", ansi.fg("250", footerMsg)));
+          "Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
+        drawFooter(buf, cols, rows, footerMsg);
       } else {
         if (listHeight > 0) {
           currentLine += activeArt.length;
         }
       }
-      
+
       if (listHeight > 0) {
         currentLine += 1;
       }
@@ -162,11 +161,11 @@ export default function mainMenu(
       } else {
         for (let i = 0; i < listHeight; i++) {
           const itemIdx = listOffset + i;
-          
+
           if (itemIdx >= items.length) {
-             const blankSpace = " ".repeat(maxListWidth);
-             buf.moveTo(currentLine + i, listColStart).write(blankSpace);
-             continue;
+            const blankSpace = " ".repeat(maxListWidth);
+            buf.moveTo(currentLine + i, listColStart).write(blankSpace);
+            continue;
           }
 
           const item = items[itemIdx];
@@ -233,7 +232,7 @@ export default function mainMenu(
         return;
       }
     });
-    
+
     const resizeHandler = () => render(true);
     process.stdout.on("resize", resizeHandler);
     render(true);

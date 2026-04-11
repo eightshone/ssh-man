@@ -5,6 +5,8 @@
  * process.stdout.write and ANSI escape codes.  No third-party deps.
  */
 
+import { VERSION } from "../consts";
+
 // ─── ANSI helpers ───────────────────────────────────────────────────────────
 
 export const ESC = "\x1b[";
@@ -187,6 +189,20 @@ export function writeFullRow(
   const vLen = visibleLength(text);
   const padding = Math.max(0, width - vLen);
   buf.moveTo(row, col).write(text + " ".repeat(padding));
+}
+
+/**
+ * Draw the standard footer incorporating navigation hints and the version block.
+ */
+export function drawFooter(
+  buf: ScreenBuffer,
+  cols: number,
+  rows: number,
+  message: string,
+): void {
+  buf.moveTo(rows, 2).write(ansi.fg("250", message));
+  const verStr = ` v${VERSION}`;
+  buf.moveTo(rows, cols - verStr.length).write(ansi.dim(verStr));
 }
 
 /**
