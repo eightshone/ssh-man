@@ -148,7 +148,7 @@ export default function mainMenu(
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
-      if (key === "ctrl-c" || key === "q") {
+      if (key === "ctrl-c" || (key === "char" && char?.toLowerCase() === "q")) {
         cleanupScreen();
         resolve(["exit", null]);
         return;
