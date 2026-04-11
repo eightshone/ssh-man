@@ -12,9 +12,7 @@ import {
   drawFooter,
 } from "../../utils/tui/index";
 
-export default function interactiveLogs(
-  logs: log[] = [],
-): Promise<[menu]> {
+export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
   return new Promise((resolve) => {
     let searchInput = "";
     let selectedIndex = 0;
@@ -22,8 +20,7 @@ export default function interactiveLogs(
 
     const getFiltered = () => {
       const q = searchInput.toLowerCase();
-      if (!q)
-        return logs.map((lg, idx) => ({ ...lg, originalIndex: idx }));
+      if (!q) return logs.map((lg, idx) => ({ ...lg, originalIndex: idx }));
 
       return logs
         .map((lg, idx) => ({ ...lg, originalIndex: idx }))
@@ -55,7 +52,7 @@ export default function interactiveLogs(
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-        buf.moveTo(1, 3).write(ansi.fg("208", " Server Connection Logs "));
+        buf.moveTo(1, 3).write(ansi.fg("255", " Server Connection Logs "));
 
         const footerMsg = "Navigate: ↑ ↓ | Search: type | Back/Clear: <esc> ";
         drawFooter(buf, cols, rows, footerMsg);
@@ -67,7 +64,7 @@ export default function interactiveLogs(
         2,
         2,
         cols - 2,
-        ` Search: ${searchInput}${ansi.bg("240", " ")}`,
+        `  Search: ${searchInput}${ansi.bg("240", " ")}`,
       ); // faux cursor
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
@@ -96,7 +93,9 @@ export default function interactiveLogs(
 
         const lg = filtered[itemIdx];
         const timeStr = colors.dim(lg.time ?? "Unknown Time");
-        const nameStr = colors.blueBright(lg.serverName ?? lg.server ?? "Unknown Server");
+        const nameStr = colors.blueBright(
+          lg.serverName ?? lg.server ?? "Unknown Server",
+        );
 
         let logStr = `  ${timeStr}  ${nameStr}`;
         let displayStr = padOrTruncate(logStr, maxColWidth);
@@ -137,7 +136,9 @@ export default function interactiveLogs(
     const cleanupScreen = () => {
       process.stdout.removeListener("resize", resizeHandler);
       cleanup();
-      process.stdout.write(ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1));
+      process.stdout.write(
+        ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1),
+      );
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {

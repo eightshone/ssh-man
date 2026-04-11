@@ -58,7 +58,7 @@ export default function listConnections(
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-        buf.moveTo(1, 3).write(ansi.fg("208", " Saved Servers "));
+        buf.moveTo(1, 3).write(ansi.fg("255", " Saved Servers "));
 
         const footerMsg =
           "Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
@@ -71,7 +71,7 @@ export default function listConnections(
         2,
         2,
         cols - 2,
-        ` Search: ${searchInput}${ansi.bg("240", " ")}`,
+        `  Search: ${searchInput}${ansi.bg("240", " ")}`,
       ); // faux cursor
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
