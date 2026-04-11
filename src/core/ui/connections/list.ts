@@ -40,7 +40,7 @@ export default function listConnections(
 
     let filtered = getFiltered();
 
-    const render = () => {
+    const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();
       const buf = new ScreenBuffer();
 
@@ -54,12 +54,16 @@ export default function listConnections(
         if (selectedIndex < 0) selectedIndex = 0;
       }
 
-      // Clear screen and draw main rounded box
-      buf.write(ansi.clear());
-      drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+      // Optional full redraw (for init or resize)
+      if (fullRender) {
+        buf.write(ansi.clear());
+        drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+        writeTextCentered(buf, 1, 1, cols - 2, " Saved Servers ", "208");
 
-      // Title
-      writeTextCentered(buf, 1, 1, cols - 2, " Saved Servers ", "208");
+        const footerMsg =
+          " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
+        buf.moveTo(rows, 2).write(ansi.bg("236", ansi.fg("250", footerMsg)));
+      }
 
       // Search Bar area (rows 2, 3, 4)
       writeFullRow(
@@ -67,7 +71,7 @@ export default function listConnections(
         2,
         2,
         cols - 2,
-        ` 🔍 Search: ${searchInput}${ansi.bg("240", " ")}`,
+        ` Search: ${searchInput}${ansi.bg("240", " ")}`,
       ); // faux cursor
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
@@ -88,7 +92,12 @@ export default function listConnections(
 
       for (let i = 0; i < listHeight; i++) {
         const itemIdx = listOffset + i;
-        if (itemIdx >= filtered.length) break;
+        if (itemIdx >= filtered.length) {
+          // Clear unused rows so old data vanishes when list shrinks
+          buf.moveTo(listTop + i, 2).write(" ".repeat(maxColWidth));
+          buf.moveTo(listTop + i, cols - 1).write(" ");
+          continue;
+        }
 
         const srv = filtered[itemIdx];
         const displayIdx = stringPadding(
@@ -131,22 +140,13 @@ export default function listConnections(
           .write(ansi.dim(padOrTruncate("  " + noResStr, maxColWidth)));
       }
 
-      // Footer
-      const footerMsg =
-        " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
-      const footerCol = 2;
-
-      buf
-        .moveTo(rows, footerCol)
-        .write(ansi.bg("236", ansi.fg("250", footerMsg)));
-
       // Hide cursor and flush
       buf.write(ansi.hideCursor());
       buf.flush();
     };
 
     const cleanupScreen = () => {
-      process.stdout.removeListener("resize", render);
+      process.stdout.removeListener("resize", resizeHandler);
       cleanup();
       process.stdout.write(
         ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1),
@@ -224,7 +224,8 @@ export default function listConnections(
       }
     });
 
-    process.stdout.on("resize", render);
-    render();
+    const resizeHandler = () => render(true);
+    process.stdout.on("resize", resizeHandler);
+    render(true);
   });
 }

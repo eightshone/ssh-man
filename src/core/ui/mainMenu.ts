@@ -83,18 +83,27 @@ export default function mainMenu(
     let selectedIndex = items.findIndex((i) => i.selectable);
     if (selectedIndex === -1) selectedIndex = 0;
 
-    const render = () => {
+    const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();
       const buf = new ScreenBuffer();
 
-      // Clear screen and draw main rounded box
-      buf.write(ansi.clear());
-      drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-
-      // Draw ASCII Art
+      // Optional clear and static borders on init or resize
       let currentLine = 3;
-      for (const line of ASCII_ART) {
-        writeTextCentered(buf, currentLine++, 1, cols - 2, line);
+      if (fullRender) {
+        buf.write(ansi.clear());
+        drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+
+        for (const line of ASCII_ART) {
+          writeTextCentered(buf, currentLine++, 1, cols - 2, line);
+        }
+        
+        const footerMsg =
+          " Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
+        buf
+          .moveTo(rows, 2)
+          .write(ansi.bg("236", ansi.fg("250", footerMsg)));
+      } else {
+        currentLine += ASCII_ART.length;
       }
       currentLine += 2;
 
@@ -124,25 +133,13 @@ export default function mainMenu(
         }
       }
 
-      // Footer
-      const footerMsg =
-        " Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
-      const footerCol = 2;
-
-      // We overlay the footer at the bottom border row (rows - 1), but we can just put it at rows
-      // Actually bottom border is at `rows - 1` because drawBox is 1-indexed to rows-1
-      // Placing footer at rows-1 clears the bottom line of the box, or placing at rows uses the very bottom
-      buf
-        .moveTo(rows, footerCol)
-        .write(ansi.bg("236", ansi.fg("250", footerMsg)));
-
       // Hide cursor and commit
       buf.write(ansi.hideCursor());
       buf.flush();
     };
 
     const cleanupScreen = () => {
-      process.stdout.removeListener("resize", render);
+      process.stdout.removeListener("resize", resizeHandler);
       cleanup();
       process.stdout.write(
         ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1),
@@ -183,8 +180,9 @@ export default function mainMenu(
         return;
       }
     });
-
-    process.stdout.on("resize", render);
-    render();
+    
+    const resizeHandler = () => render(true);
+    process.stdout.on("resize", resizeHandler);
+    render(true);
   });
 }
