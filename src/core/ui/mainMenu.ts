@@ -137,15 +137,20 @@ export default function mainMenu(
             writeTextCentered(buf, currentLine++, 1, cols - 2, line);
           }
         }
-
-        const footerMsg =
-          "Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
-        drawFooter(buf, cols, rows, footerMsg);
       } else {
         if (listHeight > 0) {
           currentLine += activeArt.length;
         }
       }
+
+      // Dynamic Footer
+      const selectedItem = items[selectedIndex];
+      let actionHint = "Select: <enter>";
+      if (selectedItem?.value === "ssh-connect") actionHint = "Connect: <enter>";
+      else if (selectedItem?.value === "exit") actionHint = "Quit: <enter>";
+
+      const footerMsg = `Navigate: ↑ ↓ | ${actionHint} | Quit: <q> or <ctrl-c>`;
+      drawFooter(buf, cols, rows, footerMsg);
 
       if (listHeight > 0) {
         currentLine += 1;

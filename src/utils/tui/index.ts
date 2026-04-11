@@ -200,9 +200,15 @@ export function drawFooter(
   rows: number,
   message: string,
 ): void {
-  buf.moveTo(rows, 2).write(ansi.fg("250", message));
   const verStr = ` v${VERSION}`;
-  buf.moveTo(rows, cols - verStr.length).write(ansi.dim(verStr));
+  const vVerLen = visibleLength(verStr);
+  const availableForMsg = Math.max(0, cols - vVerLen - 2);
+
+  const displayMsg = padOrTruncate(message, availableForMsg);
+
+  buf
+    .moveTo(rows, 2)
+    .write(ansi.fg("250", displayMsg) + ansi.dim(verStr));
 }
 
 /**
