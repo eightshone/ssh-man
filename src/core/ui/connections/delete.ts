@@ -12,11 +12,11 @@ async function deleteConnection(
     message: `Delete ${selectedServer.name}`,
     choices: [
       {
-        name: "🗑️ Confirm and delete",
+        name: "️ Confirm and delete",
         value: true,
       },
       {
-        name: "🚫 Cancel",
+        name: "Cancel",
         value: false,
       },
     ],

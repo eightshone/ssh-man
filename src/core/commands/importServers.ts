@@ -18,7 +18,7 @@ async function importServers(configFile: string, options: { force?: boolean }) {
   // validate config file format
   if (!validateServers(content)) {
     console.log(
-      "❌ The file you are trying to import is not a valid config file!"
+      "The file you are trying to import is not a valid config file!"
     );
     return;
   }
@@ -94,7 +94,7 @@ async function importServers(configFile: string, options: { force?: boolean }) {
 
   await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
 
-  console.log("✅ All server configs have been imported");
+  console.log("All server configs have been imported");
 }
 
 export default importServers;

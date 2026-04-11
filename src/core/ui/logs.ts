@@ -6,14 +6,14 @@ import { logsTheme } from "../../utils/themes";
 
 async function interactiveLogs(logs: log[] = []): Promise<[menu]> {
   console.clear();
-  console.log(colors.blueBright("📰 SERVER CONNECTION LOGS"));
+  console.log(colors.blueBright("SERVER CONNECTION LOGS"));
   await search({
     message: "Search:",
     source: async (input, { signal }) => {
       if (logs.length === 0) {
         return [
           {
-            name: "📭 No server connections have been logged!",
+            name: "No server connections have been logged!",
             value: null,
           },
         ];
@@ -32,7 +32,7 @@ async function interactiveLogs(logs: log[] = []): Promise<[menu]> {
         ? filteredLogs
         : [
             {
-              name: "📭 No logs matched your search query!",
+              name: "No logs matched your search query!",
               value: null,
             },
           ];

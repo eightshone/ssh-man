@@ -34,7 +34,7 @@ async function connectCommand(creds: string, options) {
       if (isValid === true) {
         sshConfig.name = saveConnection;
       } else {
-        console.log(`❌ ${isValid}`);
+        console.log(`${isValid}`);
         return;
       }
     } else if (!!saveConnection && typeof saveConnection === "boolean") {
@@ -45,7 +45,7 @@ async function connectCommand(creds: string, options) {
   } else {
     sshConfig = findServer(config.servers, creds);
     if (!sshConfig) {
-      console.log("❌ Server config not found!");
+      console.log("Server config not found!");
       return;
     }
   }

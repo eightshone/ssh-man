@@ -34,7 +34,7 @@ export default function mainMenu(
   return new Promise((resolve) => {
     let items: MenuItem[] = [
       {
-        name: "✨ Recent sessions",
+        name: "Recent sessions",
         value: null,
         selectable: false,
         muted: true,
@@ -52,7 +52,7 @@ export default function mainMenu(
       });
     } else {
       items.push({
-        name: "  ⚠️ No recent sessions! Add or connect to one to see it here",
+        name: "  No recent sessions! Add or connect to one to see it here",
         value: null,
         selectable: false,
         muted: true,
@@ -61,24 +61,24 @@ export default function mainMenu(
 
     items.push({ name: "", value: null, selectable: false });
     items.push({
-      name: "💻 New connection",
+      name: "New connection",
       value: "ssh-new",
       selectable: true,
     });
     items.push({
-      name: "🗃️ Saved servers",
+      name: "Saved servers",
       value: "ssh-list",
       selectable: true,
     });
     items.push({ name: "", value: null, selectable: false });
-    items.push({ name: "⚙️ Settings", value: "settings", selectable: true });
+    items.push({ name: "Settings", value: "settings", selectable: true });
     items.push({
-      name: "📰 Logs [Exiperimental]",
+      name: "Logs [Exiperimental]",
       value: "logs",
       selectable: true,
     });
-    items.push({ name: "📖 Manual", value: "manual", selectable: true });
-    items.push({ name: "🚪 Quit", value: "exit", selectable: true });
+    items.push({ name: "Manual", value: "manual", selectable: true });
+    items.push({ name: "Quit", value: "exit", selectable: true });
 
     let selectedIndex = items.findIndex((i) => i.selectable);
     if (selectedIndex === -1) selectedIndex = 0;

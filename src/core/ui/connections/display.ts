@@ -9,12 +9,12 @@ async function displayConnection(
   index: number,
   passwordCopied?: boolean
 ): Promise<[menu, string[]]> {
-  console.log(colors.dim("🖥️ Server name"));
+  console.log(colors.dim("️ Server name"));
   console.log(`   ${sshConfig.name}
     `);
   console.log(
     colors.dim(
-      `${stringPadding("🧑 Username", 44)} 🔑 ${
+      `${stringPadding("Username", 44)} ${
         sshConfig.usePassword ? "Password" : "Key"
       }`
     )
@@ -25,7 +25,7 @@ async function displayConnection(
     }
     `
   );
-  console.log(colors.dim(`${stringPadding("🌐 Hostname", 44)} 🔌 Port`));
+  console.log(colors.dim(`${stringPadding("Hostname", 44)} Port`));
   console.log(`   ${stringPadding(sshConfig.host)}     ${sshConfig.port}
   `);
 
@@ -33,7 +33,7 @@ async function displayConnection(
     message: "Select action",
     choices: [
       {
-        name: "🚀 Connect",
+        name: "Connect",
         value: "ssh-connect",
         description: "Connect to server",
       },
@@ -41,20 +41,20 @@ async function displayConnection(
         ? [
             {
               name: passwordCopied
-                ? "✅ Password copied to clipboard"
-                : "📋 Copy password to clipborad",
+                ? "Password copied to clipboard"
+                : "Copy password to clipborad",
               value: "ssh-password",
               description: "Edit server password to clipboard",
             },
           ]
         : []),
       {
-        name: "✍️ Edit",
+        name: "️ Edit",
         value: "ssh-edit",
         description: "Edit server configuration",
       },
       {
-        name: "❌ Delete",
+        name: "Delete",
         value: "ssh-delete",
         description: "Delete server config",
       },

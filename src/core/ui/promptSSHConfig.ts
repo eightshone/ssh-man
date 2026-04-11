@@ -20,12 +20,12 @@ async function promptSSHConfig(
     message: "Authentication method:",
     choices: [
       {
-        name: "🔒 Password",
+        name: "Password",
         value: true,
         description: "Use password to connect",
       },
       {
-        name: "🔑 Key",
+        name: "Key",
         value: false,
         description: "Use private key to connect",
       },

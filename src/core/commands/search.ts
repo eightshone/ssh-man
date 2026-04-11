@@ -31,11 +31,11 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
   }
 
   if (filteredServers.length === 0) {
-    console.log(colors.yellow(`\n📭 No servers found matching: "${query}"`));
+    console.log(colors.yellow(`\nNo servers found matching: "${query}"`));
     return;
   }
 
-  console.log(colors.cyan(`\n🔍 Search results for "${colors.bold(query)}":`));
+  console.log(colors.cyan(`\nSearch results for "${colors.bold(query)}":`));
   console.log(colors.dim(`  #  ${stringPadding("Name")}  Config`));
 
   filteredServers.forEach((srv) => {

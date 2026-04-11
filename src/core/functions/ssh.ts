@@ -19,11 +19,11 @@ function sshConnection(
 
     client
       .on("close", () => {
-        console.log("Connection closed ⚪");
+        console.log("Connection closed ");
         resolve(); // resolve the promise when the connection closes
       })
       .on("error", (err) => {
-        spinner.error("Connection error! ⛔");
+        spinner.error("Connection error! ");
         console.log("Error details", err.message);
       })
       .on("ready", function () {

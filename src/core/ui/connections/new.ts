@@ -15,12 +15,12 @@ async function newConnection(
     message: "Save connection",
     choices: [
       {
-        name: "✔️ YES",
+        name: "️ YES",
         value: true,
         description: "Save this new conenction to the servers list",
       },
       {
-        name: "❌ No",
+        name: "No",
         value: false,
         description: "Connect without saving",
       },

@@ -9,7 +9,7 @@ import saveFile from "../../../utils/saveFile";
 async function exportConnections(
   servers: server[]
 ): Promise<[menu, string[]?]> {
-  console.log("📤 Export configurations");
+  console.log("Export configurations");
   let selectedConfigs = await checkbox({
     message: "To exit this menu, do not select any configration",
     choices: [

@@ -13,7 +13,7 @@ async function settings(config: config): Promise<[menu, string[]]> {
   let answer = await select({
     message: " ",
     choices: [
-      new Separator(colors.dim("📋 Defaults")),
+      new Separator(colors.dim("Defaults")),
       {
         name: `${stringPadding("Port", columnWidth)} ${stringPadding(
           `${config.defaults.port}`,
@@ -63,18 +63,18 @@ async function settings(config: config): Promise<[menu, string[]]> {
         )} to edit autosave prefix`,
       },
 
-      new Separator(colors.dim("\n🛡️ Security")),
+      new Separator(colors.dim("\n️ Security")),
       {
         name: colors.dim(
-          "🚧 Security features will be introduced in future versions."
+          "Security features will be introduced in future versions."
         ),
         value: null,
         disabled: " ",
       },
 
-      new Separator(colors.dim("\n🗃️ Backups")),
+      new Separator(colors.dim("\n️ Backups")),
       {
-        name: colors.dim("🚧 Backups will be supported in future versions."),
+        name: colors.dim("Backups will be supported in future versions."),
         value: null,
         disabled: " ",
       },

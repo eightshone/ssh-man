@@ -130,8 +130,8 @@ export default function listConnections(
       if (filtered.length === 0) {
         const noResStr =
           searchInput.length > 0
-            ? "📭 No servers match your search"
-            : "📭 No saved servers";
+            ? "No servers match your search"
+            : "No saved servers";
         buf
           .moveTo(listTop + 1, 2)
           .write(ansi.dim(padOrTruncate("  " + noResStr, maxColWidth)));
