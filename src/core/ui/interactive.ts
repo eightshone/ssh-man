@@ -6,7 +6,6 @@ import editConnection from "./connections/edit";
 import listConnections from "./connections/list";
 import mainMenu from "./mainMenu";
 import newConnection from "./connections/new";
-import searchConnections from "./connections/search";
 import sshConnect from "../functions/sshConnect";
 import { Command } from "commander";
 import manual from "./manual";
@@ -36,10 +35,6 @@ async function interactive(
 
     if (currentMenu === "ssh-list") {
       [currentMenu, options] = await listConnections(config.servers);
-    }
-
-    if (currentMenu === "ssh-search") {
-      [currentMenu, options] = await searchConnections(config.servers);
     }
 
     if (currentMenu === "ssh-display") {
