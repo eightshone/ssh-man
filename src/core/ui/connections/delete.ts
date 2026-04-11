@@ -3,6 +3,17 @@ import { CONFIG_DIR } from "../../../utils/consts";
 import saveFile from "../../../utils/saveFile";
 import { config, menu, server } from "../../../utils/types";
 
+export async function performDelete(initialConfig: config, serverIndex: number) {
+  const config: config = { ...initialConfig };
+  const { servers } = initialConfig;
+
+  servers.splice(serverIndex, 1);
+  config.servers = servers;
+
+  await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
+  return config;
+}
+
 async function deleteConnection(
   initialConfig: config,
   selectedServer: server,
@@ -22,15 +33,7 @@ async function deleteConnection(
     ],
   });
   if (deleteServer) {
-    const config: config = { ...initialConfig };
-    const { servers } = initialConfig;
-
-    servers.splice(serverIndex, 1);
-
-    config.servers = servers;
-
-    await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
-
+    await performDelete(initialConfig, serverIndex);
     return ["ssh-list"];
   }
 

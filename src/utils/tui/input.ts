@@ -23,6 +23,8 @@ export function setupInput(onKey: (name: string, ch?: string) => void): { stdin:
     if (data === '\x1b[B') { onKey('down');  return; }
     if (data === '\x1b[C') { onKey('right'); return; }
     if (data === '\x1b[D') { onKey('left');  return; }
+    if (data === '\x1b[3~') { onKey('delete'); return; }
+    if (data === '\x1b[3;5~') { onKey('ctrl-delete'); return; }
 
     // Enter
     if (data === '\r' || data === '\n') { onKey('enter'); return; }

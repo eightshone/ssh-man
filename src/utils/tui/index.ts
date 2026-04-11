@@ -139,8 +139,72 @@ export function drawBox(
     buf.moveTo(row + r, col + w - 1).write(colorize(b.v));
   }
 
-  // Bottom border
   buf.moveTo(row + h - 1, col).write(colorize(b.bl + b.h.repeat(inner) + b.br));
+}
+
+/**
+ * Fill a rectangular region with a character.
+ */
+export function fillRegion(
+  buf: ScreenBuffer,
+  row: number,
+  col: number,
+  width: number,
+  height: number,
+  char: string = " ",
+): void {
+  for (let r = 0; r < height; r++) {
+    buf.moveTo(row + r, col).write(char.repeat(width));
+  }
+}
+
+/**
+ * Draw a centered popup box with content and optional choices.
+ */
+export function drawPopup(
+  buf: ScreenBuffer,
+  title: string,
+  content: string[],
+  choices: string[] = [],
+  selectedIndex: number = 0,
+  colorCode: string = "255",
+): void {
+  const { rows, cols } = getTermSize();
+  const width = Math.min(cols - 4, 50);
+  const height = content.length + choices.length + 4;
+  const startRow = Math.floor((rows - height) / 2);
+  const startCol = Math.floor((cols - width) / 2);
+
+  // Background
+  fillRegion(buf, startRow, startCol, width, height, " ");
+
+  // Border
+  drawBox(buf, startRow, startCol, width, height, "rounded", colorCode);
+
+  // Title
+  const centeredTitle = ` ${title} `;
+  writeTextCentered(buf, startRow, startCol, width, centeredTitle, colorCode);
+
+  // Content
+  content.forEach((line, i) => {
+    const text = padOrTruncate(line, width - 4);
+    buf.moveTo(startRow + 1 + i, startCol + 2).write(text);
+  });
+
+  // Choices
+  choices.forEach((choice, i) => {
+    const isSelected = i === selectedIndex;
+    const choiceText = isSelected ? `> ${choice} <` : `  ${choice}  `;
+    const row = startRow + content.length + 2 + i;
+    const pad = Math.floor((width - visibleLength(choiceText)) / 2);
+
+    buf.moveTo(row, startCol + pad);
+    if (isSelected) {
+      buf.write(ansi.bg(colorCode, ansi.fg(0, choiceText)));
+    } else {
+      buf.write(choiceText);
+    }
+  });
 }
 
 /**

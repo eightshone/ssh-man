@@ -1,5 +1,5 @@
 import colors from "yoctocolors-cjs";
-import { menu, server } from "../../../utils/types";
+import { menu, server, config as Config } from "../../../utils/types";
 import { setupInput } from "../../../utils/tui/input";
 import {
   ansi,
@@ -13,13 +13,21 @@ import {
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
 
+import { drawPopup, fillRegion } from "../../../utils/tui/index";
+import { performDelete } from "./delete";
+
 export default function listConnections(
-  servers: server[],
+  config: Config,
 ): Promise<[menu, string[]]> {
+  let servers = config.servers;
   return new Promise((resolve) => {
     let searchInput = "";
     let selectedIndex = 0;
     let listOffset = 0;
+
+    // Popup state
+    let showDeleteConfirm = false;
+    let popupSelectedIndex = 1; // Default to Cancel (index 1)
 
     // Filter servers based on input
     const getFiltered = () => {
@@ -58,12 +66,14 @@ export default function listConnections(
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-        buf.moveTo(1, 3).write(ansi.fg("255", " Saved Conenctions "));
-
-        const footerMsg =
-          "Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
-        drawFooter(buf, cols, rows, footerMsg);
+        buf.moveTo(1, 3).write(ansi.fg("255", " Saved Connections "));
       }
+
+      // Footer message based on mode
+      const footerMsg = showDeleteConfirm
+        ? "Confirm: <enter> | Cancel: <esc> / N | Navigate: ↑ ↓ ← → "
+        : "Navigate: ↑ ↓ | Details: <enter> | Search: type | Back/Clear: <esc> | Delete: <ctrl-del>";
+      drawFooter(buf, cols, rows, footerMsg);
 
       // Search Bar area (rows 2, 3, 4)
       writeFullRow(
@@ -138,6 +148,22 @@ export default function listConnections(
           .write(ansi.dim(padOrTruncate("  " + noResStr, maxColWidth)));
       }
 
+      // Draw Popup if active
+      if (showDeleteConfirm) {
+        const srv = filtered[selectedIndex];
+        drawPopup(
+          buf,
+          " Confirm Deletion ",
+          [
+            `Are you sure you want to delete ${srv.name}?`,
+            "This action cannot be undone.",
+          ],
+          ["Confirm", "Cancel"],
+          popupSelectedIndex,
+          "160", // Red color (approx)
+        );
+      }
+
       // Hide cursor and flush
       buf.write(ansi.hideCursor());
       buf.flush();
@@ -152,6 +178,41 @@ export default function listConnections(
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
+      if (showDeleteConfirm) {
+        if (
+          key === "left" ||
+          key === "right" ||
+          key === "up" ||
+          key === "down" ||
+          key === "tab"
+        ) {
+          popupSelectedIndex = popupSelectedIndex === 0 ? 1 : 0;
+          render();
+        } else if (key === "enter") {
+          if (popupSelectedIndex === 0) {
+            // Confirm delete
+            const srv = filtered[selectedIndex];
+            performDelete(config, srv.originalIndex).then((newConfig) => {
+              config = newConfig;
+              servers = config.servers;
+              searchInput = "";
+              filtered = getFiltered();
+              showDeleteConfirm = false;
+              selectedIndex = 0;
+              render(true);
+            });
+          } else {
+            // Cancel
+            showDeleteConfirm = false;
+            render(true);
+          }
+        } else if (key === "escape") {
+          showDeleteConfirm = false;
+          render(true);
+        }
+        return;
+      }
+
       if (key === "escape") {
         if (searchInput.length > 0) {
           searchInput = "";
@@ -161,6 +222,15 @@ export default function listConnections(
         } else {
           cleanupScreen();
           resolve(["main", []]);
+        }
+        return;
+      }
+
+      if (key === "ctrl-delete") {
+        if (filtered.length > 0) {
+          showDeleteConfirm = true;
+          popupSelectedIndex = 1; // Default to Cancel
+          render();
         }
         return;
       }
