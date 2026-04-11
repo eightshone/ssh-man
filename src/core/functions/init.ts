@@ -1,4 +1,5 @@
 import { existsSync, promises as fs } from "fs";
+import dayjs from "dayjs";
 import yoctoSpinner from "yocto-spinner";
 import createFileIfNotExists from "../../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
@@ -82,16 +83,38 @@ async function init(
     }
   }
 
-  if (!silent && spinner) {
-    spinner.text = "Checking for updates…";
-  }
-  const [isUptodate, manager] = await isSameVersion();
+  // check for updates (at most once per day)
+  const lastCheckFile = `${CONFIG_DIR}/.last-update-check`;
+  let shouldCheckUpdate = true;
 
-  if (!silent && spinner) {
-    spinner.success("App started!");
+  if (existsSync(lastCheckFile)) {
+    try {
+      const lastCheck = await fs.readFile(lastCheckFile, "utf8");
+      if (dayjs().isSame(dayjs(lastCheck), "day")) {
+        shouldCheckUpdate = false;
+      }
+    } catch {
+      // corrupt file or invalid date, re-check
+    }
   }
 
-  showUpdateMessage(isUptodate, manager, true);
+  if (shouldCheckUpdate) {
+    if (!silent && spinner) {
+      spinner.text = "Checking for updates…";
+    }
+    const [isUptodate, manager] = await isSameVersion();
+    await fs.writeFile(lastCheckFile, dayjs().toISOString(), "utf8");
+
+    if (!silent && spinner) {
+      spinner.success("App started!");
+    }
+
+    showUpdateMessage(isUptodate, manager, true);
+  } else {
+    if (!silent && spinner) {
+      spinner.success("App started!");
+    }
+  }
 
   return {
     config: configObj,
