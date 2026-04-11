@@ -92,7 +92,7 @@ async function importServers(configFile: string, options: { force?: boolean }) {
 
   config.servers = updatedServers;
 
-  await saveFile(`${CONFIG_DIR}/config.json`, config);
+  await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
 
   console.log("✅ All server configs have been imported");
 }

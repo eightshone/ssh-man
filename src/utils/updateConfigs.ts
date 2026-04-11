@@ -28,7 +28,7 @@ async function updateConfigs(
     { time: formattedTime, server: sshConfig.id, serverName: sshConfig.name },
     ...logs,
   ];
-  await saveFile(`${CONFIG_DIR}/config.json`, config);
+  await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
   await saveFile(`${CONFIG_DIR}/logs.json`, logs);
 
   return [config, logs];

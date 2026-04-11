@@ -1,9 +1,11 @@
 import { promises as fs } from "fs";
 import { dirname } from "path";
+import { encrypt } from "./crypto";
 
 async function createFileIfNotExists(
   filePath: string,
-  content: string = ""
+  content: string = "",
+  encrypted: boolean = false
 ): Promise<void> {
   try {
     // Get the directory path
@@ -16,7 +18,8 @@ async function createFileIfNotExists(
     try {
       await fs.access(filePath);
     } catch {
-      await fs.writeFile(filePath, content);
+      const fileContent = encrypted ? encrypt(content) : content;
+      await fs.writeFile(filePath, fileContent);
     }
   } catch (error) {
     console.error("Error:", error);

@@ -123,7 +123,7 @@ async function editConnection(
   if (confirmChanges) {
     config.servers[index] = updatedSshConfig;
     // save config to file
-    await saveFile(`${CONFIG_DIR}/config.json`, config);
+    await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
 
     if (updatedSshConfig.name !== sshConfig.name) {
       const updatedLogs = logs.map((currentLog) => {

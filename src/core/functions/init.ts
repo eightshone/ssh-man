@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import { existsSync, promises as fs } from "fs";
 import yoctoSpinner from "yocto-spinner";
 import createFileIfNotExists from "../../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
@@ -8,6 +8,8 @@ import compareVersions from "../../utils/compareVersions";
 import migrate from "./migrate";
 import isSameVersion from "./isSameVersion";
 import showUpdateMessage from "./showUpdateMessage";
+import { isPlainJSON } from "../../utils/crypto";
+import saveFile from "../../utils/saveFile";
 
 type options = {
   silent?: boolean;
@@ -30,7 +32,11 @@ async function init(
     if (!silent && spinner) {
       spinner.text = "Creating config files…";
     }
-    await createFileIfNotExists(configFile, JSON.stringify(DEFAULT_CONFIG));
+    await createFileIfNotExists(
+      configFile,
+      JSON.stringify(DEFAULT_CONFIG),
+      true
+    );
     await createFileIfNotExists(logsFile, "[]");
     if (!silent && spinner) {
       spinner.text = "Config files created!";
@@ -43,12 +49,25 @@ async function init(
   if (!silent && spinner) {
     spinner.text = "Loading config files…";
   }
-  let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`),
+  let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`, true),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
   if (!silent && spinner) {
     spinner.text = "Config files loaded!";
     spinner.text = "Checking config compatibility…";
   }
+
+  // migrate plain-text config files to encrypted format
+  const rawContent = await fs.readFile(configFile, "utf8");
+  if (isPlainJSON(rawContent)) {
+    if (!silent && spinner) {
+      spinner.text = "Encrypting config file…";
+    }
+    await saveFile(configFile, configObj, undefined, true);
+    if (!silent && spinner) {
+      spinner.text = "Config file encrypted!";
+    }
+  }
+
   // migrate config files
   if (
     !configObj.version ||

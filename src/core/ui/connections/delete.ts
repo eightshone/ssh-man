@@ -29,7 +29,7 @@ async function deleteConnection(
 
     config.servers = servers;
 
-    await saveFile(`${CONFIG_DIR}/config.json`, config);
+    await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
 
     return ["ssh-list"];
   }
