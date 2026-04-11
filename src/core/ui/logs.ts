@@ -69,7 +69,7 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
       // List header (row 4)
-      const headerStr = `    Time                   Server Name`;
+      const headerStr = `  Time                 Server Name`;
       buf.moveTo(4, 2).write(ansi.dim(padOrTruncate(headerStr, cols - 2)));
 
       // List area (row 5 to rows - 2)
