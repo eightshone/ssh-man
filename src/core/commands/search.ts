@@ -40,11 +40,11 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
 
   filteredServers.forEach((srv) => {
     const formattedIndex = colors.dim(
-      stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0")
+      stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
     );
     const formattedName = stringPadding(srv.name);
-    const formattedConfig = `${colors.yellow(srv.username)}:[redacted]@${colors.blue(
-      srv.host
+    const formattedConfig = `${colors.yellow(srv.username)}@${colors.blue(
+      srv.host,
     )}:${colors.magenta(`${srv.port}`)}`;
 
     console.log(`${formattedIndex}  ${formattedName}  ${formattedConfig}`);

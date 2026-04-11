@@ -7,51 +7,68 @@
 
 // ─── ANSI helpers ───────────────────────────────────────────────────────────
 
-export const ESC = '\x1b[';
+export const ESC = "\x1b[";
 
 export const ansi = {
-  clear:        () => `${ESC}2J`,
-  moveTo:       (r: number, c: number) => `${ESC}${r};${c}H`,
-  hideCursor:   () => `${ESC}?25l`,
-  showCursor:   () => `${ESC}?25h`,
-  bold:         (s: string) => `${ESC}1m${s}${ESC}0m`,
-  dim:          (s: string) => `${ESC}2m${s}${ESC}0m`,
-  inverse:      (s: string) => `${ESC}7m${s}${ESC}0m`,
-  fg:           (code: number | string, s: string) => `${ESC}38;5;${code}m${s}${ESC}0m`,
-  bg:           (code: number | string, s: string) => `${ESC}48;5;${code}m${s}${ESC}0m`,
-  fgRgb:        (r: number, g: number, b: number, s: string) => `${ESC}38;2;${r};${g};${b}m${s}${ESC}0m`,
-  bgRgb:        (r: number, g: number, b: number, s: string) => `${ESC}48;2;${r};${g};${b}m${s}${ESC}0m`,
-  reset:        () => `${ESC}0m`,
+  clear: () => `${ESC}2J`,
+  moveTo: (r: number, c: number) => `${ESC}${r};${c}H`,
+  hideCursor: () => `${ESC}?25l`,
+  showCursor: () => `${ESC}?25h`,
+  bold: (s: string) => `${ESC}1m${s}${ESC}0m`,
+  dim: (s: string) => `${ESC}2m${s}${ESC}0m`,
+  inverse: (s: string) => `${ESC}7m${s}${ESC}0m`,
+  fg: (code: number | string, s: string) => `${ESC}38;5;${code}m${s}${ESC}0m`,
+  bg: (code: number | string, s: string) => `${ESC}48;5;${code}m${s}${ESC}0m`,
+  fgRgb: (r: number, g: number, b: number, s: string) =>
+    `${ESC}38;2;${r};${g};${b}m${s}${ESC}0m`,
+  bgRgb: (r: number, g: number, b: number, s: string) =>
+    `${ESC}48;2;${r};${g};${b}m${s}${ESC}0m`,
+  reset: () => `${ESC}0m`,
 };
 
 // ─── Box-drawing characters ─────────────────────────────────────────────────
 
-export const BOX: Record<string, { tl: string; tr: string; bl: string; br: string; h: string; v: string }> = {
+export const BOX: Record<
+  string,
+  { tl: string; tr: string; bl: string; br: string; h: string; v: string }
+> = {
   single: {
-    tl: '┌', tr: '┐', bl: '└', br: '┘',
-    h: '─', v: '│',
+    tl: "┌",
+    tr: "┐",
+    bl: "└",
+    br: "┘",
+    h: "─",
+    v: "│",
   },
   double: {
-    tl: '╔', tr: '╗', bl: '╚', br: '╝',
-    h: '═', v: '║',
+    tl: "╔",
+    tr: "╗",
+    bl: "╚",
+    br: "╝",
+    h: "═",
+    v: "║",
   },
   rounded: {
-    tl: '╭', tr: '╮', bl: '╰', br: '╯',
-    h: '─', v: '│',
+    tl: "╭",
+    tr: "╮",
+    bl: "╰",
+    br: "╯",
+    h: "─",
+    v: "│",
   },
 };
 
 // Scrollbar characters
 export const SCROLLBAR = {
-  track: '░',
-  thumb: '█',
+  track: "│",
+  thumb: "┃",
 };
 
 // ─── Utility: strip ANSI codes for accurate width calculation ────────────────
 
 export function stripAnsi(str: string): string {
   // eslint-disable-next-line no-control-regex
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  return str.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
 export function visibleLength(str: string): number {
@@ -82,7 +99,7 @@ export class ScreenBuffer {
   }
 
   flush(): void {
-    process.stdout.write(this.chunks.join(''));
+    process.stdout.write(this.chunks.join(""));
     this.chunks = [];
   }
 }
@@ -92,7 +109,15 @@ export class ScreenBuffer {
 /**
  * Draw a bordered box at (row, col) with given width and height.
  */
-export function drawBox(buf: ScreenBuffer, row: number, col: number, w: number, h: number, style: string = 'single', color: string | null = null): void {
+export function drawBox(
+  buf: ScreenBuffer,
+  row: number,
+  col: number,
+  w: number,
+  h: number,
+  style: string = "single",
+  color: string | null = null,
+): void {
   const b = BOX[style] || BOX.single;
   const inner = w - 2;
 
@@ -117,7 +142,14 @@ export function drawBox(buf: ScreenBuffer, row: number, col: number, w: number, 
 /**
  * Write text inside a box, horizontally centered.
  */
-export function writeTextCentered(buf: ScreenBuffer, row: number, col: number, width: number, text: string, colorCode: string | null = null): void {
+export function writeTextCentered(
+  buf: ScreenBuffer,
+  row: number,
+  col: number,
+  width: number,
+  text: string,
+  colorCode: string | null = null,
+): void {
   const vLen = visibleLength(text);
   const pad = Math.max(0, Math.floor((width - vLen) / 2));
   buf.moveTo(row, col + pad);
@@ -131,27 +163,47 @@ export function writeTextCentered(buf: ScreenBuffer, row: number, col: number, w
 /**
  * Write text left-aligned at a position.
  */
-export function writeText(buf: ScreenBuffer, row: number, col: number, text: string): void {
+export function writeText(
+  buf: ScreenBuffer,
+  row: number,
+  col: number,
+  text: string,
+): void {
   buf.moveTo(row, col).write(text);
 }
 
 /**
  * Write text that fills an entire row width, padding with spaces.
  */
-export function writeFullRow(buf: ScreenBuffer, row: number, col: number, width: number, text: string): void {
+export function writeFullRow(
+  buf: ScreenBuffer,
+  row: number,
+  col: number,
+  width: number,
+  text: string,
+): void {
   const vLen = visibleLength(text);
   const padding = Math.max(0, width - vLen);
-  buf.moveTo(row, col).write(text + ' '.repeat(padding));
+  buf.moveTo(row, col).write(text + " ".repeat(padding));
 }
 
 /**
  * Draw a vertical scrollbar.
  */
-export function drawScrollbar(buf: ScreenBuffer, col: number, topRow: number, height: number, total: number, visible: number, offset: number, color: string = '240'): void {
+export function drawScrollbar(
+  buf: ScreenBuffer,
+  col: number,
+  topRow: number,
+  height: number,
+  total: number,
+  visible: number,
+  offset: number,
+  color: string = "240",
+): void {
   if (total <= visible) {
     // No scrollbar needed — fill track with spaces
     for (let i = 0; i < height; i++) {
-        buf.moveTo(topRow + i, col).write(' ');
+      buf.moveTo(topRow + i, col).write(" ");
     }
     return;
   }
@@ -165,7 +217,7 @@ export function drawScrollbar(buf: ScreenBuffer, col: number, topRow: number, he
     if (i >= thumbPos && i < thumbPos + thumbSize) {
       buf.write(`${ESC}38;5;${color}m${SCROLLBAR.thumb}${ESC}0m`);
     } else {
-      buf.write(`${ESC}38;5;237m${SCROLLBAR.track}${ESC}0m`);
+      buf.write(`${ESC}38;5;${color}m${SCROLLBAR.track}${ESC}0m`);
     }
   }
 }
@@ -177,9 +229,9 @@ export function padOrTruncate(str: string, len: number): string {
   const vLen = visibleLength(str);
   if (vLen > len) {
     // Truncate (works for non-ANSI strings; for ANSI we do a rough cut)
-    return stripAnsi(str).slice(0, len - 1) + '…';
+    return stripAnsi(str).slice(0, len - 1) + "…";
   }
-  return str + ' '.repeat(len - vLen);
+  return str + " ".repeat(len - vLen);
 }
 
 export interface TermSize {

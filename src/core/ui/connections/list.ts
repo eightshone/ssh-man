@@ -1,14 +1,13 @@
+import colors from "yoctocolors-cjs";
 import { menu, server } from "../../../utils/types";
 import { setupInput } from "../../../utils/tui/input";
 import {
   ansi,
   ScreenBuffer,
   drawBox,
-  writeTextCentered,
   writeFullRow,
   padOrTruncate,
   getTermSize,
-  visibleLength,
   drawScrollbar,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
@@ -58,7 +57,7 @@ export default function listConnections(
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
-        writeTextCentered(buf, 1, 1, cols - 2, " Saved Servers ", "208");
+        buf.moveTo(1, 3).write(ansi.fg("208", " Saved Servers "));
 
         const footerMsg =
           " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
@@ -100,14 +99,13 @@ export default function listConnections(
         }
 
         const srv = filtered[itemIdx];
-        const displayIdx = stringPadding(
-          `${srv.originalIndex + 1}`,
-          3,
-          "start",
-          "0",
+        const displayIdx = colors.dim(
+          stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
         );
         const paddedName = stringPadding(srv.name);
-        let srvStr = `  ${displayIdx}  ${paddedName}  ${srv.username}@${srv.host}:${srv.port}`;
+        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(srv.username)}@${colors.blue(
+          srv.host,
+        )}:${colors.magenta(`${srv.port}`)}`;
 
         let displayStr = padOrTruncate(srvStr, maxColWidth);
 
@@ -122,13 +120,13 @@ export default function listConnections(
       if (filtered.length > 0) {
         drawScrollbar(
           buf,
-          cols - 1,
+          cols,
           listTop,
           listHeight,
           filtered.length,
           listHeight,
           listOffset,
-          "250",
+          "255",
         );
       } else {
         const noResStr =
