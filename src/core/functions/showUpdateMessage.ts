@@ -1,9 +1,10 @@
 import colors from "yoctocolors-cjs";
 import { UPDATE_COMMANDS } from "../../utils/consts";
+import { PackageManager } from "../../utils/types";
 
 function showUpdateMessage(
   isUptodate: boolean,
-  manager: "npm" | "yarn" | "pnpm",
+  manager: PackageManager,
   warningOnly: boolean = false
 ) {
   if (isUptodate && !warningOnly) {

@@ -67,3 +67,4 @@ type editDefaultOptionsVar =
 export type editDefaultOptions = {
   message: string;
 } & editDefaultOptionsVar;
+export type PackageManager = "npm" | "yarn" | "pnpm" | "bun";

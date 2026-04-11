@@ -36,4 +36,5 @@ export const UPDATE_COMMANDS = {
   yarn: "yarn global add @eightshone/sshman",
   npm: "npm install -g @eightshone/sshman",
   pnpm: "pnpm add -g @eightshone/sshman",
+  bun: "bun add -g @eightshone/sshman",
 };

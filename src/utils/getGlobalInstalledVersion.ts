@@ -1,12 +1,22 @@
 import { execSync } from "child_process";
+import { PackageManager } from "./types";
 
 function getGlobalInstalledVersion(
   pkg: string,
-  manager: string
+  manager: PackageManager
 ): string | null {
   try {
     let cmd = "";
     switch (manager) {
+      case "bun":
+        cmd = `bun pm ls -g`;
+        const bunOutput = execSync(cmd, {
+          stdio: ["pipe", "pipe", "ignore"],
+        }).toString();
+        const bunMatch = bunOutput.match(
+          new RegExp(`${pkg.replace(/\//g, "\\/")}@([\\d.]+)`)
+        );
+        return bunMatch?.[1] || null;
       case "pnpm":
         cmd = `pnpm ls -g ${pkg} --json`;
         break;

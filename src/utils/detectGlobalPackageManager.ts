@@ -1,6 +1,12 @@
 import { execSync } from "child_process";
+import { PackageManager } from "./types";
 
-function detectGlobalPackageManager(): "npm" | "yarn" | "pnpm" {
+function detectGlobalPackageManager(): PackageManager {
+  try {
+    execSync("bun --version", { stdio: "ignore" });
+    return "bun";
+  } catch {}
+
   try {
     execSync("pnpm --version", { stdio: "ignore" });
     return "pnpm";
