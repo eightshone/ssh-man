@@ -13,6 +13,7 @@ import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
 import displayLogs from "./logs";
 import exportConnections from "./connections/export";
+import { ansi } from "../../utils/tui/index";
 
 async function interactive(
   initialConfig: config,
@@ -23,6 +24,8 @@ async function interactive(
     options: string[] | null = null,
     config: config = { ...initialConfig },
     logs: log[] = [...initialLogs];
+
+  process.stdout.write(ansi.altScreenEnter());
 
   while (currentMenu !== "exit") {
     if (currentMenu === "main") {
@@ -91,6 +94,7 @@ async function interactive(
     }
   }
 
+  process.stdout.write(ansi.altScreenExit());
   goodbye();
 }
 

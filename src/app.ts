@@ -13,6 +13,7 @@ import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
+import { ansi } from "./utils/tui/index";
 
 const program = new Command();
 
@@ -98,6 +99,7 @@ async function app() {
 }
 
 process.on("uncaughtException", (error) => {
+  process.stdout.write(ansi.altScreenExit());
   if (error instanceof Error && error.name === "ExitPromptError") {
     goodbye();
   } else {
