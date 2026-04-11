@@ -87,8 +87,17 @@ export default function mainMenu(
       const { rows, cols } = getTermSize();
       const buf = new ScreenBuffer();
 
+      // Calculate vertical centering bounds
+      const totalContentHeight = ASCII_ART.length + 2 + items.length;
+      const availableInnerRows = rows - 3;
+      let startRow = 3;
+      if (availableInnerRows > totalContentHeight) {
+        startRow = 2 + Math.floor((availableInnerRows - totalContentHeight) / 2);
+      }
+      
+      let currentLine = startRow;
+
       // Optional clear and static borders on init or resize
-      let currentLine = 3;
       if (fullRender) {
         buf.write(ansi.clear());
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
