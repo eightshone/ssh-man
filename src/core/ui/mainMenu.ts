@@ -70,6 +70,7 @@ export default function mainMenu(
       value: "ssh-list",
       selectable: true,
     });
+    items.push({ name: "", value: null, selectable: false });
     items.push({ name: "⚙️ Settings", value: "settings", selectable: true });
     items.push({
       name: "📰 Logs [Exiperimental]",
@@ -124,7 +125,8 @@ export default function mainMenu(
       }
 
       // Footer
-      const footerMsg = " Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
+      const footerMsg =
+        " Navigate: ↑ ↓ |  Select: <enter> | Quit: <q> or <ctrl-c> ";
       const footerCol = 2;
 
       // We overlay the footer at the bottom border row (rows - 1), but we can just put it at rows

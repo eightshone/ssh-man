@@ -9,11 +9,13 @@ import {
   padOrTruncate,
   getTermSize,
   visibleLength,
-  drawScrollbar
+  drawScrollbar,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
 
-export default function listConnections(servers: server[]): Promise<[menu, string[]]> {
+export default function listConnections(
+  servers: server[],
+): Promise<[menu, string[]]> {
   return new Promise((resolve) => {
     let searchInput = "";
     let selectedIndex = 0;
@@ -22,7 +24,8 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
     // Filter servers based on input
     const getFiltered = () => {
       const q = searchInput.toLowerCase();
-      if (!q) return servers.map((srv, idx) => ({ ...srv, originalIndex: idx }));
+      if (!q)
+        return servers.map((srv, idx) => ({ ...srv, originalIndex: idx }));
 
       return servers
         .map((srv, idx) => ({ ...srv, originalIndex: idx }))
@@ -31,7 +34,7 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
             srv.name.toLowerCase().includes(q) ||
             srv.host.toLowerCase().includes(q) ||
             srv.username.toLowerCase().includes(q) ||
-            String(srv.port).includes(q)
+            String(srv.port).includes(q),
         );
     };
 
@@ -46,7 +49,8 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
         selectedIndex = 0;
         listOffset = 0;
       } else {
-        if (selectedIndex >= filtered.length) selectedIndex = filtered.length - 1;
+        if (selectedIndex >= filtered.length)
+          selectedIndex = filtered.length - 1;
         if (selectedIndex < 0) selectedIndex = 0;
       }
 
@@ -55,24 +59,31 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
       drawBox(buf, 1, 1, cols, rows - 1, "rounded");
 
       // Title
-      writeTextCentered(buf, 1, 1, cols - 2, " 🗃️  Saved Servers ", "208");
+      writeTextCentered(buf, 1, 1, cols - 2, " Saved Servers ", "208");
 
       // Search Bar area (rows 2, 3, 4)
-      writeFullRow(buf, 2, 3, cols - 6, `  🔍 Search: ${searchInput}${ansi.bg("240", " ")}`); // faux cursor
-      buf.moveTo(3, 2).write("├" + "─".repeat(cols - 4) + "┤");
+      writeFullRow(
+        buf,
+        2,
+        2,
+        cols - 2,
+        ` 🔍 Search: ${searchInput}${ansi.bg("240", " ")}`,
+      ); // faux cursor
+      buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
       // List header (row 4)
-      const headerStr = `   #  ${stringPadding("Name")}  Config`;
-      buf.moveTo(4, 2).write(ansi.dim(padOrTruncate(headerStr, cols - 4)));
+      const headerStr = `    #  ${stringPadding("Name")}  Config`;
+      buf.moveTo(4, 2).write(ansi.dim(padOrTruncate(headerStr, cols - 2)));
 
       // List area (row 5 to rows - 2)
       const listTop = 5;
       const listHeight = rows - 2 - listTop;
-      const maxColWidth = cols - 6;
+      const maxColWidth = cols - 2;
 
       // Adjust scroll offset
       if (selectedIndex < listOffset) listOffset = selectedIndex;
-      if (selectedIndex >= listOffset + listHeight) listOffset = selectedIndex - listHeight + 1;
+      if (selectedIndex >= listOffset + listHeight)
+        listOffset = selectedIndex - listHeight + 1;
       if (listHeight >= filtered.length) listOffset = 0;
 
       for (let i = 0; i < listHeight; i++) {
@@ -80,32 +91,54 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
         if (itemIdx >= filtered.length) break;
 
         const srv = filtered[itemIdx];
-        const displayIdx = stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0");
+        const displayIdx = stringPadding(
+          `${srv.originalIndex + 1}`,
+          3,
+          "start",
+          "0",
+        );
         const paddedName = stringPadding(srv.name);
-        let srvStr = `  ${displayIdx}  ${paddedName}  ${srv.username}:[redacted]@${srv.host}:${srv.port}`;
-        
+        let srvStr = `  ${displayIdx}  ${paddedName}  ${srv.username}@${srv.host}:${srv.port}`;
+
         let displayStr = padOrTruncate(srvStr, maxColWidth);
 
         if (itemIdx === selectedIndex) {
-          buf.moveTo(listTop + i, 3).write(`${ansi.bg(238, displayStr)}`);
+          buf.moveTo(listTop + i, 2).write(`${ansi.bg(238, displayStr)}`);
         } else {
-          buf.moveTo(listTop + i, 3).write(displayStr);
+          buf.moveTo(listTop + i, 2).write(displayStr);
         }
       }
 
       // Draw Scrollbar
       if (filtered.length > 0) {
-        drawScrollbar(buf, cols - 2, listTop, listHeight, filtered.length, listHeight, listOffset, "250");
+        drawScrollbar(
+          buf,
+          cols - 1,
+          listTop,
+          listHeight,
+          filtered.length,
+          listHeight,
+          listOffset,
+          "250",
+        );
       } else {
-        const noResStr = searchInput.length > 0 ? "📭 No servers match your search" : "📭 No saved servers";
-        buf.moveTo(listTop + 1, 3).write(ansi.dim(padOrTruncate("  " + noResStr, maxColWidth)));
+        const noResStr =
+          searchInput.length > 0
+            ? "📭 No servers match your search"
+            : "📭 No saved servers";
+        buf
+          .moveTo(listTop + 1, 2)
+          .write(ansi.dim(padOrTruncate("  " + noResStr, maxColWidth)));
       }
 
       // Footer
-      const footerMsg = " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
+      const footerMsg =
+        " Navigate: ↑ ↓ | Select: <enter> | Search: type | Back/Clear: <esc> ";
       const footerCol = 2;
-      
-      buf.moveTo(rows, footerCol).write(ansi.bg("236", ansi.fg("250", footerMsg)));
+
+      buf
+        .moveTo(rows, footerCol)
+        .write(ansi.bg("236", ansi.fg("250", footerMsg)));
 
       // Hide cursor and flush
       buf.write(ansi.hideCursor());
@@ -115,7 +148,9 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
     const cleanupScreen = () => {
       process.stdout.removeListener("resize", render);
       cleanup();
-      process.stdout.write(ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1));
+      process.stdout.write(
+        ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1),
+      );
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
@@ -175,7 +210,7 @@ export default function listConnections(servers: server[]): Promise<[menu, strin
           cleanupScreen();
           resolve([
             "ssh-display",
-            [JSON.stringify(selectedSrv), String(selectedSrv.originalIndex)]
+            [JSON.stringify(selectedSrv), String(selectedSrv.originalIndex)],
           ]);
         }
         return;
