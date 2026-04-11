@@ -201,9 +201,9 @@ export function drawScrollbar(
   color: string = "240",
 ): void {
   if (total <= visible) {
-    // No scrollbar needed — fill track with spaces
+    // No scrollbar needed — fill track with track character
     for (let i = 0; i < height; i++) {
-      buf.moveTo(topRow + i, col).write(" ");
+      buf.moveTo(topRow + i, col).write(SCROLLBAR.track);
     }
     return;
   }

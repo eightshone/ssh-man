@@ -94,7 +94,6 @@ export default function listConnections(
         if (itemIdx >= filtered.length) {
           // Clear unused rows so old data vanishes when list shrinks
           buf.moveTo(listTop + i, 2).write(" ".repeat(maxColWidth));
-          buf.moveTo(listTop + i, cols - 1).write(" ");
           continue;
         }
 
@@ -116,19 +115,19 @@ export default function listConnections(
         }
       }
 
-      // Draw Scrollbar
-      if (filtered.length > 0) {
-        drawScrollbar(
-          buf,
-          cols,
-          listTop,
-          listHeight,
-          filtered.length,
-          listHeight,
-          listOffset,
-          "255",
-        );
-      } else {
+      // Draw Scrollbar unconditionally (renders as a static line if not scrolling)
+      drawScrollbar(
+        buf,
+        cols,
+        listTop,
+        listHeight,
+        filtered.length,
+        listHeight,
+        listOffset,
+        "255",
+      );
+
+      if (filtered.length === 0) {
         const noResStr =
           searchInput.length > 0
             ? "📭 No servers match your search"
