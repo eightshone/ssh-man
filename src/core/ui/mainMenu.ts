@@ -43,7 +43,7 @@ export default function mainMenu(
   return new Promise((resolve) => {
     let items: MenuItem[] = [
       {
-        name: "Recent sessions",
+        name: "Recent connections",
         value: null,
         selectable: false,
         muted: true,
@@ -53,7 +53,7 @@ export default function mainMenu(
     if (recentServers.length > 0) {
       recentServers.slice(0, 3).forEach((srv, idx) => {
         items.push({
-          name: `   ${idx + 1} - ${srv.name}`,
+          name: `${idx + 1} - ${srv.name}`,
           value: "ssh-connect" as menu,
           selectable: true,
           options: [JSON.stringify(srv)],
@@ -75,17 +75,17 @@ export default function mainMenu(
       selectable: true,
     });
     items.push({
-      name: "Saved servers",
+      name: "Saved connections",
       value: "ssh-list",
+      selectable: true,
+    });
+    items.push({
+      name: "Logs",
+      value: "logs",
       selectable: true,
     });
     items.push({ name: "", value: null, selectable: false });
     items.push({ name: "Settings", value: "settings", selectable: true });
-    items.push({
-      name: "Logs [Exiperimental]",
-      value: "logs",
-      selectable: true,
-    });
     items.push({ name: "Manual", value: "manual", selectable: true });
     items.push({ name: "Quit", value: "exit", selectable: true });
 

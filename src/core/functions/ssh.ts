@@ -7,7 +7,7 @@ import { readFileSync } from "fs";
 
 function sshConnection(
   sshConfig: server,
-  unref: boolean = false
+  unref: boolean = false,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
@@ -56,10 +56,10 @@ function sshConnection(
                 process.stdout.rows,
                 process.stdout.columns,
                 0,
-                0
+                0,
               );
             });
-          }
+          },
         );
       })
       .connect(config);

@@ -5,13 +5,13 @@ import sshConnection from "./ssh";
 async function sshConnect(
   config: config,
   logs: log[],
-  sshConfig: server
+  sshConfig: server,
 ): Promise<[menu, config, log[]]> {
   const [updatedConfig, updatedLogs] = await updateConfigs(
     config,
     logs,
     sshConfig,
-    true
+    true,
   );
 
   console.clear();

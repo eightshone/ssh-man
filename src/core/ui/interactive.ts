@@ -18,7 +18,7 @@ import { ansi } from "../../utils/tui/index";
 async function interactive(
   initialConfig: config,
   initialLogs: log[],
-  program: Command
+  program: Command,
 ) {
   let currentMenu: menu = "main",
     options: string[] | null = null,
@@ -44,7 +44,7 @@ async function interactive(
       [currentMenu, options] = await displayConnection(
         JSON.parse(options[0]),
         parseInt(options[1]),
-        options.length === 3 && options[2] === "true"
+        options.length === 3 && options[2] === "true",
       );
     }
 
@@ -52,16 +52,15 @@ async function interactive(
       [currentMenu, config, logs] = await sshConnect(
         config,
         logs,
-        JSON.parse(options[0])
+        JSON.parse(options[0]),
       );
-      console.clear();
     }
 
     if (currentMenu === "ssh-edit") {
       [currentMenu, options, config] = await editConnection(
         config,
         parseInt(options[1]),
-        logs
+        logs,
       );
     }
 
@@ -69,7 +68,7 @@ async function interactive(
       [currentMenu, options] = await deleteConnection(
         config,
         JSON.parse(options[0]),
-        parseInt(options[1])
+        parseInt(options[1]),
       );
     }
 
