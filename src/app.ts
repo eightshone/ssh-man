@@ -12,6 +12,7 @@ import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
 import importServers from "./core/commands/importServers";
+import searchCommand from "./core/commands/search";
 
 const program = new Command();
 
@@ -63,6 +64,13 @@ program
   .option("-f, --force", "replace configs with the same name")
   .description("import server configurations")
   .action(importServers);
+
+program
+  .command("search")
+  .argument("<terms...>", "search terms")
+  .option("-f, --fuzzy", "make a fuzzy search")
+  .description("search for a server config")
+  .action(searchCommand);
 
 program
   .command("goodbye")
