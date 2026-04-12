@@ -41,7 +41,7 @@ export default function listConnections(
       return servers
         .map((srv, idx) => ({ ...srv, originalIndex: idx }))
         .filter((srv) => {
-          return words.every((word) => {
+          return words.some((word) => {
             return (
               (srv.name ?? "").toLowerCase().includes(word) ||
               (srv.host ?? "").toLowerCase().includes(word) ||

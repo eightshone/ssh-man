@@ -32,7 +32,7 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
       .map((srv, index) => ({ ...srv, originalIndex: index }))
       .filter((srv) => {
         const searchable = getSearchableString(srv);
-        return searchWords.every((word) => searchable.includes(word));
+        return searchWords.some((word) => searchable.includes(word));
       });
   }
 

@@ -28,7 +28,7 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
       return logs
         .map((lg, idx) => ({ ...lg, originalIndex: idx }))
         .filter((lg) => {
-          return words.every((word) => {
+          return words.some((word) => {
             return (
               (lg.serverName?.toLowerCase().includes(word) ?? false) ||
               (lg.time?.toLowerCase().includes(word) ?? false) ||
