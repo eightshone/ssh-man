@@ -31,7 +31,7 @@ export const GOODBYES: string[] = [
   "Goodbye! Have a fantastic day! 🥳",
 ];
 export const CONFIG_DIR = `${homedir()}/.sshman`;
-export const CONNECTION_REGEX = /^(.*?)(?::(.*?))?@(.*?)(?::(\d+))?$/;
+export const CONNECTION_REGEX = /^(?:([^@:]+)(?::([^@:]+))?@)?([^@:]+)(?::(\d+))?$/;
 export const UPDATE_COMMANDS = {
   yarn: "yarn global add @eightshone/sshman",
   npm: "npm install -g @eightshone/sshman",

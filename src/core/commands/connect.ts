@@ -16,11 +16,31 @@ async function connectCommand(creds: string, options) {
   const promptPassword: boolean = options.password;
   let sshConfig: server | undefined;
 
-  const newConnection = isConnectionString(creds);
+  const hasAt = creds.includes("@");
+  let isNewConnection = false;
 
-  if (newConnection) {
-    sshConfig = await parseConnectionString(creds, promptPassword);
+  if (hasAt) {
+    if (isConnectionString(creds)) {
+      isNewConnection = true;
+      sshConfig = await parseConnectionString(creds, promptPassword);
+    } else {
+      console.log("Invalid connection string format!");
+      return;
+    }
+  } else {
+    sshConfig = findServer(config.servers, creds);
+    if (!sshConfig) {
+      if (isConnectionString(creds)) {
+        isNewConnection = true;
+        sshConfig = await parseConnectionString(creds, promptPassword);
+      } else {
+        console.log("Server config not found!");
+        return;
+      }
+    }
+  }
 
+  if (isNewConnection) {
     if (
       !!saveConnection &&
       typeof saveConnection === "string" &&
@@ -42,19 +62,13 @@ async function connectCommand(creds: string, options) {
         `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
       );
     }
-  } else {
-    sshConfig = findServer(config.servers, creds);
-    if (!sshConfig) {
-      console.log("Server config not found!");
-      return;
-    }
   }
 
   [config, logs] = await updateConfigs(
     config,
     logs,
     sshConfig,
-    !!saveConnection && newConnection
+    !!saveConnection && isNewConnection
   );
 
   sshConnection(sshConfig);
