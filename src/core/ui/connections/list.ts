@@ -22,6 +22,7 @@ export default function listConnections(
   let servers = config.servers;
   return new Promise((resolve) => {
     let searchInput = "";
+    let cursorPos = 0;
     let selectedIndex = 0;
     let listOffset = 0;
 
@@ -31,19 +32,24 @@ export default function listConnections(
 
     // Filter servers based on input
     const getFiltered = () => {
-      const q = searchInput.toLowerCase();
+      const q = searchInput.toLowerCase().trim();
       if (!q)
         return servers.map((srv, idx) => ({ ...srv, originalIndex: idx }));
 
+      const words = q.split(/\s+/).filter((w) => w.length > 0);
+
       return servers
         .map((srv, idx) => ({ ...srv, originalIndex: idx }))
-        .filter(
-          (srv) =>
-            (srv.name ?? "").toLowerCase().includes(q) ||
-            (srv.host ?? "").toLowerCase().includes(q) ||
-            (srv.username ?? "").toLowerCase().includes(q) ||
-            String(srv.port ?? "").includes(q),
-        );
+        .filter((srv) => {
+          return words.every((word) => {
+            return (
+              (srv.name ?? "").toLowerCase().includes(word) ||
+              (srv.host ?? "").toLowerCase().includes(word) ||
+              (srv.username ?? "").toLowerCase().includes(word) ||
+              String(srv.port ?? "").includes(word)
+            );
+          });
+        });
     };
 
     let filtered = getFiltered();
@@ -76,13 +82,17 @@ export default function listConnections(
       drawFooter(buf, cols, rows, footerMsg);
 
       // Search Bar area (rows 2, 3, 4)
+      const part1 = searchInput.slice(0, cursorPos);
+      const charAtCursor = searchInput[cursorPos] || " ";
+      const part2 = searchInput.slice(cursorPos + 1);
+
       writeFullRow(
         buf,
         2,
         2,
         cols - 2,
-        `  Search: ${searchInput}${ansi.bg("240", " ")}`,
-      ); // faux cursor
+        `  Search: ${part1}${ansi.bg("240", charAtCursor)}${part2}`,
+      );
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
       // List header (row 4)
@@ -216,6 +226,7 @@ export default function listConnections(
       if (key === "escape") {
         if (searchInput.length > 0) {
           searchInput = "";
+          cursorPos = 0;
           filtered = getFiltered();
           selectedIndex = 0;
           render();
@@ -236,8 +247,10 @@ export default function listConnections(
       }
 
       if (key === "backspace") {
-        if (searchInput.length > 0) {
-          searchInput = searchInput.slice(0, -1);
+        if (cursorPos > 0) {
+          searchInput =
+            searchInput.slice(0, cursorPos - 1) + searchInput.slice(cursorPos);
+          cursorPos--;
           filtered = getFiltered();
           selectedIndex = 0;
           render();
@@ -245,9 +258,27 @@ export default function listConnections(
         return;
       }
 
+      if (key === "left") {
+        if (cursorPos > 0) {
+          cursorPos--;
+          render();
+        }
+        return;
+      }
+
+      if (key === "right") {
+        if (cursorPos < searchInput.length) {
+          cursorPos++;
+          render();
+        }
+        return;
+      }
+
       if (key === "char" && char) {
         // Only printable text
-        searchInput += char;
+        searchInput =
+          searchInput.slice(0, cursorPos) + char + searchInput.slice(cursorPos);
+        cursorPos += char.length;
         filtered = getFiltered();
         selectedIndex = 0;
         render();

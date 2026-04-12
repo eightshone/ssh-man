@@ -21,12 +21,18 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
       .map((srv, index) => ({ ...srv, originalIndex: index }))
       .filter((srv) => fuzzyRegex.test(getSearchableString(srv)));
   } else {
-    const lowerTerms = terms.map((t) => t.toLowerCase());
+    const searchWords = terms
+      .join(" ")
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
+
     filteredServers = servers
       .map((srv, index) => ({ ...srv, originalIndex: index }))
       .filter((srv) => {
         const searchable = getSearchableString(srv);
-        return lowerTerms.every((term) => searchable.includes(term));
+        return searchWords.every((word) => searchable.includes(word));
       });
   }
 
