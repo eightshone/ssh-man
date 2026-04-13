@@ -87,7 +87,6 @@ export function highlightTerms(
   return result;
 }
 
-
 // ─── Box-drawing characters ─────────────────────────────────────────────────
 
 export const BOX: Record<
@@ -252,18 +251,17 @@ export function drawPopup(
   // Choices
   choices.forEach((choice, i) => {
     const isSelected = i === selectedIndex;
-    const choiceText = `  ${choice}  `;
+    const choiceText = ` ${choice}`;
     const row = startRow + content.length + 2 + i;
 
     buf.moveTo(row, startCol + 2); // Left align with 2 chars from border
     if (isSelected) {
-      buf.write(ansi.bg(238, choiceText));
+      buf.write(ansi.bg(238, padOrTruncate(choiceText, width - 4)));
     } else {
       buf.write(choiceText);
     }
   });
 }
-
 
 /**
  * Write text inside a box, horizontally centered.
@@ -328,9 +326,7 @@ export function drawFooter(
 
   const displayMsg = padOrTruncate(message, availableForMsg);
 
-  buf
-    .moveTo(rows, 2)
-    .write(ansi.fg("250", displayMsg) + ansi.dim(verStr));
+  buf.moveTo(rows, 2).write(ansi.fg("250", displayMsg) + ansi.dim(verStr));
 }
 
 /**
