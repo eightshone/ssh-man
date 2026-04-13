@@ -79,7 +79,7 @@ export default function listConnections(
 
       // Footer message based on mode
       const footerMsg = showDeleteConfirm
-        ? "Confirm: <enter> | Cancel: <esc> / N | Navigate: ↑ ↓ ← → "
+        ? "Confirm: <enter> | Cancel: <esc> | Navigate: ↑ ↓ ← → "
         : "Navigate: ↑ ↓ | Details: <enter> | Search: type | Back/Clear: <esc> | Delete: <ctrl-del>";
       drawFooter(buf, cols, rows, footerMsg);
 
@@ -238,16 +238,16 @@ export default function listConnections(
               filtered = getFiltered();
               showDeleteConfirm = false;
               selectedIndex = 0;
-              render(true);
+              render();
             });
           } else {
             // Cancel
             showDeleteConfirm = false;
-            render(true);
+            render();
           }
         } else if (key === "escape") {
           showDeleteConfirm = false;
-          render(true);
+          render();
         }
         return;
       }

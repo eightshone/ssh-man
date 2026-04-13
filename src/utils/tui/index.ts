@@ -252,18 +252,18 @@ export function drawPopup(
   // Choices
   choices.forEach((choice, i) => {
     const isSelected = i === selectedIndex;
-    const choiceText = isSelected ? `> ${choice} <` : `  ${choice}  `;
+    const choiceText = `  ${choice}  `;
     const row = startRow + content.length + 2 + i;
-    const pad = Math.floor((width - visibleLength(choiceText)) / 2);
 
-    buf.moveTo(row, startCol + pad);
+    buf.moveTo(row, startCol + 2); // Left align with 2 chars from border
     if (isSelected) {
-      buf.write(ansi.bg(colorCode, ansi.fg(0, choiceText)));
+      buf.write(ansi.bg(238, choiceText));
     } else {
       buf.write(choiceText);
     }
   });
 }
+
 
 /**
  * Write text inside a box, horizontally centered.
