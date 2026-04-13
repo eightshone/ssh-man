@@ -10,6 +10,8 @@ import {
   getTermSize,
   drawScrollbar,
   drawFooter,
+  highlightTerms,
+  ESC,
 } from "../../utils/tui/index";
 
 export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
@@ -102,15 +104,29 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
         }
 
         const lg = filtered[itemIdx];
-        const timeStr = colors.dim(lg.time ?? "Unknown Time");
+        const isSelected = itemIdx === selectedIndex;
+        const baseBg = isSelected ? `${ESC}48;5;238m` : "";
+        const searchWords = searchInput
+          .toLowerCase()
+          .trim()
+          .split(/\s+/)
+          .filter((w) => w.length > 0);
+
+        const timeStr = colors.dim(
+          highlightTerms(lg.time ?? "Unknown Time", searchWords, baseBg + "\x1b[2m"),
+        );
         const nameStr = colors.blueBright(
-          lg.serverName ?? lg.server ?? "Unknown Server",
+          highlightTerms(
+            lg.serverName ?? lg.server ?? "Unknown Server",
+            searchWords,
+            baseBg + "\x1b[94m",
+          ),
         );
 
         let logStr = `  ${timeStr}  ${nameStr}`;
         let displayStr = padOrTruncate(logStr, maxColWidth);
 
-        if (itemIdx === selectedIndex) {
+        if (isSelected) {
           buf.moveTo(listTop + i, 2).write(`${ansi.bg(238, displayStr)}`);
         } else {
           buf.moveTo(listTop + i, 2).write(displayStr);

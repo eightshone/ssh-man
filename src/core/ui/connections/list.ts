@@ -10,6 +10,8 @@ import {
   getTermSize,
   drawScrollbar,
   drawFooter,
+  highlightTerms,
+  ESC,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
 
@@ -119,17 +121,44 @@ export default function listConnections(
         }
 
         const srv = filtered[itemIdx];
+        const isSelected = itemIdx === selectedIndex;
+        const baseBg = isSelected ? `${ESC}48;5;238m` : "";
+        const searchWords = searchInput
+          .toLowerCase()
+          .trim()
+          .split(/\s+/)
+          .filter((w) => w.length > 0);
+
         const displayIdx = colors.dim(
           stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
         );
-        const paddedName = stringPadding(srv.name ?? "");
-        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(
+
+        const highlightedName = highlightTerms(srv.name ?? "", searchWords, baseBg);
+        const paddedName = stringPadding(highlightedName);
+
+        const highlightedUser = highlightTerms(
           srv.username ?? "",
-        )}@${colors.blue(srv.host ?? "")}:${colors.magenta(`${srv.port ?? ""}`)}`;
+          searchWords,
+          baseBg + "\x1b[33m",
+        );
+        const highlightedHost = highlightTerms(
+          srv.host ?? "",
+          searchWords,
+          baseBg + "\x1b[34m",
+        );
+        const highlightedPort = highlightTerms(
+          String(srv.port ?? ""),
+          searchWords,
+          baseBg + "\x1b[35m",
+        );
+
+        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(
+          highlightedUser,
+        )}@${colors.blue(highlightedHost)}:${colors.magenta(highlightedPort)}`;
 
         let displayStr = padOrTruncate(srvStr, maxColWidth);
 
-        if (itemIdx === selectedIndex) {
+        if (isSelected) {
           buf.moveTo(listTop + i, 2).write(`${ansi.bg(238, displayStr)}`);
         } else {
           buf.moveTo(listTop + i, 2).write(displayStr);

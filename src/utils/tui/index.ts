@@ -30,6 +30,64 @@ export const ansi = {
   reset: () => `${ESC}0m`,
 };
 
+/**
+ * Highlighting matching terms with white background and black text.
+ * Re-applies baseStyle after each match to preserve surrounding styles.
+ */
+export function highlightTerms(
+  text: string,
+  terms: string[],
+  baseStyle: string = "",
+): string {
+  if (!terms || terms.length === 0 || !text) return text;
+
+  const ranges: [number, number][] = [];
+  const lowerText = text.toLowerCase();
+
+  for (const term of terms) {
+    if (!term) continue;
+    const lowerTerm = term.toLowerCase();
+    let pos = 0;
+    while ((pos = lowerText.indexOf(lowerTerm, pos)) !== -1) {
+      ranges.push([pos, pos + lowerTerm.length]);
+      pos += 1;
+    }
+  }
+
+  if (ranges.length === 0) return text;
+
+  // Sort and merge ranges
+  ranges.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const merged: [number, number][] = [];
+  let current = ranges[0];
+  for (let i = 1; i < ranges.length; i++) {
+    if (ranges[i][0] <= current[1]) {
+      current[1] = Math.max(current[1], ranges[i][1]);
+    } else {
+      merged.push(current);
+      current = ranges[i];
+    }
+  }
+  merged.push(current);
+
+  // Apply highlighting
+  let result = "";
+  let lastPos = 0;
+  // White background (255), Black text (0)
+  const highlightPrefix = `${ESC}48;5;255m${ESC}38;5;0m`;
+  const highlightSuffix = `${ESC}0m${baseStyle}`;
+
+  for (const [start, end] of merged) {
+    result += text.slice(lastPos, start);
+    result += highlightPrefix + text.slice(start, end) + highlightSuffix;
+    lastPos = end;
+  }
+  result += text.slice(lastPos);
+
+  return result;
+}
+
+
 // ─── Box-drawing characters ─────────────────────────────────────────────────
 
 export const BOX: Record<
