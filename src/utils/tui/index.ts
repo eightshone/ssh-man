@@ -73,8 +73,8 @@ export function highlightTerms(
   // Apply highlighting
   let result = "";
   let lastPos = 0;
-  // White background (255), Black text (0)
-  const highlightPrefix = `${ESC}48;5;255m${ESC}38;5;0m`;
+  // Dark gray background (240), keep original text color
+  const highlightPrefix = `${ESC}48;5;240m`;
   const highlightSuffix = `${ESC}0m${baseStyle}`;
 
   for (const [start, end] of merged) {
