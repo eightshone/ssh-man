@@ -56,9 +56,27 @@ export default function listConnections(
 
     let filtered = getFiltered();
 
-    const render = (fullRender: boolean = false) => {
+    const render = (fullRender: boolean = false, popupOnly: boolean = false) => {
       const { rows, cols } = getTermSize();
       const buf = new ScreenBuffer();
+
+      if (popupOnly && showDeleteConfirm) {
+        const srv = filtered[selectedIndex];
+        drawPopup(
+          buf,
+          " Confirm Deletion ",
+          [
+            `Are you sure you want to delete ${srv.name}?`,
+            "This action cannot be undone.",
+          ],
+          ["Confirm", "Cancel"],
+          popupSelectedIndex,
+          "160", // Red color (approx)
+          true, // onlyChoices
+        );
+        buf.flush();
+        return;
+      }
 
       // Ensure index is valid
       if (filtered.length === 0) {
@@ -226,7 +244,7 @@ export default function listConnections(
           key === "tab"
         ) {
           popupSelectedIndex = popupSelectedIndex === 0 ? 1 : 0;
-          render();
+          render(false, true);
         } else if (key === "enter") {
           if (popupSelectedIndex === 0) {
             // Confirm delete

@@ -225,6 +225,7 @@ export function drawPopup(
   choices: string[] = [],
   selectedIndex: number = 0,
   colorCode: string = "255",
+  onlyChoices: boolean = false,
 ): void {
   const { rows, cols } = getTermSize();
   const width = Math.min(cols - 4, 50);
@@ -232,21 +233,23 @@ export function drawPopup(
   const startRow = Math.floor((rows - height) / 2);
   const startCol = Math.floor((cols - width) / 2);
 
-  // Background
-  fillRegion(buf, startRow, startCol, width, height, " ");
+  if (!onlyChoices) {
+    // Background
+    fillRegion(buf, startRow, startCol, width, height, " ");
 
-  // Border
-  drawBox(buf, startRow, startCol, width, height, "rounded", colorCode);
+    // Border
+    drawBox(buf, startRow, startCol, width, height, "rounded", colorCode);
 
-  // Title
-  const centeredTitle = ` ${title} `;
-  writeTextCentered(buf, startRow, startCol, width, centeredTitle, colorCode);
+    // Title
+    const centeredTitle = ` ${title} `;
+    writeTextCentered(buf, startRow, startCol, width, centeredTitle, colorCode);
 
-  // Content
-  content.forEach((line, i) => {
-    const text = padOrTruncate(line, width - 4);
-    buf.moveTo(startRow + 1 + i, startCol + 2).write(text);
-  });
+    // Content
+    content.forEach((line, i) => {
+      const text = padOrTruncate(line, width - 4);
+      buf.moveTo(startRow + 1 + i, startCol + 2).write(text);
+    });
+  }
 
   // Choices
   choices.forEach((choice, i) => {
@@ -258,7 +261,7 @@ export function drawPopup(
     if (isSelected) {
       buf.write(ansi.bg(238, padOrTruncate(choiceText, width - 4)));
     } else {
-      buf.write(choiceText);
+      buf.write(padOrTruncate(choiceText, width - 4));
     }
   });
 }
