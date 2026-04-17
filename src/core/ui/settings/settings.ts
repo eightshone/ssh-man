@@ -6,7 +6,7 @@ import stringPadding from "../../../utils/stringPadding";
 
 async function settings(config: config): Promise<[menu, string[]]> {
   let options: string[] = [];
-  const columnWidth = Math.floor(process.stdout.columns / 2 - 1);
+  const columnWidth = Math.floor(process.stdout.columns / 2 - 2);
   console.clear();
   console.log("Settings:");
 
@@ -18,7 +18,7 @@ async function settings(config: config): Promise<[menu, string[]]> {
         name: `${stringPadding("Port", columnWidth)} ${stringPadding(
           `${config.defaults.port}`,
           columnWidth,
-          "start"
+          "start",
         )}`,
         value: `settings-defaults-edit#-_-#${JSON.stringify({
           message: "Edit default port",
@@ -26,17 +26,17 @@ async function settings(config: config): Promise<[menu, string[]]> {
           type: "number",
         })}`,
         description: `\nPress ${colors.inverse(
-          " ENTER ↵ "
+          " ENTER ↵ ",
         )} to edit default port`,
       },
       {
         name: `${stringPadding(
           "Private key path",
-          columnWidth
+          columnWidth,
         )} ${stringPadding(
           `${config.defaults.privateKey}`,
           columnWidth,
-          "start"
+          "start",
         )}`,
         value: `settings-defaults-edit#-_-#${JSON.stringify({
           message: "Edit default private key path",
@@ -44,14 +44,14 @@ async function settings(config: config): Promise<[menu, string[]]> {
           type: "private-key",
         })}`,
         description: `\nPress ${colors.inverse(
-          " ENTER ↵ "
+          " ENTER ↵ ",
         )} to edit default private key path`,
       },
       {
         name: `${stringPadding("Autosave prefix", columnWidth)} ${stringPadding(
           `${config.defaults.autoSavePrefix}`,
           columnWidth,
-          "start"
+          "start",
         )}`,
         value: `settings-defaults-edit#-_-#${JSON.stringify({
           message: "Edit autosave prefix",
@@ -59,14 +59,14 @@ async function settings(config: config): Promise<[menu, string[]]> {
           type: "server-name",
         })}`,
         description: `\nPress ${colors.inverse(
-          " ENTER ↵ "
+          " ENTER ↵ ",
         )} to edit autosave prefix`,
       },
 
       new Separator(colors.dim("\n️ Security")),
       {
         name: colors.dim(
-          "Security features will be introduced in future versions."
+          "Security features will be introduced in future versions.",
         ),
         value: null,
         disabled: " ",
