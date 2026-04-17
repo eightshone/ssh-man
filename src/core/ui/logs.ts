@@ -240,7 +240,7 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
 
       if (key === "ctrl-c") {
         cleanupScreen();
-        process.exit(0);
+        resolve(["exit"]);
         return;
       }
     });

@@ -176,7 +176,7 @@ export default function settings(
 
         if (key === "ctrl-c") {
           cleanupScreen();
-          process.exit(0);
+          resolve(["exit", [], activeConfig]);
           return;
         }
 
@@ -215,9 +215,15 @@ export default function settings(
         }
       } else {
         // Popup input mode
-        if (key === "escape" || key === "ctrl-c") {
+        if (key === "escape") {
           mode = "list";
           render(true);
+          return;
+        }
+        
+        if (key === "ctrl-c") {
+          cleanupScreen();
+          resolve(["exit", [], activeConfig]);
           return;
         }
 

@@ -200,7 +200,7 @@ export default function manual(program: Command): Promise<[menu]> {
       
       if (key === "ctrl-c") {
         cleanupScreen();
-        process.exit(0);
+        resolve(["exit"]);
         return;
       }
 
