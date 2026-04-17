@@ -11,22 +11,63 @@ import {
   drawScrollbar,
 } from "../../utils/tui/index";
 
+type RenderItem = {
+  text: string;
+  isSelectable: boolean;
+  cmdIndex?: number;
+};
+
 export default function manual(program: Command): Promise<[menu]> {
   return new Promise((resolve) => {
-    let mode: "list" | "help" = "list";
-    let selectedIndex = 0;
+    let mode: "root" | "help" = "root";
+    let selectedRenderIndex = -1;
     let listOffset = 0;
-    
-    // Help scroll offset
     let helpOffset = 0;
 
-    const items = [
-      { name: "sshman (root)", help: program.helpInformation() },
-      ...program.commands.map((c) => ({
-        name: c.name(),
-        help: c.helpInformation(),
-      })),
-    ];
+    // Build the array of command help texts
+    const items = program.commands.map((c) => ({
+      name: c.name(),
+      help: c.helpInformation(),
+    }));
+
+    // Parse the root help string to construct the root view
+    const rootHelpLines = program.helpInformation().split("\n");
+    const renderItems: RenderItem[] = [];
+    let inCommands = false;
+
+    for (const line of rootHelpLines) {
+      // Remove carriage returns if any
+      const cleanedLine = line.replace(/\r/g, "");
+      
+      if (cleanedLine.trim() === "Commands:") {
+        inCommands = true;
+        renderItems.push({ text: cleanedLine, isSelectable: false });
+      } else if (inCommands && cleanedLine.trim().length > 0) {
+        // It's a command line
+        const firstWord = cleanedLine.trim().split(" ")[0];
+        const cmdIndex = items.findIndex((item) => item.name === firstWord);
+        
+        renderItems.push({
+          text: cleanedLine,
+          isSelectable: true,
+          cmdIndex: cmdIndex !== -1 ? cmdIndex : undefined,
+        });
+        
+        if (selectedRenderIndex === -1 && cmdIndex !== -1) {
+          selectedRenderIndex = renderItems.length - 1; // set first selectable as default
+        }
+      } else {
+        renderItems.push({ text: cleanedLine, isSelectable: false });
+      }
+    }
+
+    // Default to 0 if not set
+    if (selectedRenderIndex === -1) {
+      selectedRenderIndex = renderItems.findIndex((r) => r.isSelectable);
+      if (selectedRenderIndex === -1) selectedRenderIndex = 0; 
+    }
+
+    let activeCmdIndex = 0; // used when viewing specific help
 
     const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();
@@ -36,34 +77,40 @@ export default function manual(program: Command): Promise<[menu]> {
         buf.write(ansi.clear());
       }
       
-      // Draw outer box
       drawBox(buf, 1, 1, cols, rows - 1, "rounded");
       buf.moveTo(1, 3).write(ansi.fg("255", " Manual "));
 
-      if (mode === "list") {
-        const footerMsg = "Navigate: ↑ ↓ | View help: <enter> | Back: <esc> ";
+      if (mode === "root") {
+        const footerMsg = "Scroll: ↑ ↓ | Select: <enter> | Back: <esc> ";
         drawFooter(buf, cols, rows, footerMsg);
+        
+        const titleStr = padOrTruncate(` Help: sshman (root) `, cols - 6);
+        buf.moveTo(2, 3).write(titleStr);
+        buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
-        const listTop = 3;
-        // height is total row size minus borders and footer
+        const listTop = 4;
         const listHeight = rows - 2 - listTop;
         const maxColWidth = cols - 2;
 
-        if (selectedIndex < listOffset) listOffset = selectedIndex;
-        if (selectedIndex >= listOffset + listHeight) listOffset = selectedIndex - listHeight + 1;
-        if (listHeight >= items.length) listOffset = 0;
+        // If the selected item goes out of view, adjust offset
+        if (selectedRenderIndex < listOffset) listOffset = selectedRenderIndex;
+        if (selectedRenderIndex >= listOffset + listHeight) {
+          listOffset = selectedRenderIndex - listHeight + 1;
+        }
+        if (listHeight >= renderItems.length) listOffset = 0;
 
         for (let i = 0; i < listHeight; i++) {
           const itemIdx = listOffset + i;
-          if (itemIdx >= items.length) {
+          if (itemIdx >= renderItems.length) {
             buf.moveTo(listTop + i, 2).write(" ".repeat(maxColWidth));
             continue;
           }
 
-          const item = items[itemIdx];
-          const isSelected = itemIdx === selectedIndex;
+          const rItem = renderItems[itemIdx];
+          const isSelected = itemIdx === selectedRenderIndex && rItem.isSelectable;
           
-          const displayStr = padOrTruncate("  " + item.name, maxColWidth);
+          let text = padOrTruncate(rItem.text, maxColWidth - 2);
+          const displayStr = padOrTruncate("  " + text, maxColWidth);
 
           if (isSelected) {
             buf.moveTo(listTop + i, 2).write(`${ansi.bg(238, displayStr)}`);
@@ -77,7 +124,7 @@ export default function manual(program: Command): Promise<[menu]> {
           cols,
           listTop,
           listHeight,
-          items.length,
+          renderItems.length,
           listHeight,
           listOffset,
           "255"
@@ -86,13 +133,12 @@ export default function manual(program: Command): Promise<[menu]> {
         const footerMsg = "Scroll: ↑ ↓ | Back: <esc> ";
         drawFooter(buf, cols, rows, footerMsg);
         
-        const item = items[selectedIndex];
-        const titleStr = padOrTruncate(` Help: ${item.name} `, cols - 6);
+        const item = items[activeCmdIndex];
+        const titleStr = padOrTruncate(` Help: ${item?.name || "Unknown"} `, cols - 6);
         buf.moveTo(2, 3).write(titleStr);
-        // Underline or separator
         buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
         
-        const helpLines = item.help.split("\n");
+        const helpLines = (item?.help || "").split("\n");
         
         const listTop = 4;
         const listHeight = rows - 2 - listTop;
@@ -143,7 +189,7 @@ export default function manual(program: Command): Promise<[menu]> {
     const { stdin, cleanup } = setupInput((key, char) => {
       if (key === "escape") {
         if (mode === "help") {
-          mode = "list";
+          mode = "root";
           render(true);
         } else {
           cleanupScreen();
@@ -158,25 +204,33 @@ export default function manual(program: Command): Promise<[menu]> {
         return;
       }
 
-      if (mode === "list") {
+      if (mode === "root") {
         if (key === "up") {
-          selectedIndex--;
-          if (selectedIndex < 0) selectedIndex = items.length - 1;
+          do {
+            selectedRenderIndex--;
+            if (selectedRenderIndex < 0) selectedRenderIndex = renderItems.length - 1;
+          } while (!renderItems[selectedRenderIndex].isSelectable);
           render();
           return;
         }
 
         if (key === "down") {
-          selectedIndex++;
-          if (selectedIndex >= items.length) selectedIndex = 0;
+          do {
+            selectedRenderIndex++;
+            if (selectedRenderIndex >= renderItems.length) selectedRenderIndex = 0;
+          } while (!renderItems[selectedRenderIndex].isSelectable);
           render();
           return;
         }
 
         if (key === "enter") {
-          mode = "help";
-          helpOffset = 0;
-          render(true);
+          const rItem = renderItems[selectedRenderIndex];
+          if (rItem && rItem.isSelectable && rItem.cmdIndex !== undefined) {
+            mode = "help";
+            activeCmdIndex = rItem.cmdIndex;
+            helpOffset = 0;
+            render(true);
+          }
           return;
         }
       } else {
