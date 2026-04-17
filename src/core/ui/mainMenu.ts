@@ -21,12 +21,12 @@ type MenuItem = {
 };
 
 const ASCII_ART_LARGE = [
-  " ███████╗███████╗██╗  ██╗███╗   ███╗ █████╗ ███╗   ██╗",
-  " ██╔════╝██╔════╝██║  ██║████╗ ████║██╔══██╗████╗  ██║",
-  " ███████╗███████╗███████║██╔████╔██║███████║██╔██╗ ██║",
-  " ╚════██║╚════██║██╔══██║██║╚██╔╝██║██╔══██║██║╚██╗██║",
-  " ███████║███████║██║  ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║",
-  " ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝",
+  " ┌███████┌███████┌██  ┌██┌███   ┌███ ┌█████ ┌███   ┌██",
+  " │██────┘│██────┘│██  │██│████ ┌████┌██──┐██│████  │██",
+  " │███████│███████│███████│██┐████┐██│███████│██┐██ │██",
+  " └────┐██└────┐██│██──┐██│██└┐██ │██│██──┐██│██└┐██│██",
+  " ┌███████┌███████│██  │██│██ └─┘ │██│██  │██│██ └┐████",
+  " └──────┘└──────┘└─┘  └─┘└─┘     └─┘└─┘  └─┘└─┘  └───┘",
 ];
 
 const ASCII_ART_MEDIUM = [
@@ -146,7 +146,8 @@ export default function mainMenu(
       // Dynamic Footer
       const selectedItem = items[selectedIndex];
       let actionHint = "Select: <enter>";
-      if (selectedItem?.value === "ssh-connect") actionHint = "Connect: <enter>";
+      if (selectedItem?.value === "ssh-connect")
+        actionHint = "Connect: <enter>";
       else if (selectedItem?.value === "exit") actionHint = "Quit: <enter>";
 
       const footerMsg = `Navigate: ↑ ↓ | ${actionHint} | Quit: <q> or <ctrl-c>`;

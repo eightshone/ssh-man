@@ -28,7 +28,7 @@ program
   .command("connect")
   .argument(
     "<string>",
-    "credentials in the format of username[:password]@server[:port]"
+    "credentials in the format of username[:password]@server[:port]",
   )
   .option("-p, --password")
   .option("-s, --save [name]")
@@ -52,7 +52,7 @@ program
   .argument("[servers...]", "server names separated by spaces")
   .option(
     "-a, --all",
-    "export all server configurations (ignores any input server names)"
+    "export all server configurations (ignores any input server names)",
   )
   .option("-n, --name <file name>", "custom name for output file")
   .option("-f, --force", "replace existing file")
@@ -99,10 +99,13 @@ async function app() {
 }
 
 process.on("uncaughtException", (error) => {
-  process.stdout.write(ansi.altScreenExit());
   if (error instanceof Error && error.name === "ExitPromptError") {
+    process.stdout.write(ansi.showCursor() + ansi.clear() + ansi.moveTo(1, 1));
+    process.stdout.write(ansi.altScreenExit());
     goodbye();
+    process.exit(0);
   } else {
+    process.stdout.write(ansi.altScreenExit());
     // Rethrow unknown errors
     throw error;
   }
