@@ -14,6 +14,9 @@ import {
   ESC,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
+import fs from "fs";
+import saveFile from "../../../utils/saveFile";
+import dayjs from "dayjs";
 
 import { drawPopup, fillRegion } from "../../../utils/tui/index";
 import { performDelete } from "./delete";
@@ -32,6 +35,15 @@ export default function listConnections(
     // Popup state
     let showDeleteConfirm = false;
     let popupSelectedIndex = 1; // Default to Cancel (index 1)
+
+    // Multi-selection state
+    const selectedIndices = new Set<number>();
+
+    // Export popup state
+    let showExportPrompt = false;
+    let exportPathInput = "";
+    let exportCursorPos = 0;
+    let exportError = "";
 
     // Filter servers based on input
     const getFiltered = () => {
@@ -57,19 +69,53 @@ export default function listConnections(
 
     let filtered = getFiltered();
 
-    const render = (fullRender: boolean = false, popupOnly: boolean = false) => {
+    const render = (
+      fullRender: boolean = false,
+      popupOnly: boolean = false,
+    ) => {
       const { rows, cols } = getTermSize();
       const buf = new ScreenBuffer();
 
+      if (popupOnly && showExportPrompt) {
+        const count = selectedIndices.size > 0 ? selectedIndices.size : 1;
+
+        let displayInput = exportPathInput;
+        // if empty maybe show a placeholder? No, standard is block cursor or nothing
+        const part1 = exportPathInput.slice(0, exportCursorPos);
+        const charAtCursor = exportPathInput[exportCursorPos] || " ";
+        const part2 = exportPathInput.slice(exportCursorPos + 1);
+        displayInput = `${part1}${ansi.bg("240", charAtCursor)}${part2}`;
+
+        const lines = [
+          `Exporting ${count} server(s). Enter file path:`,
+          "",
+          `  > ${displayInput}`,
+          "",
+        ];
+        if (exportError) {
+          lines.push(ansi.fg("160", `  ${exportError}`));
+          lines.push("");
+        }
+
+        drawPopup(buf, " Export Connections ", lines, [], 0, "255", false);
+        buf.flush();
+        return;
+      }
+
       if (popupOnly && showDeleteConfirm) {
-        const srv = filtered[selectedIndex];
+        let msg = "";
+        let count = selectedIndices.size;
+        if (count > 0) {
+          msg = `Are you sure you want to delete ${count} selected server${count > 1 ? "s" : ""}?`;
+        } else {
+          const srv = filtered[selectedIndex];
+          msg = `Are you sure you want to delete ${srv.name}?`;
+        }
+
         drawPopup(
           buf,
           " Confirm Deletion ",
-          [
-            `Are you sure you want to delete ${srv.name}?`,
-            "This action cannot be undone.",
-          ],
+          [msg, "This action cannot be undone."],
           ["Confirm", "Cancel"],
           popupSelectedIndex,
           "160", // Red color (approx)
@@ -102,15 +148,24 @@ export default function listConnections(
         keybindings = [
           { action: "Confirm", key: "<enter>" },
           { action: "Cancel", key: "<esc>" },
-          { action: "Navigate", key: "↑ ↓ ← →" }
+          { action: "Navigate", key: "↑ ↓ ← →" },
+        ];
+      } else if (showExportPrompt) {
+        keybindings = [
+          { action: "Type", key: "chars" },
+          { action: "Cursor", key: "← →" },
+          { action: "Confirm", key: "<enter>" },
+          { action: "Cancel", key: "<esc>" },
         ];
       } else {
         keybindings = [
           { action: "Navigate", key: "↑ ↓" },
           { action: "Details", key: "<enter>" },
+          { action: "Select/Deselect", key: "<ctrl-space>" },
+          { action: "Export", key: "<ctrl-e>" },
+          { action: "Delete", key: "<ctrl-del>" },
           { action: "Search", key: "type" },
           { action: "Back/Clear", key: "<esc>" },
-          { action: "Delete", key: "<ctrl-del>" }
         ];
       }
       drawFooter(buf, cols, rows, keybindings, footerOffset);
@@ -165,7 +220,11 @@ export default function listConnections(
           stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
         );
 
-        const highlightedName = highlightTerms(srv.name ?? "", searchWords, baseBg);
+        const highlightedName = highlightTerms(
+          srv.name ?? "",
+          searchWords,
+          baseBg,
+        );
         const paddedName = stringPadding(highlightedName);
 
         const highlightedUser = highlightTerms(
@@ -184,7 +243,11 @@ export default function listConnections(
           baseBg + "\x1b[35m",
         );
 
-        let srvStr = `  ${displayIdx}  ${paddedName}  ${colors.yellow(
+        const checkMark = selectedIndices.has(srv.originalIndex)
+          ? colors.cyan("✓")
+          : " ";
+
+        let srvStr = ` ${checkMark}${displayIdx}  ${paddedName}  ${colors.yellow(
           highlightedUser,
         )}@${colors.blue(highlightedHost)}:${colors.magenta(highlightedPort)}`;
 
@@ -220,15 +283,20 @@ export default function listConnections(
       }
 
       // Draw Popup if active
-      if (showDeleteConfirm) {
-        const srv = filtered[selectedIndex];
+      if (showDeleteConfirm && !showExportPrompt) {
+        let msg = "";
+        let count = selectedIndices.size;
+        if (count > 0) {
+          msg = `Are you sure you want to delete ${count} selected server${count > 1 ? "s" : ""}?`;
+        } else {
+          const srv = filtered[selectedIndex];
+          msg = `Are you sure you want to delete ${srv.name}?`;
+        }
+
         drawPopup(
           buf,
           " Confirm Deletion ",
-          [
-            `Are you sure you want to delete ${srv.name}?`,
-            "This action cannot be undone.",
-          ],
+          [msg, "This action cannot be undone."],
           ["Confirm", "Cancel"],
           popupSelectedIndex,
           "160", // Red color (approx)
@@ -262,13 +330,21 @@ export default function listConnections(
         } else if (key === "enter") {
           if (popupSelectedIndex === 0) {
             // Confirm delete
-            const srv = filtered[selectedIndex];
-            performDelete(config, srv.originalIndex).then((newConfig) => {
+            let indicesToRemove: number | number[];
+            if (selectedIndices.size > 0) {
+              indicesToRemove = Array.from(selectedIndices);
+            } else {
+              const srv = filtered[selectedIndex];
+              indicesToRemove = srv.originalIndex;
+            }
+
+            performDelete(config, indicesToRemove).then((newConfig) => {
               config = newConfig;
               servers = config.servers;
               searchInput = "";
               filtered = getFiltered();
               showDeleteConfirm = false;
+              selectedIndices.clear();
               selectedIndex = 0;
               render();
             });
@@ -284,18 +360,129 @@ export default function listConnections(
         return;
       }
 
-      if (key === "shift-tab" && !showDeleteConfirm) {
+      if (showExportPrompt) {
+        if (key === "escape") {
+          showExportPrompt = false;
+          exportError = "";
+          render(false, true);
+          return;
+        }
+
+        if (key === "backspace") {
+          exportError = "";
+          if (exportCursorPos > 0) {
+            exportPathInput =
+              exportPathInput.slice(0, exportCursorPos - 1) +
+              exportPathInput.slice(exportCursorPos);
+            exportCursorPos--;
+            render(false, true);
+          }
+          return;
+        }
+
+        if (key === "left") {
+          if (exportCursorPos > 0) {
+            exportCursorPos--;
+            render(false, true);
+          }
+          return;
+        }
+
+        if (key === "right") {
+          if (exportCursorPos < exportPathInput.length) {
+            exportCursorPos++;
+            render(false, true);
+          }
+          return;
+        }
+
+        if (key === "char" && char) {
+          exportError = "";
+          exportPathInput =
+            exportPathInput.slice(0, exportCursorPos) +
+            char +
+            exportPathInput.slice(exportCursorPos);
+          exportCursorPos += char.length;
+          render(false, true);
+          return;
+        }
+
+        if (key === "enter") {
+          if (!exportPathInput.trim()) {
+            exportError = "Filename cannot be empty.";
+            render(false, true);
+            return;
+          }
+
+          if (fs.existsSync(exportPathInput)) {
+            exportError = "File already exists!";
+            render(false, true);
+            return;
+          }
+
+          let serversToExport: server[] = [];
+          if (selectedIndices.size > 0) {
+            serversToExport = config.servers.filter((_, idx) =>
+              selectedIndices.has(idx),
+            );
+          } else if (filtered.length > 0) {
+            serversToExport = [filtered[selectedIndex]];
+          }
+
+          saveFile(exportPathInput, serversToExport)
+            .then(() => {
+              showExportPrompt = false;
+              exportError = "";
+              render();
+            })
+            .catch((err) => {
+              exportError = "Error saving: " + err.message;
+              render(false, true);
+            });
+        }
+        return;
+      }
+
+      if (key === "ctrl-space") {
+        if (filtered.length > 0) {
+          const srv = filtered[selectedIndex];
+          if (selectedIndices.has(srv.originalIndex)) {
+            selectedIndices.delete(srv.originalIndex);
+          } else {
+            selectedIndices.add(srv.originalIndex);
+          }
+          render();
+        }
+        return;
+      }
+
+      if (key === "ctrl-e") {
+        if (filtered.length > 0) {
+          showExportPrompt = true;
+          exportPathInput = `config-export-${dayjs().format("YYYY-MM-DD---HH-mm-ss")}.cfg`;
+          exportCursorPos = exportPathInput.length;
+          exportError = "";
+          render(false, true);
+        }
+        return;
+      }
+
+      if (key === "shift-tab" && !showDeleteConfirm && !showExportPrompt) {
         footerOffset++;
         render();
         return;
       }
 
       if (key === "escape") {
-        if (searchInput.length > 0) {
-          searchInput = "";
-          cursorPos = 0;
-          filtered = getFiltered();
-          selectedIndex = 0;
+        if (searchInput.length > 0 || selectedIndices.size > 0) {
+          if (searchInput.length > 0) {
+            searchInput = "";
+            cursorPos = 0;
+            filtered = getFiltered();
+            selectedIndex = 0;
+          } else {
+            selectedIndices.clear();
+          }
           render();
         } else {
           cleanupScreen();

@@ -3,11 +3,18 @@ import { CONFIG_DIR } from "../../../utils/consts";
 import saveFile from "../../../utils/saveFile";
 import { config, menu, server } from "../../../utils/types";
 
-export async function performDelete(initialConfig: config, serverIndex: number) {
+export async function performDelete(initialConfig: config, serverIndex: number | number[]) {
   const config: config = { ...initialConfig };
-  const { servers } = initialConfig;
+  let { servers } = initialConfig;
 
-  servers.splice(serverIndex, 1);
+  if (Array.isArray(serverIndex)) {
+    // Collect specific indices to remove
+    const indicesToRemove = new Set(serverIndex);
+    servers = servers.filter((_, idx) => !indicesToRemove.has(idx));
+  } else {
+    servers.splice(serverIndex, 1);
+  }
+  
   config.servers = servers;
 
   await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);

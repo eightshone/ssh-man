@@ -27,6 +27,10 @@ export function setupInput(onKey: (name: string, ch?: string) => void): { stdin:
     if (data === '\x1b[3~') { onKey('delete'); return; }
     if (data === '\x1b[3;5~') { onKey('ctrl-delete'); return; }
 
+    // Control Characters (non-escape sequences)
+    if (data === '\x00') { onKey('ctrl-space'); return; }
+    if (data === '\x05') { onKey('ctrl-e'); return; }
+
     // Enter
     if (data === '\r' || data === '\n') { onKey('enter'); return; }
 
