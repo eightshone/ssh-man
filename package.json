@@ -36,12 +36,14 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist/src/app.js && node scripts/update-utils.js"
+    "postbuild": "fix-esm-import-path dist/src/app.js && node scripts/update-utils.js && npx javascript-obfuscator ./dist --output ./dist --target node --compact true"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "@types/ssh2": "^1.15.4",
+    "esbuild": "^0.28.0",
     "fix-esm-import-path": "^1.10.1",
+    "javascript-obfuscator": "^5.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
