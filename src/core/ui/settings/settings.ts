@@ -16,14 +16,15 @@ import { CONFIG_DIR } from "../../../utils/consts";
 
 type SettingsMode = "list" | "edit_port" | "edit_key" | "edit_prefix";
 
+let selectedIndex = 0;
+let footerOffset = 0;
+
 export default function settings(
   initialConfig: config,
 ): Promise<[menu, string[], config]> {
   return new Promise((resolve) => {
     let activeConfig = { ...initialConfig };
     let mode: SettingsMode = "list";
-    let selectedIndex = 0;
-    let footerOffset = 0;
 
     let inputValue = "";
     let cursorPosition = 0;

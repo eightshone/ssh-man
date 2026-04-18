@@ -21,23 +21,23 @@ import dayjs from "dayjs";
 import { drawPopup, fillRegion } from "../../../utils/tui/index";
 import { performDelete } from "./delete";
 
+let searchInput = "";
+let cursorPos = 0;
+let selectedIndex = 0;
+let listOffset = 0;
+let footerOffset = 0;
+
+// Multi-selection state
+const selectedIndices = new Set<number>();
+
 export default function listConnections(
   config: Config,
 ): Promise<[menu, string[]]> {
   let servers = config.servers;
   return new Promise((resolve) => {
-    let searchInput = "";
-    let cursorPos = 0;
-    let selectedIndex = 0;
-    let listOffset = 0;
-    let footerOffset = 0;
-
     // Popup state
     let showDeleteConfirm = false;
     let popupSelectedIndex = 1; // Default to Cancel (index 1)
-
-    // Multi-selection state
-    const selectedIndices = new Set<number>();
 
     // Export popup state
     let showExportPrompt = false;

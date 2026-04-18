@@ -37,6 +37,10 @@ const ASCII_ART_MEDIUM = [
 
 const ASCII_ART_SMALL = ["SSHMAN"];
 
+let selectedIndex = -1;
+let listOffset = 0;
+let footerOffset = 0;
+
 export default function mainMenu(
   recentServers: server[] = [],
 ): Promise<[menu, string[] | null]> {
@@ -89,11 +93,14 @@ export default function mainMenu(
     items.push({ name: "Manual", value: "manual", selectable: true });
     items.push({ name: "Quit", value: "exit", selectable: true });
 
-    let selectedIndex = items.findIndex((i) => i.selectable);
-    if (selectedIndex === -1) selectedIndex = 0;
-
-    let listOffset = 0;
-    let footerOffset = 0;
+    if (
+      selectedIndex === -1 ||
+      selectedIndex >= items.length ||
+      !items[selectedIndex].selectable
+    ) {
+      let firstSelectable = items.findIndex((i) => i.selectable);
+      selectedIndex = firstSelectable === -1 ? 0 : firstSelectable;
+    }
 
     const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();

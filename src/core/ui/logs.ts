@@ -14,14 +14,14 @@ import {
   ESC,
 } from "../../utils/tui/index";
 
+let searchInput = "";
+let cursorPos = 0;
+let selectedIndex = 0;
+let listOffset = 0;
+let footerOffset = 0;
+
 export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
   return new Promise((resolve) => {
-    let searchInput = "";
-    let cursorPos = 0;
-    let selectedIndex = 0;
-    let listOffset = 0;
-    let footerOffset = 0;
-
     const getFiltered = () => {
       const q = searchInput.toLowerCase().trim();
       if (!q) return logs.map((lg, idx) => ({ ...lg, originalIndex: idx }));
