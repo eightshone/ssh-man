@@ -23,6 +23,7 @@ export default function settings(
     let activeConfig = { ...initialConfig };
     let mode: SettingsMode = "list";
     let selectedIndex = 0;
+    let footerOffset = 0;
 
     let inputValue = "";
     let cursorPosition = 0;
@@ -80,11 +81,22 @@ export default function settings(
       drawBox(buf, 1, 1, cols, rows - 1, "rounded");
       buf.moveTo(1, 4).write(ansi.fg("255", " Settings "));
 
-      const footerMsg =
-        mode === "list"
-          ? "Navigate: ↑ ↓ | Edit/Select: <enter> | Back: <esc> "
-          : "Type: chars | Cursor: ← → | Accept: <enter> | Cancel: <esc> ";
-      drawFooter(buf, cols, rows, footerMsg);
+      let keybindings: { action: string; key: string }[] = [];
+      if (mode === "list") {
+        keybindings = [
+          { action: "Navigate", key: "↑ ↓" },
+          { action: "Edit/Select", key: "<enter>" },
+          { action: "Back", key: "<esc>" }
+        ];
+      } else {
+        keybindings = [
+          { action: "Type", key: "chars" },
+          { action: "Cursor", key: "← →" },
+          { action: "Accept", key: "<enter>" },
+          { action: "Cancel", key: "<esc>" }
+        ];
+      }
+      drawFooter(buf, cols, rows, keybindings, footerOffset);
 
       const listTop = 3;
       const maxColWidth = cols - 4;
@@ -213,6 +225,12 @@ export default function settings(
           }
           return;
         }
+
+        if (key === "shift-tab") {
+          footerOffset++;
+          render();
+          return;
+        }
       } else {
         // Popup input mode
         if (key === "escape") {
@@ -316,6 +334,12 @@ export default function settings(
           } else {
             render();
           }
+          return;
+        }
+
+        if (key === "shift-tab") {
+          footerOffset++;
+          render();
           return;
         }
       }

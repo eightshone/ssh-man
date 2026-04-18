@@ -93,6 +93,7 @@ export default function mainMenu(
     if (selectedIndex === -1) selectedIndex = 0;
 
     let listOffset = 0;
+    let footerOffset = 0;
 
     const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();
@@ -145,13 +146,17 @@ export default function mainMenu(
 
       // Dynamic Footer
       const selectedItem = items[selectedIndex];
-      let actionHint = "Select: <enter>";
-      if (selectedItem?.value === "ssh-connect")
-        actionHint = "Connect: <enter>";
-      else if (selectedItem?.value === "exit") actionHint = "Quit: <enter>";
+      let actionHint = "Select";
+      if (selectedItem?.value === "ssh-connect") actionHint = "Connect";
+      else if (selectedItem?.value === "exit") actionHint = "Quit";
 
-      const footerMsg = `Navigate: ↑ ↓ | ${actionHint} | Quit: <q> or <ctrl-c>`;
-      drawFooter(buf, cols, rows, footerMsg);
+      const keybindings = [
+        { action: "Navigate", key: "↑ ↓" },
+        { action: actionHint, key: "<enter>" },
+        { action: "Quit", key: "<q> or <ctrl-c>" }
+      ];
+
+      drawFooter(buf, cols, rows, keybindings, footerOffset);
 
       if (listHeight > 0) {
         currentLine += 1;
@@ -208,6 +213,12 @@ export default function mainMenu(
       if (key === "ctrl-c" || (key === "char" && char?.toLowerCase() === "q")) {
         cleanupScreen();
         resolve(["exit", null]);
+        return;
+      }
+
+      if (key === "shift-tab") {
+        footerOffset++;
+        render();
         return;
       }
 

@@ -27,6 +27,7 @@ export default function listConnections(
     let cursorPos = 0;
     let selectedIndex = 0;
     let listOffset = 0;
+    let footerOffset = 0;
 
     // Popup state
     let showDeleteConfirm = false;
@@ -96,10 +97,23 @@ export default function listConnections(
       }
 
       // Footer message based on mode
-      const footerMsg = showDeleteConfirm
-        ? "Confirm: <enter> | Cancel: <esc> | Navigate: ↑ ↓ ← → "
-        : "Navigate: ↑ ↓ | Details: <enter> | Search: type | Back/Clear: <esc> | Delete: <ctrl-del>";
-      drawFooter(buf, cols, rows, footerMsg);
+      let keybindings: { action: string; key: string }[] = [];
+      if (showDeleteConfirm) {
+        keybindings = [
+          { action: "Confirm", key: "<enter>" },
+          { action: "Cancel", key: "<esc>" },
+          { action: "Navigate", key: "↑ ↓ ← →" }
+        ];
+      } else {
+        keybindings = [
+          { action: "Navigate", key: "↑ ↓" },
+          { action: "Details", key: "<enter>" },
+          { action: "Search", key: "type" },
+          { action: "Back/Clear", key: "<esc>" },
+          { action: "Delete", key: "<ctrl-del>" }
+        ];
+      }
+      drawFooter(buf, cols, rows, keybindings, footerOffset);
 
       // Search Bar area (rows 2, 3, 4)
       const part1 = searchInput.slice(0, cursorPos);
@@ -267,6 +281,12 @@ export default function listConnections(
           showDeleteConfirm = false;
           render();
         }
+        return;
+      }
+
+      if (key === "shift-tab" && !showDeleteConfirm) {
+        footerOffset++;
+        render();
         return;
       }
 

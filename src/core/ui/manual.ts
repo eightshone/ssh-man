@@ -23,6 +23,7 @@ export default function manual(program: Command): Promise<[menu]> {
     let selectedRenderIndex = -1;
     let listOffset = 0;
     let helpOffset = 0;
+    let footerOffset = 0;
 
     // Build the array of command help texts
     const items = program.commands.map((c) => ({
@@ -81,8 +82,12 @@ export default function manual(program: Command): Promise<[menu]> {
       buf.moveTo(1, 3).write(ansi.fg("255", " Manual "));
 
       if (mode === "root") {
-        const footerMsg = "Scroll: ↑ ↓ | Select: <enter> | Back: <esc> ";
-        drawFooter(buf, cols, rows, footerMsg);
+        const keybindings = [
+          { action: "Scroll", key: "↑ ↓" },
+          { action: "Select", key: "<enter>" },
+          { action: "Back", key: "<esc>" }
+        ];
+        drawFooter(buf, cols, rows, keybindings, footerOffset);
         
         const titleStr = padOrTruncate(` Help: sshman (root) `, cols - 6);
         buf.moveTo(2, 3).write(titleStr);
@@ -130,8 +135,11 @@ export default function manual(program: Command): Promise<[menu]> {
           "255"
         );
       } else {
-        const footerMsg = "Scroll: ↑ ↓ | Back: <esc> ";
-        drawFooter(buf, cols, rows, footerMsg);
+        const keybindings = [
+          { action: "Scroll", key: "↑ ↓" },
+          { action: "Back", key: "<esc>" }
+        ];
+        drawFooter(buf, cols, rows, keybindings, footerOffset);
         
         const item = items[activeCmdIndex];
         const titleStr = padOrTruncate(` Help: ${item?.name || "Unknown"} `, cols - 6);
@@ -195,6 +203,12 @@ export default function manual(program: Command): Promise<[menu]> {
           cleanupScreen();
           resolve(["main"]);
         }
+        return;
+      }
+
+      if (key === "shift-tab") {
+        footerOffset++;
+        render();
         return;
       }
       

@@ -20,6 +20,7 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
     let cursorPos = 0;
     let selectedIndex = 0;
     let listOffset = 0;
+    let footerOffset = 0;
 
     const getFiltered = () => {
       const q = searchInput.toLowerCase().trim();
@@ -62,8 +63,12 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
         drawBox(buf, 1, 1, cols, rows - 1, "rounded");
         buf.moveTo(1, 3).write(ansi.fg("255", " Server Connection Logs "));
 
-        const footerMsg = "Navigate: ↑ ↓ ← → | Search: type | Back/Clear: <esc> ";
-        drawFooter(buf, cols, rows, footerMsg);
+        const keybindings = [
+          { action: "Navigate", key: "↑ ↓ ← →" },
+          { action: "Search", key: "type" },
+          { action: "Back/Clear", key: "<esc>" }
+        ];
+        drawFooter(buf, cols, rows, keybindings, footerOffset);
       }
 
       // Search Bar area (rows 2, 3, 4)
@@ -179,6 +184,12 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
           cleanupScreen();
           resolve(["main"]);
         }
+        return;
+      }
+
+      if (key === "shift-tab") {
+        footerOffset++;
+        render();
         return;
       }
 

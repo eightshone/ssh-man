@@ -314,6 +314,11 @@ export function writeFullRow(
   buf.moveTo(row, col).write(text + " ".repeat(padding));
 }
 
+export interface Keybinding {
+  key: string;
+  action: string;
+}
+
 /**
  * Draw the standard footer incorporating navigation hints and the version block.
  */
@@ -321,13 +326,57 @@ export function drawFooter(
   buf: ScreenBuffer,
   cols: number,
   rows: number,
-  message: string,
+  keybindings: Keybinding[],
+  offset: number = 0,
 ): void {
   const verStr = ` v${VERSION}`;
   const vVerLen = visibleLength(verStr);
-  const availableForMsg = Math.max(0, cols - vVerLen - 2);
+  const cycleHint = " | cycle: <shift-tab>";
+  const vCycleHintLen = visibleLength(cycleHint);
 
-  const displayMsg = padOrTruncate(message, availableForMsg);
+  let availableForMsg = Math.max(0, cols - vVerLen - 2);
+
+  let allFit = true;
+  let totalLen = 0;
+  for (let i = 0; i < keybindings.length; i++) {
+    const kb = keybindings[i];
+    const kbStr = `${kb.action}: ${kb.key}`;
+    totalLen += visibleLength(kbStr) + (i > 0 ? 3 : 0); // " | " is 3 chars
+  }
+
+  let formattedMsg = "";
+
+  if (totalLen <= availableForMsg || keybindings.length === 0) {
+    formattedMsg = keybindings.map(kb => `${kb.action}: ${kb.key}`).join(" | ");
+  } else {
+    let availWithHint = availableForMsg - vCycleHintLen;
+    const startIndex = offset % keybindings.length;
+    let currentLen = 0;
+    const toRender: string[] = [];
+
+    for (let i = 0; i < keybindings.length; i++) {
+      const idx = (startIndex + i) % keybindings.length;
+      const kb = keybindings[idx];
+      const kbStr = `${kb.action}: ${kb.key}`;
+      const kbLen = visibleLength(kbStr) + (toRender.length > 0 ? 3 : 0);
+
+      // We fit as many items as we can into availWithHint
+      if (currentLen + kbLen <= availWithHint) {
+        toRender.push(kbStr);
+        currentLen += kbLen;
+      } else {
+        break;
+      }
+    }
+
+    if (toRender.length === 0) {
+      toRender.push(`${keybindings[startIndex].action}: ${keybindings[startIndex].key}`);
+    }
+
+    formattedMsg = toRender.join(" | ") + cycleHint;
+  }
+
+  const displayMsg = padOrTruncate(formattedMsg, availableForMsg);
 
   buf.moveTo(rows, 2).write(ansi.fg("250", displayMsg) + ansi.dim(verStr));
 }
