@@ -1,3 +1,4 @@
+import { ansi } from "../../utils/tui/index";
 import transformLogs from "../../utils/transformLogs";
 import init from "../functions/init";
 import interactiveLogs from "../ui/logs";
@@ -8,8 +9,9 @@ async function logs(options) {
   const { logs } = await init({ silent: true });
 
   if (interactive) {
-    interactiveLogs(logs);
-    console.clear();
+    process.stdout.write(ansi.altScreenEnter());
+    await interactiveLogs(logs);
+    process.stdout.write(ansi.altScreenExit());
   } else {
     transformLogs(logs)
       .filter(

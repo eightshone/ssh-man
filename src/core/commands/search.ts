@@ -13,7 +13,7 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
   let filteredServers: (server & { originalIndex: number })[] = [];
 
   const getSearchableString = (srv: server) =>
-    `${srv.username}@${srv.host}:${srv.port}`.toLowerCase();
+    `${srv.username ?? ""}@${srv.host ?? ""}:${srv.port ?? ""}`.toLowerCase();
 
   if (fuzzy) {
     const fuzzyRegex = new RegExp(query.split("").join(".*"), "i");
@@ -21,30 +21,36 @@ async function searchCommand(terms: string[], options: { fuzzy?: boolean }) {
       .map((srv, index) => ({ ...srv, originalIndex: index }))
       .filter((srv) => fuzzyRegex.test(getSearchableString(srv)));
   } else {
-    const lowerTerms = terms.map((t) => t.toLowerCase());
+    const searchWords = terms
+      .join(" ")
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
+
     filteredServers = servers
       .map((srv, index) => ({ ...srv, originalIndex: index }))
       .filter((srv) => {
         const searchable = getSearchableString(srv);
-        return lowerTerms.every((term) => searchable.includes(term));
+        return searchWords.some((word) => searchable.includes(word));
       });
   }
 
   if (filteredServers.length === 0) {
-    console.log(colors.yellow(`\n📭 No servers found matching: "${query}"`));
+    console.log(colors.yellow(`\nNo servers found matching: "${query}"`));
     return;
   }
 
-  console.log(colors.cyan(`\n🔍 Search results for "${colors.bold(query)}":`));
+  console.log(colors.cyan(`\nSearch results for "${colors.bold(query)}":`));
   console.log(colors.dim(`  #  ${stringPadding("Name")}  Config`));
 
   filteredServers.forEach((srv) => {
     const formattedIndex = colors.dim(
-      stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0")
+      stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
     );
     const formattedName = stringPadding(srv.name);
-    const formattedConfig = `${colors.yellow(srv.username)}:[redacted]@${colors.blue(
-      srv.host
+    const formattedConfig = `${colors.yellow(srv.username)}@${colors.blue(
+      srv.host,
     )}:${colors.magenta(`${srv.port}`)}`;
 
     console.log(`${formattedIndex}  ${formattedName}  ${formattedConfig}`);

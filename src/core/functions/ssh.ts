@@ -1,5 +1,6 @@
 import { Client } from "ssh2";
 import yoctoSpinner from "yocto-spinner";
+import colors from "yoctocolors-cjs";
 import { server } from "../../utils/types";
 import { readFileSync } from "fs";
 
@@ -7,7 +8,8 @@ import { readFileSync } from "fs";
 
 function sshConnection(
   sshConfig: server,
-  unref: boolean = false
+  unref: boolean = false,
+  isTUI: boolean = false,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
@@ -19,15 +21,19 @@ function sshConnection(
 
     client
       .on("close", () => {
-        console.log("Connection closed ⚪");
         resolve(); // resolve the promise when the connection closes
       })
       .on("error", (err) => {
-        spinner.error("Connection error! ⛔");
-        console.log("Error details", err.message);
+        spinner.error(colors.red("Connection error!"));
+        if (isTUI) {
+          reject(err);
+        } else {
+          console.log("Error details", err.message);
+          resolve();
+        }
       })
       .on("ready", function () {
-        spinner.success("Connection ready! 🟢");
+        spinner.success(colors.green("Connection ready!"));
         this.shell(
           {
             term: process.env.TERM ?? "xterm-256color",
@@ -56,10 +62,10 @@ function sshConnection(
                 process.stdout.rows,
                 process.stdout.columns,
                 0,
-                0
+                0,
               );
             });
-          }
+          },
         );
       })
       .connect(config);

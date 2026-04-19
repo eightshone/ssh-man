@@ -1,6 +1,7 @@
 import { existsSync, promises as fs } from "fs";
 import dayjs from "dayjs";
 import yoctoSpinner from "yocto-spinner";
+import colors from "yoctocolors-cjs";
 import createFileIfNotExists from "../../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
 import loadFile from "../../utils/loadFile";
@@ -17,7 +18,7 @@ type options = {
 };
 
 async function init(
-  options: options = { silent: false }
+  options: options = { silent: false },
 ): Promise<{ config: config; logs: log[] }> {
   const { silent } = options;
   const configFile = `${CONFIG_DIR}/config.json`;
@@ -36,7 +37,7 @@ async function init(
     await createFileIfNotExists(
       configFile,
       JSON.stringify(DEFAULT_CONFIG),
-      true
+      true,
     );
     await createFileIfNotExists(logsFile, "[]");
     if (!silent && spinner) {
@@ -45,13 +46,54 @@ async function init(
   }
 
   // todo: add config files validations
-
   // load config and logs
   if (!silent && spinner) {
     spinner.text = "Loading config files…";
   }
   let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`, true),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
+
+  // sanitize server objects to ensure mandatory string fields are present
+  configObj.servers = (configObj.servers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
+  configObj.recentServers = (configObj.recentServers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
+  const problematicServers = configObj.servers.filter(
+    (srv) => srv.name.includes(".") && !srv.name.startsWith("auto-save-"),
+  );
+  if (problematicServers.length > 0) {
+    if (!silent && spinner) {
+      spinner.info("Some saved connections have dots in their names.");
+    }
+
+    console.log(
+      colors.yellow(
+        "Names with dots may conflict with direct URL connections.",
+      ),
+    );
+    console.log(colors.yellow("Problematic connections:"));
+    problematicServers.forEach((srv) => {
+      console.log(colors.yellow(` - ${srv.name}`));
+    });
+    console.log(""); // newline
+
+    if (!silent && spinner) {
+      spinner.start();
+    }
+  }
+
   if (!silent && spinner) {
     spinner.text = "Config files loaded!";
     spinner.text = "Checking config compatibility…";

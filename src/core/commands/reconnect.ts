@@ -8,7 +8,7 @@ async function reconnectCommand() {
 
   // exit if there are no recent servers
   if (!config.recentServers.length) {
-    console.log("❌ There are no recent sessions");
+    console.log("There are no recent sessions");
     return;
   }
 
@@ -16,7 +16,7 @@ async function reconnectCommand() {
   const connectTo = config.recentServers[0];
 
   console.log(
-    `🔄 Reconnecting to "${
+    `Reconnecting to "${
       connectTo.name ?? connectTo.username + "@" + connectTo.host
     }"`
   );

@@ -48,6 +48,7 @@ export type menu =
   | "ssh-export-filename"
   | "manual"
   | "settings-defaults-edit"
+  | "ssh-error"
   | "logs";
 
 export type json = {

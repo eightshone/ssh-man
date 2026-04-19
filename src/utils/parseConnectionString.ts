@@ -1,4 +1,4 @@
-import { homedir } from "os";
+import { homedir, userInfo } from "os";
 import colors from "yoctocolors-cjs";
 import password from "@inquirer/password";
 import { server } from "./types";
@@ -12,23 +12,26 @@ async function parseConnectionString(
 
   if (!match) {
     throw new Error(
-      "Invalid connection string format. Expected format: username[:password]@server[:port]"
+      "Invalid connection string format. Expected format: [username[:password]@]host[:port]"
     );
   }
 
   if (match[2]) {
     console.log(
       colors.yellow(
-        "⚠️ Please avoid writing your passwords directly into the terminal!"
+        "️ Please avoid writing your passwords directly into the terminal!"
       )
     );
   }
 
+  const username = match[1] || userInfo().username;
+  const host = match[3];
+
   const sshConfig: Partial<server> = {
-    name: `auto-save-${match[1]}@${match[3]}`,
-    username: match[1],
+    name: `auto-save-${username}@${host}`,
+    username,
     usePassword: promptPassword || match[2] ? true : false,
-    host: match[3],
+    host,
     port: match[4] ? parseInt(match[4], 10) : 22,
   };
 

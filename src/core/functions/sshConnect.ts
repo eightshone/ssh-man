@@ -5,19 +5,23 @@ import sshConnection from "./ssh";
 async function sshConnect(
   config: config,
   logs: log[],
-  sshConfig: server
-): Promise<[menu, config, log[]]> {
-  const [updatedConfig, updatedLogs] = await updateConfigs(
-    config,
-    logs,
-    sshConfig,
-    true
-  );
+  sshConfig: server,
+  shouldSave: boolean = false,
+): Promise<[menu, config, log[], string[]?]> {
+  try {
+    const [updatedConfig, updatedLogs] = await updateConfigs(
+      config,
+      logs,
+      sshConfig,
+      shouldSave,
+    );
 
-  console.clear();
-  await sshConnection(sshConfig);
+    await sshConnection(sshConfig, false, true);
 
-  return ["main", updatedConfig, updatedLogs];
+    return ["main", updatedConfig, updatedLogs];
+  } catch (error: any) {
+    return ["ssh-error" as menu, config, logs, [error.message, "main"]];
+  }
 }
 
 export default sshConnect;

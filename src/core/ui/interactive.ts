@@ -1,29 +1,31 @@
 import goodbye from "../../utils/goodbye";
 import { config, log, menu } from "../../utils/types";
 import deleteConnection from "./connections/delete";
-import displayConnection from "./connections/display";
 import editConnection from "./connections/edit";
 import listConnections from "./connections/list";
 import mainMenu from "./mainMenu";
 import newConnection from "./connections/new";
-import searchConnections from "./connections/search";
 import sshConnect from "../functions/sshConnect";
 import { Command } from "commander";
 import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
 import displayLogs from "./logs";
+import errorPopup from "./errorPopup";
 import exportConnections from "./connections/export";
+import { ansi } from "../../utils/tui/index";
 
 async function interactive(
   initialConfig: config,
   initialLogs: log[],
-  program: Command
+  program: Command,
 ) {
   let currentMenu: menu = "main",
     options: string[] | null = null,
     config: config = { ...initialConfig },
     logs: log[] = [...initialLogs];
+
+  process.stdout.write(ansi.altScreenEnter());
 
   while (currentMenu !== "exit") {
     if (currentMenu === "main") {
@@ -31,39 +33,35 @@ async function interactive(
     }
 
     if (currentMenu === "ssh-new") {
-      [currentMenu, config, logs] = await newConnection(config, logs);
+      [currentMenu, options] = (await newConnection(config, logs)) as any;
     }
 
     if (currentMenu === "ssh-list") {
-      [currentMenu, options] = await listConnections(config.servers);
+      [currentMenu, options] = await listConnections(config, options);
     }
 
-    if (currentMenu === "ssh-search") {
-      [currentMenu, options] = await searchConnections(config.servers);
-    }
-
-    if (currentMenu === "ssh-display") {
-      [currentMenu, options] = await displayConnection(
-        JSON.parse(options[0]),
-        parseInt(options[1]),
-        options.length === 3 && options[2] === "true"
-      );
+    if (currentMenu === "ssh-error") {
+      const errorMsg = options ? options[0] : "Unknown error";
+      const returnPath = (options ? options[1] : "main") as menu;
+      [currentMenu] = await errorPopup(errorMsg, returnPath);
     }
 
     if (currentMenu === "ssh-connect") {
-      [currentMenu, config, logs] = await sshConnect(
+      process.stdout.write(ansi.altScreenExit());
+      [currentMenu, config, logs, options] = await sshConnect(
         config,
         logs,
-        JSON.parse(options[0])
+        JSON.parse(options[0]),
+        options[1] === "true",
       );
-      console.clear();
+      process.stdout.write(ansi.altScreenEnter());
     }
 
     if (currentMenu === "ssh-edit") {
       [currentMenu, options, config] = await editConnection(
         config,
         parseInt(options[1]),
-        logs
+        logs,
       );
     }
 
@@ -71,7 +69,7 @@ async function interactive(
       [currentMenu, options] = await deleteConnection(
         config,
         JSON.parse(options[0]),
-        parseInt(options[1])
+        parseInt(options[1]),
       );
     }
 
@@ -96,6 +94,7 @@ async function interactive(
     }
   }
 
+  process.stdout.write(ansi.altScreenExit());
   goodbye();
 }
 

@@ -1,67 +1,100 @@
 ![sshman banner](readme/banner.png)
 
 # SSH MANAGER (SSHMAN)
-A simple terminmal based SSH manager created in Node.js
 
-# Quick start
+**SSHMAN** is a modern, interactive TUI (Terminal User Interface) SSH connection manager built with Node.js. It simplifies managing multiple SSH sessions with a sleek, user-friendly interface and robust CLI commands.
 
-## Installation
-To get started with `SSH MANAGER` you have to simply install it using your favorite package manager.
-| Yarn                                 | NPM                                 | PNPM                             |
-| ------------------------------------ | ----------------------------------- | -------------------------------- |
-| `yarn global add @eightshone/sshman` | `npm install -g @eightshone/sshman` | `pnpm add -g @eightshone/sshman` |
+## Key Features
 
-## Usage
-The build of this project exposes the command named `sshman`
-### Interactive mode
-`sshman`
-![iteractive menu](readme/main-menu.png)
-This mode lets you access the features that SSHMAN offers in an interactive way.
+- **Interactive TUI Dashboard**: A premium terminal experience with rounded borders, ASCII art, and intuitive navigation.
+- **Connection Management**: Save, edit, and categorize your SSH connections for quick access.
+- **Quick Reconnect**: Jump back into your last session with a single command.
+- **Interactive Logs**: Browse and search through your connection history with real-time filtering.
+- **Global Search**: Quickly find the server you need from your saved connections.
+- **Secure Configuration**: Your connection details are stored in an encrypted format.
+- **Import/Export**: Easily share or backup your server configurations.
+- **Built-in Manual**: Accessible interactive help documentation within the app.
 
-### Commands
-#### Connect to a new server
-`sshman connect username:[password]@hotsname:[port]`
-**Options**:
-`--save [server name]` or `-s [server name]`: save the connection for future use.
-**Examples**:
-`sshman connect username:[password]@hotsname:[port] -s`
-`sshman connect username:[password]@hotsname:[port] -s server-name`
+---
 
-#### Connect to a saved server
-`sshman connect server-name`
-The command doesn't care if the server name contains uppercase or spaces. `Server Name`, `server name`, `server-name`, `SeRvEr-NaMe`, etc. are all the same name for the command.
+## Quick Start
 
-#### Print logs
-`sshman logs`
-**Options**:
-`--interactive` or `-i`: enter interactive logs listing mode.
-`--search <search terms>` or `-s <search terms>`: add filters to standard logs output.
-**Examples**:
+### Installation
+
+Install `SSHMAN` globally using your preferred package manager:
+
+| Package Manager | Command |
+| :--- | :--- |
+| **Yarn** | `yarn global add @eightshone/sshman` |
+| **NPM** | `npm install -g @eightshone/sshman` |
+| **PNPM** | `pnpm add -g @eightshone/sshman` |
+| **Bun** | `bun add -g @eightshone/sshman` |
+
+### Usage
+
+#### Interactive Mode
+Simply run `sshman` to enter the interactive TUI dashboard.
+```bash
+sshman
+```
+![interactive menu](readme/main-menu.png)
+
+#### Command Line Interface
+SSHMAN also provides a powerful set of CLI commands for direct access:
+
+- **Connect to a new server**:
+  ```bash
+  sshman connect username[:password]@hostname[:port] [--save [name]]
+  ```
+  *Example*: `sshman connect root:password@1.2.3.4:22 -s my-server`
+
+- **Quick Reconnect**:
+  ```bash
+  sshman reconnect
+  ```
+  Connects to the last server you accessed.
+
+- **Connect to a saved server**:
+  ```bash
+  sshman connect server-name
+  ```
+
+- **Search for a server**:
+  ```bash
+  sshman search <terms> [--fuzzy]
+  ```
+
+- **Logs**:
+  ```bash
+  sshman logs [-i] [-s <search terms>]
+  ```
+  Use `-i` for the interactive TUI logs browser.
+
+- **Export/Import Configs**:
+  ```bash
+  sshman export [servers...] [-a] [-n <filename>]
+  sshman import <config-file> [-f]
+  ```
+
+---
 
 ## Development
-### Clone project
-`git clone git@github.com:eightshone/ssh-man.git`
 
-### Install dependencies
-| Yarn           | NPM           | PNPM           |
-| -------------- | ------------- | -------------- |
-| `yarn install` | `npm install` | `pnpm install` |
+### Setup
+1. **Clone the repository**:
+   ```bash
+   git clone git@github.com:eightshone/ssh-man.git
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install # or yarn install / pnpm install
+   ```
 
-### Start the project
-| Yarn       | NPM           | PNPM       |
-| ---------- | ------------- | ---------- |
-| `yarn dev` | `npm run dev` | `pnpm dev` |
+### Scripts
+- `npm run dev`: Start the project in development mode using `tsx`.
+- `npm run build`: Build the project (TypeScript compilation and obfuscation).
 
-### Build the project
-| Yarn         | NPM             | PNPM         |
-| ------------ | --------------- | ------------ |
-| `yarn build` | `npm run build` | `pnpm build` |
 
-# Roadmap
-- [ ] Add delete server command
-- [ ] Add reconnect to last server command (this will work even on unsaved servers)
-- [ ] Add pagination option to standard logs output 
-- [ ] Add automatic script execution features
-- [ ] Add config modifier commands
-- [ ] Add config encryption options
-- [ ] Migrate config files from JSON to binary files
+
+License: **MIT**  
+Author: **EIGHTSH ONE**
