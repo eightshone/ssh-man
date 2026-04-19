@@ -11,6 +11,7 @@ import manual from "./manual";
 import settings from "./settings/settings";
 import editDefault from "./settings/editDefault";
 import displayLogs from "./logs";
+import errorPopup from "./errorPopup";
 import exportConnections from "./connections/export";
 import { ansi } from "../../utils/tui/index";
 
@@ -39,9 +40,15 @@ async function interactive(
       [currentMenu, options] = await listConnections(config, options);
     }
 
+    if (currentMenu === "ssh-error") {
+      const errorMsg = options ? options[0] : "Unknown error";
+      const returnPath = (options ? options[1] : "main") as menu;
+      [currentMenu] = await errorPopup(errorMsg, returnPath);
+    }
+
     if (currentMenu === "ssh-connect") {
       process.stdout.write(ansi.altScreenExit());
-      [currentMenu, config, logs] = await sshConnect(
+      [currentMenu, config, logs, options] = await sshConnect(
         config,
         logs,
         JSON.parse(options[0]),
