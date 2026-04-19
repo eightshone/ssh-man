@@ -36,7 +36,7 @@ async function interactive(
     }
 
     if (currentMenu === "ssh-list") {
-      [currentMenu, options] = await listConnections(config);
+      [currentMenu, options] = await listConnections(config, options);
     }
 
     if (currentMenu === "ssh-connect") {

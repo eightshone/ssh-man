@@ -33,6 +33,7 @@ const selectedIndices = new Set<number>();
 
 export default function listConnections(
   config: Config,
+  initialOptions?: string[] | null,
 ): Promise<[menu, string[]]> {
   let servers = config.servers;
   return new Promise((resolve) => {
@@ -51,6 +52,21 @@ export default function listConnections(
     let detailsSelectedIndex = 0;
     let showPassword = false;
     let passwordCopied = false;
+
+    // Handle initial options (e.g. from Edit screen)
+    if (initialOptions && initialOptions[0]) {
+      try {
+        const target = JSON.parse(initialOptions[0]);
+        const foundIdx = servers.findIndex((s) => s.id === target.id);
+        if (foundIdx !== -1) {
+          selectedIndex = foundIdx;
+          showDetailsPopup = true;
+          // listOffset will be adjusted in the first render() call
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
 
     // Filter servers based on input
     const getFiltered = () => {
