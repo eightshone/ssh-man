@@ -66,7 +66,7 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
         const keybindings = [
           { action: "Navigate", key: "↑ ↓ ← →" },
           { action: "Search", key: "type" },
-          { action: "Back/Clear", key: "<esc>" }
+          { action: "Back/Clear", key: "<esc>" },
         ];
         drawFooter(buf, cols, rows, keybindings, footerOffset);
       }
@@ -76,13 +76,14 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
       const charAtCursor = searchInput[cursorPos] || " ";
       const part2 = searchInput.slice(cursorPos + 1);
 
-      writeFullRow(
-        buf,
-        2,
-        2,
-        cols - 2,
-        `  Search: ${part1}${ansi.bg("240", charAtCursor)}${part2}`,
-      );
+      let searchLine = "";
+      if (searchInput.length === 0) {
+        searchLine = `  ${ansi.bg("240", colors.gray("S"))}${colors.gray("earch…")}`;
+      } else {
+        searchLine = `  ${part1}${ansi.bg("240", charAtCursor)}${part2}`;
+      }
+
+      writeFullRow(buf, 2, 2, cols - 2, searchLine);
       buf.moveTo(3, 1).write("├" + "─".repeat(cols - 2) + "┤");
 
       // List header (row 4)
@@ -118,7 +119,11 @@ export default function interactiveLogs(logs: log[] = []): Promise<[menu]> {
           .filter((w) => w.length > 0);
 
         const timeStr = colors.dim(
-          highlightTerms(lg.time ?? "Unknown Time", searchWords, baseBg + "\x1b[2m"),
+          highlightTerms(
+            lg.time ?? "Unknown Time",
+            searchWords,
+            baseBg + "\x1b[2m",
+          ),
         );
         const nameStr = colors.blueBright(
           highlightTerms(
