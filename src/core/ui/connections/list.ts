@@ -464,6 +464,9 @@ export default function listConnections(
         } else if (key === "escape") {
           showDeleteConfirm = false;
           render();
+        } else if (key === "ctrl-c") {
+          cleanupScreen();
+          resolve(["exit", []]);
         }
         return;
       }
@@ -547,6 +550,9 @@ export default function listConnections(
               exportError = "Error saving: " + err.message;
               render(false, true);
             });
+        } else if (key === "ctrl-c") {
+          cleanupScreen();
+          resolve(["exit", []]);
         }
         return;
       }
@@ -604,6 +610,9 @@ export default function listConnections(
             showDetailsPopup = false;
             render();
           }
+        } else if (key === "ctrl-c") {
+          cleanupScreen();
+          resolve(["exit", []]);
         }
         return;
       }
