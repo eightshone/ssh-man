@@ -1,8 +1,9 @@
 import detectGlobalPackageManager from "../../utils/detectGlobalPackageManager";
 import getGlobalInstalledVersion from "../../utils/getGlobalInstalledVersion";
 import getLatestNpmVersion from "../../utils/getLatestNpmVersion";
+import { PackageManager } from "../../utils/types";
 
-async function isSameVersion(): Promise<[boolean, "yarn" | "npm" | "pnpm"]> {
+async function isSameVersion(): Promise<[boolean, PackageManager]> {
   const pkg = "@eightshone/sshman";
 
   const manager = detectGlobalPackageManager();

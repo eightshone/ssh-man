@@ -30,7 +30,7 @@ async function editDefault(
     });
   }
 
-  await saveFile(`${CONFIG_DIR}/config.json`, innerConfig);
+  await saveFile(`${CONFIG_DIR}/config.json`, innerConfig, undefined, true);
 
   return ["settings", innerConfig];
 }

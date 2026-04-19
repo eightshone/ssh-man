@@ -19,7 +19,7 @@ async function updateConfigs(
       config.servers = [...config.servers, sshConfig];
     } else {
       console.info(
-        "\n⚠️ This server config exists in your list of servers!\n   It will not be added to the list to avoid duplicate entries.\n"
+        "\n️ This server config exists in your list of servers!\n   It will not be added to the list to avoid duplicate entries.\n"
       );
     }
   }
@@ -28,7 +28,7 @@ async function updateConfigs(
     { time: formattedTime, server: sshConfig.id, serverName: sshConfig.name },
     ...logs,
   ];
-  await saveFile(`${CONFIG_DIR}/config.json`, config);
+  await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
   await saveFile(`${CONFIG_DIR}/logs.json`, logs);
 
   return [config, logs];

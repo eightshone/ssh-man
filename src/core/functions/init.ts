@@ -1,5 +1,7 @@
-import { existsSync } from "fs";
+import { existsSync, promises as fs } from "fs";
+import dayjs from "dayjs";
 import yoctoSpinner from "yocto-spinner";
+import colors from "yoctocolors-cjs";
 import createFileIfNotExists from "../../utils/createFileIfNotExist";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
 import loadFile from "../../utils/loadFile";
@@ -8,13 +10,15 @@ import compareVersions from "../../utils/compareVersions";
 import migrate from "./migrate";
 import isSameVersion from "./isSameVersion";
 import showUpdateMessage from "./showUpdateMessage";
+import { isPlainJSON } from "../../utils/crypto";
+import saveFile from "../../utils/saveFile";
 
 type options = {
   silent?: boolean;
 };
 
 async function init(
-  options: options = { silent: false }
+  options: options = { silent: false },
 ): Promise<{ config: config; logs: log[] }> {
   const { silent } = options;
   const configFile = `${CONFIG_DIR}/config.json`;
@@ -30,7 +34,11 @@ async function init(
     if (!silent && spinner) {
       spinner.text = "Creating config files…";
     }
-    await createFileIfNotExists(configFile, JSON.stringify(DEFAULT_CONFIG));
+    await createFileIfNotExists(
+      configFile,
+      JSON.stringify(DEFAULT_CONFIG),
+      true,
+    );
     await createFileIfNotExists(logsFile, "[]");
     if (!silent && spinner) {
       spinner.text = "Config files created!";
@@ -38,17 +46,71 @@ async function init(
   }
 
   // todo: add config files validations
-
   // load config and logs
   if (!silent && spinner) {
     spinner.text = "Loading config files…";
   }
-  let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`),
+  let configObj: config = await loadFile(`${CONFIG_DIR}/config.json`, true),
     logsObj: log[] = await loadFile(`${CONFIG_DIR}/logs.json`);
+
+  // sanitize server objects to ensure mandatory string fields are present
+  configObj.servers = (configObj.servers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
+  configObj.recentServers = (configObj.recentServers || []).map((srv) => ({
+    ...srv,
+    name: srv.name ?? "",
+    host: srv.host ?? "",
+    username: srv.username ?? "",
+    port: srv.port ?? 22,
+  }));
+
+  const problematicServers = configObj.servers.filter(
+    (srv) => srv.name.includes(".") && !srv.name.startsWith("auto-save-"),
+  );
+  if (problematicServers.length > 0) {
+    if (!silent && spinner) {
+      spinner.info("Some saved connections have dots in their names.");
+    }
+
+    console.log(
+      colors.yellow(
+        "Names with dots may conflict with direct URL connections.",
+      ),
+    );
+    console.log(colors.yellow("Problematic connections:"));
+    problematicServers.forEach((srv) => {
+      console.log(colors.yellow(` - ${srv.name}`));
+    });
+    console.log(""); // newline
+
+    if (!silent && spinner) {
+      spinner.start();
+    }
+  }
+
   if (!silent && spinner) {
     spinner.text = "Config files loaded!";
     spinner.text = "Checking config compatibility…";
   }
+
+  // migrate plain-text config files to encrypted format
+  const rawContent = await fs.readFile(configFile, "utf8");
+  if (isPlainJSON(rawContent)) {
+    if (!silent && spinner) {
+      spinner.text = "Encrypting config file…";
+    }
+    await saveFile(configFile, configObj, undefined, true);
+    if (!silent && spinner) {
+      spinner.text = "Config file encrypted!";
+    }
+  }
+
   // migrate config files
   if (
     !configObj.version ||
@@ -63,16 +125,38 @@ async function init(
     }
   }
 
-  if (!silent && spinner) {
-    spinner.text = "Checking for updates…";
-  }
-  const [isUptodate, manager] = await isSameVersion();
+  // check for updates (at most once per day)
+  const lastCheckFile = `${CONFIG_DIR}/.last-update-check`;
+  let shouldCheckUpdate = true;
 
-  if (!silent && spinner) {
-    spinner.success("App started!");
+  if (existsSync(lastCheckFile)) {
+    try {
+      const lastCheck = await fs.readFile(lastCheckFile, "utf8");
+      if (dayjs().isSame(dayjs(lastCheck), "day")) {
+        shouldCheckUpdate = false;
+      }
+    } catch {
+      // corrupt file or invalid date, re-check
+    }
   }
 
-  showUpdateMessage(isUptodate, manager, true);
+  if (shouldCheckUpdate) {
+    if (!silent && spinner) {
+      spinner.text = "Checking for updates…";
+    }
+    const [isUptodate, manager] = await isSameVersion();
+    await fs.writeFile(lastCheckFile, dayjs().toISOString(), "utf8");
+
+    if (!silent && spinner) {
+      spinner.success("App started!");
+    }
+
+    showUpdateMessage(isUptodate, manager, true);
+  } else {
+    if (!silent && spinner) {
+      spinner.success("App started!");
+    }
+  }
 
   return {
     config: configObj,

@@ -48,6 +48,7 @@ export type menu =
   | "ssh-export-filename"
   | "manual"
   | "settings-defaults-edit"
+  | "ssh-error"
   | "logs";
 
 export type json = {
@@ -67,3 +68,4 @@ type editDefaultOptionsVar =
 export type editDefaultOptions = {
   message: string;
 } & editDefaultOptionsVar;
+export type PackageManager = "npm" | "yarn" | "pnpm" | "bun";

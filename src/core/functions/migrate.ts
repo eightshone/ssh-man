@@ -52,7 +52,7 @@ async function migrate(
     configObj.defaults = DEFAULT_CONFIG.defaults;
   }
   configObj.version = VERSION;
-  await saveFile(`${CONFIG_DIR}/config.json`, configObj);
+  await saveFile(`${CONFIG_DIR}/config.json`, configObj, undefined, true);
   await saveFile(`${CONFIG_DIR}/logs.json`, logsObj);
   spinner.text = "Migration complete!";
 
