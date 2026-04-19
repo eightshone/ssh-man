@@ -32,7 +32,7 @@ async function interactive(
     }
 
     if (currentMenu === "ssh-new") {
-      [currentMenu, config, logs] = await newConnection(config, logs);
+      [currentMenu, options] = (await newConnection(config, logs)) as any;
     }
 
     if (currentMenu === "ssh-list") {
@@ -40,11 +40,14 @@ async function interactive(
     }
 
     if (currentMenu === "ssh-connect") {
+      process.stdout.write(ansi.altScreenExit());
       [currentMenu, config, logs] = await sshConnect(
         config,
         logs,
         JSON.parse(options[0]),
+        options[1] === "true",
       );
+      process.stdout.write(ansi.altScreenEnter());
     }
 
     if (currentMenu === "ssh-edit") {

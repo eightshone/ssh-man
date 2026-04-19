@@ -6,16 +6,16 @@ async function sshConnect(
   config: config,
   logs: log[],
   sshConfig: server,
+  shouldSave: boolean = false,
 ): Promise<[menu, config, log[]]> {
   const [updatedConfig, updatedLogs] = await updateConfigs(
     config,
     logs,
     sshConfig,
-    true,
+    shouldSave,
   );
 
-  console.clear();
-  await sshConnection(sshConfig);
+  await sshConnection(sshConfig, false);
 
   return ["main", updatedConfig, updatedLogs];
 }

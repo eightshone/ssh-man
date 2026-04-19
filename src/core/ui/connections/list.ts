@@ -582,7 +582,7 @@ export default function listConnections(
           const action = choices[detailsSelectedIndex];
           if (action === "Connect") {
             cleanupScreen();
-            resolve(["ssh-connect", [JSON.stringify(srv)]]);
+            resolve(["ssh-connect", [JSON.stringify(srv), "false"]]);
           } else if (action === "Show password" || action === "Hide password") {
             showPassword = !showPassword;
             render(false, true);
