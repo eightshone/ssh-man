@@ -71,7 +71,7 @@ async function connectCommand(creds: string, options) {
     !!saveConnection && isNewConnection
   );
 
-  sshConnection(sshConfig);
+  await sshConnection(sshConfig);
 }
 
 export default connectCommand;

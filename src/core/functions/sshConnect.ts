@@ -16,7 +16,7 @@ async function sshConnect(
       shouldSave,
     );
 
-    await sshConnection(sshConfig, false);
+    await sshConnection(sshConfig, false, true);
 
     return ["main", updatedConfig, updatedLogs];
   } catch (error: any) {

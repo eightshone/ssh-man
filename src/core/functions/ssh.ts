@@ -9,6 +9,7 @@ import { readFileSync } from "fs";
 function sshConnection(
   sshConfig: server,
   unref: boolean = false,
+  isTUI: boolean = false,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
@@ -24,7 +25,12 @@ function sshConnection(
       })
       .on("error", (err) => {
         spinner.error(colors.red("Connection error!"));
-        reject(err);
+        if (isTUI) {
+          reject(err);
+        } else {
+          console.log("Error details", err.message);
+          resolve();
+        }
       })
       .on("ready", function () {
         spinner.success(colors.green("Connection ready!"));
