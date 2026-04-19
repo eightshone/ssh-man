@@ -294,9 +294,15 @@ export default function listConnections(
           .split(/\s+/)
           .filter((w) => w.length > 0);
 
-        const displayIdx = colors.dim(
-          stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
-        );
+        const lineChecked = selectedIndices.has(srv.originalIndex);
+
+        const checkMark = lineChecked ? colors.cyan("✓") : " ";
+
+        const displayIdx = selectedIndices.has(srv.originalIndex)
+          ? stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0")
+          : colors.dim(
+              stringPadding(`${srv.originalIndex + 1}`, 3, "start", "0"),
+            );
 
         const highlightedName = highlightTerms(
           srv.name ?? "",
@@ -321,15 +327,14 @@ export default function listConnections(
           baseBg + "\x1b[35m",
         );
 
-        const checkMark = selectedIndices.has(srv.originalIndex)
-          ? colors.cyan("✓")
-          : " ";
+        let srvStr = ` ${checkMark}${displayIdx}  ${paddedName}  ${
+          lineChecked ? highlightedUser : colors.yellow(highlightedUser)
+        }@${lineChecked ? highlightedHost : colors.blue(highlightedHost)}:${lineChecked ? highlightedPort : colors.magenta(highlightedPort)}`;
 
-        let srvStr = ` ${checkMark}${displayIdx}  ${paddedName}  ${colors.yellow(
-          highlightedUser,
-        )}@${colors.blue(highlightedHost)}:${colors.magenta(highlightedPort)}`;
-
-        let displayStr = padOrTruncate(srvStr, maxColWidth);
+        let displayStr = padOrTruncate(
+          lineChecked ? colors.cyan(srvStr) : srvStr,
+          maxColWidth,
+        );
 
         if (isSelected) {
           buf.moveTo(listTop + i, 2).write(`${ansi.bg(238, displayStr)}`);

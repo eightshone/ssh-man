@@ -19,7 +19,9 @@ function stringPadding(
   }
 
   const currentVLen = visibleLength(output);
-  const padding = " ".repeat(Math.max(0, totalLength - currentVLen));
+  const padding = paddingCharacter.repeat(
+    Math.max(0, totalLength - currentVLen),
+  );
 
   if (paddingPosition === "end") {
     return output + padding;
@@ -27,6 +29,5 @@ function stringPadding(
     return padding + output;
   }
 }
-
 
 export default stringPadding;
