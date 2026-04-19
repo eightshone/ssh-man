@@ -38,3 +38,8 @@ export const UPDATE_COMMANDS = {
   pnpm: "pnpm add -g @eightshone/sshman",
   bun: "bun add -g @eightshone/sshman",
 };
+
+// Telemetry paths and constants
+export const TELEMETRY_CONFIG_FILE = `${CONFIG_DIR}/.telemetry.json`;
+export const TELEMETRY_EVENTS_FILE = `${CONFIG_DIR}/.telemetry-events.json`;
+export const TELEMETRY_SYNC_INTERVAL_MS = 86_400_000; // 24 hours
