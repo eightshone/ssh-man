@@ -172,9 +172,9 @@ export default function listConnections(
           lines,
           choices,
           detailsSelectedIndex,
-          "33",
+          null,
           false,
-          cols - 8,
+          cols - 6,
         );
         buf.flush();
         return;
@@ -405,9 +405,9 @@ export default function listConnections(
           lines,
           choices,
           detailsSelectedIndex,
-          "33",
+          null,
           false,
-          cols - 8,
+          cols - 6,
         );
       }
 
