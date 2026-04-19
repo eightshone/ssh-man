@@ -53,9 +53,10 @@ export function drawPopup(
   selectedIndex: number = 0,
   colorCode: string = "255",
   onlyChoices: boolean = false,
+  customWidth?: number,
 ): void {
   const { rows, cols } = getTermSize();
-  const width = Math.min(cols - 4, 50);
+  const width = customWidth || Math.min(cols - 4, 50);
   const height = content.length + choices.length + 4;
   const startRow = Math.floor((rows - height) / 2);
   const startCol = Math.floor((cols - width) / 2);

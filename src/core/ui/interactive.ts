@@ -1,7 +1,6 @@
 import goodbye from "../../utils/goodbye";
 import { config, log, menu } from "../../utils/types";
 import deleteConnection from "./connections/delete";
-import displayConnection from "./connections/display";
 import editConnection from "./connections/edit";
 import listConnections from "./connections/list";
 import mainMenu from "./mainMenu";
@@ -38,14 +37,6 @@ async function interactive(
 
     if (currentMenu === "ssh-list") {
       [currentMenu, options] = await listConnections(config);
-    }
-
-    if (currentMenu === "ssh-display") {
-      [currentMenu, options] = await displayConnection(
-        JSON.parse(options[0]),
-        parseInt(options[1]),
-        options.length === 3 && options[2] === "true",
-      );
     }
 
     if (currentMenu === "ssh-connect") {

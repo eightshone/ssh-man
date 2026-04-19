@@ -17,6 +17,7 @@ import stringPadding from "../../../utils/stringPadding";
 import fs from "fs";
 import saveFile from "../../../utils/saveFile";
 import dayjs from "dayjs";
+import clipboard from "clipboardy";
 
 import { drawPopup, fillRegion } from "../../../utils/tui/index";
 import { performDelete } from "./delete";
@@ -44,6 +45,12 @@ export default function listConnections(
     let exportPathInput = "";
     let exportCursorPos = 0;
     let exportError = "";
+
+    // Details popup state
+    let showDetailsPopup = false;
+    let detailsSelectedIndex = 0;
+    let showPassword = false;
+    let passwordCopied = false;
 
     // Filter servers based on input
     const getFiltered = () => {
@@ -125,6 +132,54 @@ export default function listConnections(
         return;
       }
 
+      if (popupOnly && showDetailsPopup) {
+        const srv = filtered[selectedIndex];
+        const choices = ["Connect"];
+        if (srv.usePassword) {
+          choices.push(showPassword ? "Hide password" : "Show password");
+          choices.push(
+            passwordCopied ? "Password copied" : "Copy password to clipboard",
+          );
+        }
+        choices.push("Edit", "Delete", "Close");
+
+        const passwordDisplay = srv.usePassword
+          ? showPassword
+            ? srv.password
+            : "********"
+          : colors.dim("(Using Key)");
+
+        const keyDisplay =
+          srv.usePassword === false
+            ? srv.privateKey
+            : colors.dim("(Using Password)");
+
+        const lines = [
+          `${colors.dim("Server Name:")} ${colors.yellow(srv.name)}`,
+          `${colors.dim("Username:   ")} ${colors.cyan(srv.username)}`,
+          srv.usePassword
+            ? `${colors.dim("Password:   ")} ${passwordDisplay}`
+            : `${colors.dim("Key Path:   ")} ${keyDisplay}`,
+          `${colors.dim("Hostname:   ")} ${colors.blue(srv.host)}`,
+          `${colors.dim("Port:       ")} ${colors.magenta(String(srv.port))}`,
+          "",
+          colors.dim("Actions:"),
+        ];
+
+        drawPopup(
+          buf,
+          " Connection Details ",
+          lines,
+          choices,
+          detailsSelectedIndex,
+          "33",
+          false,
+          cols - 8,
+        );
+        buf.flush();
+        return;
+      }
+
       // Ensure index is valid
       if (filtered.length === 0) {
         selectedIndex = 0;
@@ -156,6 +211,12 @@ export default function listConnections(
           { action: "Cursor", key: "← →" },
           { action: "Confirm", key: "<enter>" },
           { action: "Cancel", key: "<esc>" },
+        ];
+      } else if (showDetailsPopup) {
+        keybindings = [
+          { action: "Navigate", key: "↑ ↓" },
+          { action: "Select", key: "<enter>" },
+          { action: "Close", key: "<esc>" },
         ];
       } else {
         keybindings = [
@@ -303,6 +364,53 @@ export default function listConnections(
         );
       }
 
+      // Draw Details Popup
+      if (showDetailsPopup && !showDeleteConfirm && !showExportPrompt) {
+        const srv = filtered[selectedIndex];
+        const choices = ["Connect"];
+        if (srv.usePassword) {
+          choices.push(showPassword ? "Hide password" : "Show password");
+          choices.push(
+            passwordCopied ? "Password copied" : "Copy password to clipboard",
+          );
+        }
+        choices.push("Edit", "Delete", "Close");
+
+        const passwordDisplay = srv.usePassword
+          ? showPassword
+            ? srv.password
+            : "********"
+          : colors.dim("(Using Key)");
+
+        const keyDisplay =
+          srv.usePassword === false
+            ? srv.privateKey
+            : colors.dim("(Using Password)");
+
+        const lines = [
+          `${colors.dim("Server Name:")} ${colors.yellow(srv.name)}`,
+          `${colors.dim("Username:   ")} ${colors.cyan(srv.username)}`,
+          srv.usePassword
+            ? `${colors.dim("Password:   ")} ${passwordDisplay}`
+            : `${colors.dim("Key Path:   ")} ${keyDisplay}`,
+          `${colors.dim("Hostname:   ")} ${colors.blue(srv.host)}`,
+          `${colors.dim("Port:       ")} ${colors.magenta(String(srv.port))}`,
+          "",
+          colors.dim("Actions:"),
+        ];
+
+        drawPopup(
+          buf,
+          " Connection Details ",
+          lines,
+          choices,
+          detailsSelectedIndex,
+          "33",
+          false,
+          cols - 8,
+        );
+      }
+
       // Hide cursor and flush
       buf.write(ansi.hideCursor());
       buf.flush();
@@ -443,6 +551,63 @@ export default function listConnections(
         return;
       }
 
+      if (showDetailsPopup) {
+        const srv = filtered[selectedIndex];
+        const choices = ["Connect"];
+        if (srv.usePassword) {
+          choices.push(showPassword ? "Hide password" : "Show password");
+          choices.push(
+            passwordCopied ? "Password copied" : "Copy password to clipboard",
+          );
+        }
+        choices.push("Edit", "Delete", "Close");
+
+        if (key === "up") {
+          detailsSelectedIndex =
+            (detailsSelectedIndex - 1 + choices.length) % choices.length;
+          render(false, true);
+        } else if (key === "down" || key === "tab") {
+          detailsSelectedIndex = (detailsSelectedIndex + 1) % choices.length;
+          render(false, true);
+        } else if (key === "escape") {
+          showDetailsPopup = false;
+          render();
+        } else if (key === "enter") {
+          const action = choices[detailsSelectedIndex];
+          if (action === "Connect") {
+            cleanupScreen();
+            resolve(["ssh-connect", [JSON.stringify(srv)]]);
+          } else if (action === "Show password" || action === "Hide password") {
+            showPassword = !showPassword;
+            render(false, true);
+          } else if (
+            action === "Copy password to clipboard" ||
+            action === "Password copied"
+          ) {
+            if (srv.usePassword) {
+              clipboard.writeSync(srv.password);
+              passwordCopied = true;
+              render(false, true);
+            }
+          } else if (action === "Edit") {
+            cleanupScreen();
+            resolve([
+              "ssh-edit",
+              [JSON.stringify(srv), String(srv.originalIndex)],
+            ]);
+          } else if (action === "Delete") {
+            showDetailsPopup = false;
+            showDeleteConfirm = true;
+            popupSelectedIndex = 1;
+            render();
+          } else if (action === "Close") {
+            showDetailsPopup = false;
+            render();
+          }
+        }
+        return;
+      }
+
       if (key === "ctrl-space") {
         if (filtered.length > 0) {
           const srv = filtered[selectedIndex];
@@ -559,12 +724,11 @@ export default function listConnections(
 
       if (key === "enter") {
         if (filtered.length > 0) {
-          const selectedSrv = filtered[selectedIndex];
-          cleanupScreen();
-          resolve([
-            "ssh-display",
-            [JSON.stringify(selectedSrv), String(selectedSrv.originalIndex)],
-          ]);
+          showDetailsPopup = true;
+          detailsSelectedIndex = 0;
+          showPassword = false;
+          passwordCopied = false;
+          render();
         }
         return;
       }
