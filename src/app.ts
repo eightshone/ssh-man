@@ -13,14 +13,48 @@ import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
+import telemetryCommand from "./core/commands/telemetry";
 import { ansi } from "./utils/tui/index";
+import {
+  initTelemetry,
+  recordCommandEvent,
+  trySync,
+  TelemetryContext,
+} from "./core/telemetry/index";
 
 const program = new Command();
+
+// Shared telemetry context — initialized before any command runs
+let telemetryCtx: TelemetryContext;
+let commandStartTime: number;
 
 program
   .name("sshman")
   .description("A simple terminmal based SSH manager created in Node.js")
   .version(VERSION, "-v, --version", "output the version number");
+
+// Initialize telemetry before any command executes.
+// This handles the first-run consent prompt and loads the config.
+program.hook("preAction", async (thisCommand, actionCommand) => {
+  const commandName = actionCommand.name();
+
+  // Skip telemetry init for telemetry subcommands (they manage config directly)
+  const skipConsent = commandName === "telemetry";
+  telemetryCtx = await initTelemetry(skipConsent);
+
+  commandStartTime = performance.now();
+});
+
+// Record telemetry events and attempt sync after each command.
+program.hook("postAction", async (thisCommand, actionCommand) => {
+  if (telemetryCtx) {
+    const durationMs = performance.now() - commandStartTime;
+    const commandName = actionCommand.name() || "interactive";
+
+    await recordCommandEvent(telemetryCtx, commandName, durationMs, true);
+    await trySync(telemetryCtx);
+  }
+});
 
 program.action(app);
 
@@ -74,6 +108,12 @@ program
   .action(searchCommand);
 
 program
+  .command("telemetry")
+  .argument("<action>", "enable, disable, or status")
+  .description("manage anonymous telemetry settings")
+  .action(telemetryCommand);
+
+program
   .command("goodbye")
   .description("says goodbye")
   .action(() => {
@@ -106,6 +146,21 @@ process.on("uncaughtException", (error) => {
     process.exit(0);
   } else {
     process.stdout.write(ansi.altScreenExit());
+
+    // Record the error in telemetry before rethrowing
+    if (telemetryCtx?.active) {
+      const durationMs = performance.now() - commandStartTime;
+      const errorType =
+        error instanceof Error ? error.constructor.name : "UnknownError";
+      recordCommandEvent(
+        telemetryCtx,
+        "uncaughtException",
+        durationMs,
+        false,
+        errorType,
+      ).catch(() => {});
+    }
+
     // Rethrow unknown errors
     throw error;
   }
