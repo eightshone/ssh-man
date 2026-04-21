@@ -94,7 +94,31 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 - `npm run dev`: Start the project in development mode using `tsx`.
 - `npm run build`: Build the project (TypeScript compilation and obfuscation).
 
+## Telemetry
 
+SSHMAN collects anonymous usage data to help improve the tool. This data helps us understand which features are most used and identify performance bottlenecks or common errors.
+
+**Telemetry is strictly opt-in.** You will be prompted to enable it on your first run. No personal information, connection details, or command arguments are ever collected.
+
+### What is collected?
+- **Command name**: (e.g., `connect`, `search`) — *Arguments and flags are stripped.*
+- **Performance**: Execution duration and success/failure status.
+- **Errors**: Sanitized error codes (e.g., `ECONNREFUSED`).
+- **System context**: OS, CPU architecture, Node.js version, and SSHMAN version.
+
+### Privacy First
+- **No PII**: We never collect IP addresses, usernames, hostnames, or any sensitive configuration.
+- **Transparent**: All data is stored locally before being batched and sent.
+- **Total Control**: You can change your preference at any time.
+
+### Manage Telemetry
+```bash
+sshman telemetry status  # Check current status and pending data
+sshman telemetry enable  # Opt-in to telemetry
+sshman telemetry disable # Opt-out and clear local telemetry data
+```
+
+---
 
 License: **MIT**  
 Author: **EIGHTSH ONE**
