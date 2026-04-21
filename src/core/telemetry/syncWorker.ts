@@ -17,6 +17,7 @@ import { request as httpRequest } from "http";
 import {
   TELEMETRY_CONFIG_FILE,
   TELEMETRY_EVENTS_FILE,
+  TELEMETRY_LOG_FILE,
 } from "../../utils/consts";
 import type { TelemetryEvent } from "./events";
 
@@ -109,5 +110,30 @@ function postData(url: string, data: string): Promise<void> {
   });
 }
 
-// Run and exit silently on any error
-sync().catch(() => process.exit(1));
+if (!endpoint || !installationId) {
+  logError(new Error("Missing required arguments: endpoint or installationId")).then(
+    () => process.exit(1),
+  );
+} else {
+  // Run and log any error before exiting
+  sync().catch(async (error) => {
+    await logError(error);
+    process.exit(1);
+  });
+}
+
+/**
+ * Logs an error to the telemetry log file.
+ */
+async function logError(error: any): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const message =
+    error instanceof Error ? error.stack || error.message : String(error);
+  const logEntry = `[${timestamp}] Sync Worker Error: ${message}\n`;
+
+  try {
+    await fs.appendFile(TELEMETRY_LOG_FILE, logEntry, "utf8");
+  } catch {
+    // If we can't write to the log file, there's nothing else we can do
+  }
+}

@@ -42,4 +42,5 @@ export const UPDATE_COMMANDS = {
 // Telemetry paths and constants
 export const TELEMETRY_CONFIG_FILE = `${CONFIG_DIR}/.telemetry.json`;
 export const TELEMETRY_EVENTS_FILE = `${CONFIG_DIR}/.telemetry-events.json`;
+export const TELEMETRY_LOG_FILE = `${CONFIG_DIR}/telemetry.log`;
 export const TELEMETRY_SYNC_INTERVAL_MS = 86_400_000; // 24 hours

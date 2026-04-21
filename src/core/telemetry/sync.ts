@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import {
   TELEMETRY_EVENTS_FILE,
+  TELEMETRY_LOG_FILE,
   TELEMETRY_SYNC_INTERVAL_MS,
   VERSION,
 } from "../../utils/consts";
@@ -76,7 +77,17 @@ export async function attemptSync(
     );
 
     child.unref(); // Let the parent process exit immediately
-  } catch {
-    // Silently fail — sync will be retried on next invocation
+  } catch (error: any) {
+    // Log error to telemetry.log
+    const timestamp = new Date().toISOString();
+    const message =
+      error instanceof Error ? error.stack || error.message : String(error);
+    const logEntry = `[${timestamp}] Sync Initiation Error: ${message}\n`;
+
+    try {
+      await fs.appendFile(TELEMETRY_LOG_FILE, logEntry, "utf8");
+    } catch {
+      // Silently fail if we can't write to the log file
+    }
   }
 }
