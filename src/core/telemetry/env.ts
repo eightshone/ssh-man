@@ -51,15 +51,14 @@ function loadEnv() {
  * Checks both the hardcoded value and the system environment variable.
  */
 export function getTelemetryEndpoint(): string | undefined {
-  if (TELEMETRY_ENDPOINT === "__TELEMETRY_ENDPOINT_PLACEHOLDER__") {
+  const isPlaceholder = TELEMETRY_ENDPOINT === "__TELEMETRY" + "_ENDPOINT_PLACEHOLDER__";
+  
+  if (isPlaceholder) {
     loadEnv();
   }
 
   // In dev mode, the placeholder is still present — fall back to env var
-  const endpoint =
-    TELEMETRY_ENDPOINT !== "__TELEMETRY_ENDPOINT_PLACEHOLDER__"
-      ? TELEMETRY_ENDPOINT
-      : process.env.TELEMETRY_ENDPOINT;
+  const endpoint = isPlaceholder ? process.env.TELEMETRY_ENDPOINT : TELEMETRY_ENDPOINT;
 
   if (!endpoint || endpoint.trim().length === 0) {
     return undefined;
@@ -72,14 +71,13 @@ export function getTelemetryEndpoint(): string | undefined {
  * Returns the resolved telemetry API key, or undefined if not configured.
  */
 export function getTelemetryApiKey(): string | undefined {
-  if (TELEMETRY_API_KEY === "__TELEMETRY_API_KEY_PLACEHOLDER__") {
+  const isPlaceholder = TELEMETRY_API_KEY === "__TELEMETRY" + "_API_KEY_PLACEHOLDER__";
+
+  if (isPlaceholder) {
     loadEnv();
   }
 
-  const key =
-    TELEMETRY_API_KEY !== "__TELEMETRY_API_KEY_PLACEHOLDER__"
-      ? TELEMETRY_API_KEY
-      : process.env.TELEMETRY_API_KEY;
+  const key = isPlaceholder ? process.env.TELEMETRY_API_KEY : TELEMETRY_API_KEY;
 
   if (!key || key.trim().length === 0) {
     return undefined;

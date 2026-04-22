@@ -125,7 +125,6 @@ program
   .description("says goodbye")
   .action(() => {
     goodbye();
-    process.exit();
   });
 
 program
