@@ -6,6 +6,7 @@ export const VERSION: string = packageJson.version;
 export const DEFAULT_CONFIG: config = {
   servers: [],
   recentServers: [],
+  debug: false,
   defaults: {
     privateKey: `${homedir()}/.ssh/id_rsa`,
     port: 22,

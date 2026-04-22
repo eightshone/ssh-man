@@ -14,6 +14,7 @@ import reconnectCommand from "./core/commands/reconnect";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
 import telemetryCommand from "./core/commands/telemetry";
+import debugCommand from "./core/commands/debug";
 import { ansi } from "./utils/tui/index";
 import {
   initTelemetry,
@@ -112,6 +113,12 @@ program
   .argument("<action>", "enable, disable, or status")
   .description("manage anonymous telemetry settings")
   .action(telemetryCommand);
+
+program
+  .command("debug")
+  .argument("<action>", "enable, disable, or status")
+  .description("manage advanced troubleshooting settings")
+  .action(debugCommand);
 
 program
   .command("goodbye")

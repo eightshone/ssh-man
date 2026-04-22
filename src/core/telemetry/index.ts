@@ -88,11 +88,14 @@ export async function recordCommandEvent(
  * Spawns a detached process that runs independently.
  * No-op if telemetry is not active.
  */
-export async function trySync(ctx: TelemetryContext): Promise<void> {
+export async function trySync(
+  ctx: TelemetryContext,
+  force: boolean = false,
+): Promise<void> {
   if (!ctx.active || !ctx.endpoint) return;
 
   try {
-    await attemptSync(ctx.config, ctx.endpoint, ctx.apiKey);
+    await attemptSync(ctx.config, ctx.endpoint, ctx.apiKey, force);
   } catch {
     // Silently fail
   }

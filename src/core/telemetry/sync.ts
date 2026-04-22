@@ -22,13 +22,14 @@ export async function attemptSync(
   config: TelemetryConfig,
   endpoint: string,
   apiKey?: string,
+  force: boolean = false,
 ): Promise<void> {
   try {
     // Check if 24 hours have elapsed since last sync
     const lastSync = new Date(config.lastSyncTimestamp).getTime();
     const now = Date.now();
 
-    if (now - lastSync < TELEMETRY_SYNC_INTERVAL_MS) {
+    if (!force && now - lastSync < TELEMETRY_SYNC_INTERVAL_MS) {
       return; // Not time to sync yet
     }
 

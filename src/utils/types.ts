@@ -25,6 +25,7 @@ export type config = {
   };
   servers: server[];
   recentServers: server[];
+  debug: boolean;
 };
 
 export type log = {

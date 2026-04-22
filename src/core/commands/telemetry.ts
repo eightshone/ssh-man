@@ -7,7 +7,11 @@ import {
 import {
   TELEMETRY_CONFIG_FILE,
   TELEMETRY_EVENTS_FILE,
+  TELEMETRY_LOG_FILE,
+  CONFIG_DIR,
 } from "../../utils/consts";
+import loadFile from "../../utils/loadFile";
+import { initTelemetry, trySync } from "../telemetry/index";
 
 /**
  * Handles `sshman telemetry <action>` subcommands.
@@ -16,7 +20,7 @@ import {
  * - status:  show current telemetry status
  */
 async function telemetryCommand(action: string) {
-  const validActions = ["enable", "disable", "status"];
+  const validActions = ["enable", "disable", "status", "sync"];
 
   if (!validActions.includes(action)) {
     console.log(
@@ -104,6 +108,38 @@ async function telemetryCommand(action: string) {
         `  Config file:     ${colors.dim(TELEMETRY_CONFIG_FILE)}`,
       );
       console.log("");
+      break;
+    }
+
+    case "sync": {
+      const configFile = `${CONFIG_DIR}/config.json`;
+      const mainConfig = await loadFile(configFile, true);
+
+      if (!mainConfig.debug) {
+        console.log(
+          colors.red("✖ Manual sync is only available in debug mode."),
+        );
+        console.log(
+          colors.dim('  Use "sshman debug enable" to turn on debug mode.'),
+        );
+        return;
+      }
+
+      console.log(colors.cyan("⏳ Initiating manual telemetry sync..."));
+
+      const ctx = await initTelemetry(true); // Skip consent prompt
+      if (!ctx.active) {
+        console.log(
+          colors.yellow("⚠ Telemetry is currently disabled. No data will be sent."),
+        );
+        return;
+      }
+
+      await trySync(ctx, true); // Force sync
+      console.log(colors.green("✓ Sync process spawned in background."));
+      console.log(
+        colors.dim(`  Check ${colors.white("telemetry.log")} for results.`),
+      );
       break;
     }
   }
