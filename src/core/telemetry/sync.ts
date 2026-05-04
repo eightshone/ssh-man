@@ -7,6 +7,7 @@ import {
   TELEMETRY_LOG_FILE,
   TELEMETRY_SYNC_INTERVAL_MS,
   VERSION,
+  CONFIG_DIR,
 } from "../../utils/consts";
 import { TelemetryConfig } from "./config";
 
@@ -79,16 +80,29 @@ export async function attemptSync(
 
     child.unref(); // Let the parent process exit immediately
   } catch (error: any) {
-    // Log error to telemetry.log
-    const timestamp = new Date().toISOString();
-    const message =
-      error instanceof Error ? error.stack || error.message : String(error);
-    const logEntry = `[${timestamp}] Sync Initiation Error: ${message}\n`;
-
+    // Check if debug is enabled before logging
+    let debugEnabled = false;
     try {
-      await fs.appendFile(TELEMETRY_LOG_FILE, logEntry, "utf8");
-    } catch {
-      // Silently fail if we can't write to the log file
+      const configFile = `${CONFIG_DIR}/config.json`;
+      if (existsSync(configFile)) {
+        const configRaw = await fs.readFile(configFile, "utf8");
+        const configObj = JSON.parse(configRaw);
+        debugEnabled = configObj.debug === true;
+      }
+    } catch {}
+
+    if (debugEnabled) {
+      // Log error to telemetry.log
+      const timestamp = new Date().toISOString();
+      const message =
+        error instanceof Error ? error.stack || error.message : String(error);
+      const logEntry = `[${timestamp}] Sync Initiation Error: ${message}\n`;
+
+      try {
+        await fs.appendFile(TELEMETRY_LOG_FILE, logEntry, "utf8");
+      } catch {
+        // Silently fail if we can't write to the log file
+      }
     }
   }
 }

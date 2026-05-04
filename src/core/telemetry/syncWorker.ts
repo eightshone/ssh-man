@@ -18,6 +18,7 @@ import {
   TELEMETRY_CONFIG_FILE,
   TELEMETRY_EVENTS_FILE,
   TELEMETRY_LOG_FILE,
+  CONFIG_DIR,
 } from "../../utils/consts";
 import type { TelemetryEvent } from "./events";
 
@@ -25,6 +26,29 @@ const [endpoint, installationId, version, apiKey] = process.argv.slice(2);
 
 if (!endpoint || !installationId) {
   process.exit(1);
+}
+
+async function isDebugEnabled(): Promise<boolean> {
+  const configFile = `${CONFIG_DIR}/config.json`;
+  if (existsSync(configFile)) {
+    try {
+      const configRaw = await fs.readFile(configFile, "utf8");
+      const configObj = JSON.parse(configRaw);
+      return configObj.debug === true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+async function logDebug(message: string): Promise<void> {
+  if (!(await isDebugEnabled())) return;
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] Sync Worker DEBUG: ${message}\n`;
+  try {
+    await fs.appendFile(TELEMETRY_LOG_FILE, logEntry, "utf8");
+  } catch {}
 }
 
 async function sync(): Promise<void> {
@@ -47,8 +71,12 @@ async function sync(): Promise<void> {
     events,
   });
 
+  await logDebug(`Attempting telemetry sync to ${endpoint} with ${events.length} events...`);
+
   // Send the data to the telemetry server
   await postData(endpoint, payload);
+
+  await logDebug("Telemetry sync succeeded.");
 
   // Success — clear events and update last sync timestamp
   await fs.writeFile(TELEMETRY_EVENTS_FILE, "[]", "utf8");
@@ -87,22 +115,28 @@ function postData(url: string, data: string): Promise<void> {
         },
       },
       (res) => {
-        // Consume the response body to free resources
-        res.resume();
+        let responseBody = "";
+        res.on("data", (chunk) => {
+          responseBody += chunk;
+        });
 
-        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-          resolve();
-        } else {
-          reject(new Error(`HTTP ${res.statusCode}`));
-        }
+        res.on("end", () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(new Error(`HTTP ${res.statusCode} from ${url}: ${responseBody || "Unknown error"}`));
+          }
+        });
       },
     );
 
-    req.on("error", reject);
+    req.on("error", (err) => {
+      reject(new Error(`Failed to request ${url}: ${err.message}`));
+    });
 
     // Set a 30-second timeout to avoid hanging indefinitely
     req.setTimeout(30_000, () => {
-      req.destroy(new Error("Request timeout"));
+      req.destroy(new Error(`Request timeout to ${url}`));
     });
 
     req.write(data);
@@ -126,6 +160,8 @@ if (!endpoint || !installationId) {
  * Logs an error to the telemetry log file.
  */
 async function logError(error: any): Promise<void> {
+  if (!(await isDebugEnabled())) return;
+  
   const timestamp = new Date().toISOString();
   const message =
     error instanceof Error ? error.stack || error.message : String(error);
