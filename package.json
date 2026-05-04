@@ -1,6 +1,6 @@
 {
   "name": "@eightshone/sshman",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "A simple cli ssh manager",
   "main": "src/app.js",
   "repository": "git@github.com:eightshone/shhman.git",
@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist/src/app.js && node scripts/update-utils.js && node scripts/inject-telemetry-endpoint.js && npx javascript-obfuscator ./dist --output ./dist --target node --compact true"
+    "postbuild": "fix-esm-import-path dist/src/app.js dist/src/core/telemetry/syncWorker.js && node scripts/update-utils.js && node scripts/inject-telemetry-endpoint.js && npx javascript-obfuscator ./dist --output ./dist --target node --compact true"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
