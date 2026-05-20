@@ -111,7 +111,7 @@ function postData(url: string, data: string): Promise<void> {
         headers: {
           "Content-Type": "application/json",
           "Content-Length": Buffer.byteLength(data),
-          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+          ...(apiKey ? { Authorization: `Bearer ${Buffer.from(apiKey).toString("base64")}` } : {}),
         },
       },
       (res) => {
