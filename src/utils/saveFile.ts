@@ -8,8 +8,15 @@ async function saveFile(
   encrypted: boolean = false
 ): Promise<void> {
   try {
-    const json = JSON.stringify(data);
-    const content = encrypted ? encrypt(json) : json;
+    let content: string;
+    if (typeof data === "string") {
+      content = data;
+    } else {
+      content = JSON.stringify(data);
+    }
+    if (encrypted) {
+      content = encrypt(content);
+    }
     await fs.promises.writeFile(filePath, content, "utf8");
   } catch (error) {
     console.error(errorMessage, error);

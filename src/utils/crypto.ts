@@ -58,3 +58,32 @@ export function isPlainJSON(content: string): boolean {
   const trimmed = content.trim();
   return trimmed.startsWith("{") || trimmed.startsWith("[");
 }
+
+export function encryptWithPassword(plaintext: string, password: string): string {
+  const salt = randomBytes(16);
+  const key = scryptSync(password, salt, KEY_LENGTH);
+  const iv = randomBytes(IV_LENGTH);
+  const cipher = createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, "utf8"),
+    cipher.final(),
+  ]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([salt, iv, authTag, encrypted]).toString("base64");
+}
+
+export function decryptWithPassword(ciphertext: string, password: string): string {
+  const data = Buffer.from(ciphertext, "base64");
+  if (data.length < 16 + IV_LENGTH + AUTH_TAG_LENGTH) {
+    throw new Error("Invalid or corrupted ciphertext");
+  }
+  const salt = data.subarray(0, 16);
+  const iv = data.subarray(16, 16 + IV_LENGTH);
+  const authTag = data.subarray(16 + IV_LENGTH, 16 + IV_LENGTH + AUTH_TAG_LENGTH);
+  const encrypted = data.subarray(16 + IV_LENGTH + AUTH_TAG_LENGTH);
+
+  const key = scryptSync(password, salt, KEY_LENGTH);
+  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+  return decipher.update(encrypted).toString("utf8") + decipher.final("utf8");
+}

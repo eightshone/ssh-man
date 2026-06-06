@@ -74,7 +74,10 @@ async function interactive(
     }
 
     if (currentMenu === "ssh-export") {
-      [currentMenu, options] = await exportConnections(config.servers);
+      process.stdout.write(ansi.altScreenExit());
+      const preSelected = options ? options.map((s) => JSON.parse(s)) : undefined;
+      [currentMenu, options] = await exportConnections(config.servers, preSelected);
+      process.stdout.write(ansi.altScreenEnter());
     }
 
     if (currentMenu === "manual") {
