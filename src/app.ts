@@ -91,6 +91,8 @@ program
   )
   .option("-n, --name <file name>", "custom name for output file")
   .option("-f, --force", "replace existing file")
+  .option("-p, --password <password>", "password to encrypt the exported config file")
+  .option("-e, --encrypt", "prompt for a password to encrypt the exported config file")
   .description("exports server configurations")
   .action(exportServers);
 
@@ -98,6 +100,7 @@ program
   .command("import")
   .argument("<config file>", "config file containing server configs")
   .option("-f, --force", "replace configs with the same name")
+  .option("-p, --password <password>", "password to decrypt the imported config file")
   .description("import server configurations")
   .action(importServers);
 

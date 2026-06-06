@@ -1,4 +1,5 @@
 import select from "@inquirer/select";
+import passwordPrompt from "@inquirer/password";
 import normalizeServerName from "../../utils/normalizeServerName";
 import readConfigFile from "../../utils/readConfigFile";
 import { server } from "../../utils/types";
@@ -7,13 +8,41 @@ import init from "../functions/init";
 import saveFile from "../../utils/saveFile";
 import { CONFIG_DIR } from "../../utils/consts";
 
-async function importServers(configFile: string, options: { force?: boolean }) {
+async function importServers(configFile: string, options: { force?: boolean; password?: string }) {
   // intialize the cli app
   let { config } = await init();
   const existingServers = [...config.servers];
 
-  // read config file
-  const content = await readConfigFile<server[]>(configFile);
+  let content: server[];
+  let password = options.password;
+
+  while (true) {
+    try {
+      content = await readConfigFile<server[]>(configFile, password);
+      break;
+    } catch (err: any) {
+      if (err.code === "ERR_ENCRYPTED_FILE") {
+        password = await passwordPrompt({ message: "Enter decryption password:" });
+        if (!password) {
+          console.log("Decryption password is required. Import aborted.");
+          return;
+        }
+      } else if (err.code === "ERR_INVALID_PASSWORD") {
+        console.log("Invalid password.");
+        password = await passwordPrompt({ message: "Try again - Enter decryption password:" });
+        if (!password) {
+          console.log("Decryption password is required. Import aborted.");
+          return;
+        }
+      } else if (err.code === "ENOENT") {
+        console.log(`Error: File not found: ${configFile}`);
+        return;
+      } else {
+        console.log(`Error reading or parsing config file: ${err.message}`);
+        return;
+      }
+    }
+  }
 
   // validate config file format
   if (!validateServers(content)) {

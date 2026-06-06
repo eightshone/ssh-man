@@ -30,6 +30,7 @@ export function setupInput(onKey: (name: string, ch?: string) => void): { stdin:
     // Control Characters (non-escape sequences)
     if (data === '\x00') { onKey('ctrl-space'); return; }
     if (data === '\x05') { onKey('ctrl-e'); return; }
+    if (data === '\x0f') { onKey('ctrl-o'); return; }
 
     // Enter
     if (data === '\r' || data === '\n') { onKey('enter'); return; }
