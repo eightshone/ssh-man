@@ -4,6 +4,9 @@ import { server } from "../../utils/types";
 import init from "../functions/init";
 import { existsSync } from "fs";
 import saveFile from "../../utils/saveFile";
+import passwordPrompt from "@inquirer/password";
+import confirmPrompt from "@inquirer/confirm";
+import { encryptWithPassword } from "../../utils/crypto";
 
 async function exportServers(servers: string[] = [], options) {
   // get or generate output filename
@@ -31,10 +34,36 @@ async function exportServers(servers: string[] = [], options) {
   // check if the output file should be replaced or not
   if (!options.force && existsSync(fileName)) {
     throw new Error("File exists!");
-  } else {
-    await saveFile(fileName, serverConfigs);
   }
 
+  let password = options.password;
+  if (!password && options.encrypt) {
+    password = await passwordPrompt({ message: "Enter encryption password:" });
+    if (!password) {
+      console.log("Encryption password cannot be empty. Export aborted.");
+      process.exit(1);
+    }
+  }
+
+  if (!password) {
+    console.log("Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).");
+    const proceed = await confirmPrompt({
+      message: "Are you sure you want to proceed without encryption?",
+      default: false,
+    });
+    if (!proceed) {
+      console.log("Export aborted.");
+      process.exit(0);
+    }
+  }
+
+  const exportData = password
+    ? encryptWithPassword(JSON.stringify(serverConfigs), password)
+    : serverConfigs;
+
+  await saveFile(fileName, exportData);
+
+  console.log(`Configurations successfully exported to ${fileName}`);
   process.exit();
 }
 
