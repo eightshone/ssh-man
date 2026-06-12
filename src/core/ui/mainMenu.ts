@@ -1,4 +1,5 @@
 import { menu, server } from "../../utils/types";
+import { VERSION } from "../../utils/consts";
 import { setupInput } from "../../utils/tui/input";
 import {
   ESC,
@@ -164,6 +165,12 @@ export default function mainMenu(
         ticker: 0,
       }));
 
+    const drawScreensaverFooter = (buf: ScreenBuffer, rows: number, cols: number): void => {
+      const verStr = ` v${VERSION}`;
+      buf.moveTo(rows, 2).write(ansi.fg("250", "Press any key"));
+      buf.moveTo(rows, cols - visibleLength(verStr)).write(ansi.dim(verStr));
+    };
+
     const renderScreensaver = () => {
       const { rows, cols } = getTermSize();
       const innerRows = rows - 3;
@@ -176,6 +183,7 @@ export default function mainMenu(
         const buf = new ScreenBuffer();
         buf.write(ansi.clear());
         if (innerRows > 0) drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+        drawScreensaverFooter(buf, rows, cols);
         buf.write(ansi.hideCursor());
         buf.flush();
         return;
@@ -216,6 +224,7 @@ export default function mainMenu(
         buf.write(rowStr);
       }
 
+      drawScreensaverFooter(buf, rows, cols);
       buf.write(ansi.hideCursor());
       buf.flush();
     };
@@ -232,6 +241,7 @@ export default function mainMenu(
       const buf = new ScreenBuffer();
       buf.write(ansi.clear());
       if (innerRows > 0) drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+      drawScreensaverFooter(buf, rows, cols);
       buf.write(ansi.hideCursor());
       buf.flush();
 
