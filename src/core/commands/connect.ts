@@ -7,13 +7,16 @@ import validateServerName from "../../utils/validateServerName";
 import init from "../functions/init";
 import sshConnection from "../functions/ssh";
 
-async function connectCommand(creds: string, options: { password?: boolean; save?: boolean | string }) {
+async function connectCommand(
+  creds: string,
+  options: { password?: boolean; save?: boolean | string },
+) {
   // intialize the cli app
   let { config, logs } = await init();
 
   // save connection may contains the server name
-  const saveConnection: string | boolean = options.save;
-  const promptPassword: boolean = options.password;
+  const saveConnection: string | boolean | undefined = options.save;
+  const promptPassword: boolean = !!options.password;
   let sshConfig: server | undefined;
 
   const hasAt = creds.includes("@");
@@ -48,7 +51,7 @@ async function connectCommand(creds: string, options: { password?: boolean; save
     ) {
       const isValid: boolean | string = validateServerName(
         saveConnection,
-        config.servers
+        config.servers,
       );
 
       if (isValid === true) {
@@ -59,7 +62,7 @@ async function connectCommand(creds: string, options: { password?: boolean; save
       }
     } else if (!!saveConnection && typeof saveConnection === "boolean") {
       console.log(
-        `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`
+        `ℹ️ You did not specify a name for this config! It will be saved under the name: ${sshConfig.name}`,
       );
     }
   }
@@ -68,7 +71,7 @@ async function connectCommand(creds: string, options: { password?: boolean; save
     config,
     logs,
     sshConfig,
-    !!saveConnection && isNewConnection
+    !!saveConnection && isNewConnection,
   );
 
   await sshConnection(sshConfig);
