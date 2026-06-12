@@ -75,7 +75,7 @@ export default function newConnection(
         type: "input",
         condition: (data: any) => data.saveConnection,
         default: (cfg: Config, data: any) =>
-          `${cfg.defaults.autoSavePrefix || "srv"}-${data.username}@${data.host}`,
+          `${cfg.defaults.autoSavePrefix || "srv"}-${data.username}-${data.host}`,
         validate: (val: string, cfg: Config) =>
           validateServerName(val, cfg.servers),
       },
@@ -142,15 +142,9 @@ export default function newConnection(
 
         const step = getCurrentStep();
         if (step?.type === "select") {
-          // Restore previous selection if possible?
-          // Inquirer usually doesn't, it resets.
-          // But we can try to find the index of the current value.
-          selectedIndex = 0;
-          if (step.choices) {
-            const val = capturedData[step.id];
-            const idx = step.choices.findIndex((c) => c.value === val);
-            if (idx !== -1) selectedIndex = idx;
-          }
+          const val = capturedData[step.id];
+          selectedIndex = step.choices?.findIndex((c) => c.value === val) ?? -1;
+          if (selectedIndex === -1) selectedIndex = 0;
         } else if (step) {
           inputBuffer = String(capturedData[step.id] || "");
           cursorPos = inputBuffer.length;

@@ -30,7 +30,7 @@ async function parseConnectionString(
 
   const sshConfig: Partial<server> = {
     id: nanoid(),
-    name: `auto-save-${username}@${host}`,
+    name: `auto-save-${username}-${host}`,
     username,
     usePassword: promptPassword || match[2] ? true : false,
     host,
