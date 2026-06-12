@@ -7,7 +7,7 @@ import validateServerName from "../../utils/validateServerName";
 import init from "../functions/init";
 import sshConnection from "../functions/ssh";
 
-async function connectCommand(creds: string, options) {
+async function connectCommand(creds: string, options: { password?: boolean; save?: boolean | string }) {
   // intialize the cli app
   let { config, logs } = await init();
 

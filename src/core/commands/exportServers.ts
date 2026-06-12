@@ -8,7 +8,7 @@ import passwordPrompt from "@inquirer/password";
 import confirmPrompt from "@inquirer/confirm";
 import { encryptWithPassword } from "../../utils/crypto";
 
-async function exportServers(servers: string[] = [], options) {
+async function exportServers(servers: string[] = [], options: { all?: boolean; name?: string; force?: boolean; password?: string; encrypt?: boolean }) {
   // get or generate output filename
   const fileName = options.name?.length
     ? options.name

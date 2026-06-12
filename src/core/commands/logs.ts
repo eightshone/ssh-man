@@ -3,7 +3,7 @@ import transformLogs from "../../utils/transformLogs";
 import init from "../functions/init";
 import interactiveLogs from "../ui/logs";
 
-async function logs(options) {
+async function logs(options: { interactive?: boolean; search?: string }) {
   const { interactive, search } = options;
 
   const { logs } = await init({ silent: true });
