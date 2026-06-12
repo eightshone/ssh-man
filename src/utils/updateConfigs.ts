@@ -11,7 +11,7 @@ async function updateConfigs(
   sshConfig: server,
   saveConfig: boolean = false
 ): Promise<[config, log[]]> {
-  const config: config = { ...initialConfig };
+  const config: config = { ...initialConfig, recentServers: [...initialConfig.recentServers] };
   let logs: log[] = [...initialLogs];
 
   if (saveConfig) {
