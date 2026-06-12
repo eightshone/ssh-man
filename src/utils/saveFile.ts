@@ -4,7 +4,7 @@ import { encrypt } from "./crypto";
 async function saveFile(
   filePath: string,
   data: any,
-  errorMessage: string = "Error updating config file file:",
+  errorMessage: string = "Error saving file:",
   encrypted: boolean = false
 ): Promise<void> {
   try {
