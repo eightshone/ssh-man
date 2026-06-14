@@ -7,7 +7,7 @@ function validateServers(value: unknown): value is server[] {
     if (
       typeof item !== "object" ||
       item === null ||
-      (!!(item as any).id && typeof (item as any).id !== "string") ||
+      (typeof (item as any).id !== "string" || !(item as any).id) ||
       typeof (item as any).name !== "string" ||
       typeof (item as any).host !== "string" ||
       typeof (item as any).port !== "number" ||

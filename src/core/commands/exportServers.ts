@@ -8,7 +8,7 @@ import passwordPrompt from "@inquirer/password";
 import confirmPrompt from "@inquirer/confirm";
 import { encryptWithPassword } from "../../utils/crypto";
 
-async function exportServers(servers: string[] = [], options) {
+async function exportServers(servers: string[] = [], options: { all?: boolean; name?: string; force?: boolean; password?: string; encrypt?: boolean }) {
   // get or generate output filename
   const fileName = options.name?.length
     ? options.name
@@ -17,7 +17,7 @@ async function exportServers(servers: string[] = [], options) {
 
   // normalize selected servers' names
   const normalizedServerNames = servers.map((serverName: string) =>
-    normalizeServerName(serverName)
+    normalizeServerName(serverName),
   );
 
   let serverConfigs: server[] = [];
@@ -27,7 +27,7 @@ async function exportServers(servers: string[] = [], options) {
     serverConfigs = config.servers;
   } else {
     serverConfigs = config.servers.filter((server: server) =>
-      normalizedServerNames.includes(normalizeServerName(server.name))
+      normalizedServerNames.includes(normalizeServerName(server.name)),
     );
   }
 
@@ -46,7 +46,9 @@ async function exportServers(servers: string[] = [], options) {
   }
 
   if (!password) {
-    console.log("Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).");
+    console.log(
+      "Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).",
+    );
     const proceed = await confirmPrompt({
       message: "Are you sure you want to proceed without encryption?",
       default: false,
@@ -61,9 +63,13 @@ async function exportServers(servers: string[] = [], options) {
     ? encryptWithPassword(JSON.stringify(serverConfigs), password)
     : serverConfigs;
 
-  await saveFile(fileName, exportData);
-
-  console.log(`Configurations successfully exported to ${fileName}`);
+  try {
+    await saveFile(fileName, exportData);
+    console.log(`Configurations successfully exported to ${fileName}`);
+  } catch (error: any) {
+    console.error(`Failed to export configurations: ${error.message}`);
+    process.exit(1);
+  }
   process.exit();
 }
 

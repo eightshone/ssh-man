@@ -20,7 +20,7 @@ export default function editConnection(
   index: number,
   initialLogs: log[],
 ): Promise<[menu, any[], Config]> {
-  let config: Config = { ...initialConfig };
+  let config: Config = { ...initialConfig, servers: [...initialConfig.servers] };
   let logs: log[] = [...initialLogs];
   const sshConfig: server = config.servers[index];
 

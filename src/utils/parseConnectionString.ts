@@ -1,6 +1,7 @@
 import { homedir, userInfo } from "os";
 import colors from "yoctocolors-cjs";
 import password from "@inquirer/password";
+import { nanoid } from "nanoid";
 import { server } from "./types";
 import { CONNECTION_REGEX } from "./consts";
 
@@ -28,7 +29,8 @@ async function parseConnectionString(
   const host = match[3];
 
   const sshConfig: Partial<server> = {
-    name: `auto-save-${username}@${host}`,
+    id: nanoid(),
+    name: `auto-save-${username}-${host}`,
     username,
     usePassword: promptPassword || match[2] ? true : false,
     host,

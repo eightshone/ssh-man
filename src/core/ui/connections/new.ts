@@ -75,7 +75,7 @@ export default function newConnection(
         type: "input",
         condition: (data: any) => data.saveConnection,
         default: (cfg: Config, data: any) =>
-          `${cfg.defaults.autoSavePrefix || "srv"}-${data.username}@${data.host}`,
+          `${cfg.defaults.autoSavePrefix || "srv"}-${data.username}-${data.host}`,
         validate: (val: string, cfg: Config) =>
           validateServerName(val, cfg.servers),
       },
@@ -142,15 +142,9 @@ export default function newConnection(
 
         const step = getCurrentStep();
         if (step?.type === "select") {
-          // Restore previous selection if possible?
-          // Inquirer usually doesn't, it resets.
-          // But we can try to find the index of the current value.
-          selectedIndex = 0;
-          if (step.choices) {
-            const val = capturedData[step.id];
-            const idx = step.choices.findIndex((c) => c.value === val);
-            if (idx !== -1) selectedIndex = idx;
-          }
+          const val = capturedData[step.id];
+          selectedIndex = step.choices?.findIndex((c) => c.value === val) ?? -1;
+          if (selectedIndex === -1) selectedIndex = 0;
         } else if (step) {
           inputBuffer = String(capturedData[step.id] || "");
           cursorPos = inputBuffer.length;
@@ -187,7 +181,10 @@ export default function newConnection(
           : { usePassword: false, privateKey: data.auth }),
       };
 
-      resolve(["ssh-connect", [JSON.stringify(sshConfig), data.saveConnection ? "true" : "false"]] as any);
+      resolve([
+        "ssh-connect",
+        [JSON.stringify(sshConfig), data.saveConnection ? "true" : "false"],
+      ] as any);
     };
 
     const render = (popupOnly = false) => {
@@ -234,23 +231,6 @@ export default function newConnection(
       const contentWidth = cols - 4;
       let currentRow = contentTop;
 
-      // Draw history
-      for (const hist of history) {
-        const step = steps[hist.stepIdx];
-        if (step.condition && !step.condition(hist.data)) continue;
-
-        let promptText =
-          typeof step.prompt === "function"
-            ? step.prompt(hist.data)
-            : step.prompt;
-        const value =
-          hist.stepIdx === currentStepIdx - 1
-            ? capturedData[step.id]
-            : hist.data[step.id]; // This is getting complex, let's simplify
-      }
-
-      // Let's re-think history drawing. We need the final values.
-      // Actually, capturedData has all answers so far.
       for (let i = 0; i < currentStepIdx; i++) {
         const step = steps[i];
         if (step.condition && !step.condition(capturedData)) continue;

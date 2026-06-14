@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 
 async function exportConnections(
   servers: server[],
-  preSelected?: server[]
+  preSelected?: server[],
 ): Promise<[menu, string[]?]> {
   console.log("Export configurations");
 
@@ -20,7 +20,8 @@ async function exportConnections(
     selectedServers = preSelected;
   } else {
     selectedServers = await checkbox({
-      message: "Select configurations to export (space to check/uncheck, enter to confirm):",
+      message:
+        "Select configurations to export (space to check/uncheck, enter to confirm):",
       choices: servers.map((server) => ({
         name: `${stringPadding(server.name)}  ${server.username}:[redacted]@${server.host}:${server.port}`,
         value: server,
@@ -58,12 +59,16 @@ async function exportConnections(
       default: true,
     });
     if (encrypt) {
-      const pw = await passwordPrompt({ message: "Enter encryption password:" });
+      const pw = await passwordPrompt({
+        message: "Enter encryption password:",
+      });
       if (!pw) {
         console.log("Password cannot be empty.");
         continue;
       }
-      const confirmPw = await passwordPrompt({ message: "Confirm encryption password:" });
+      const confirmPw = await passwordPrompt({
+        message: "Confirm encryption password:",
+      });
       if (pw !== confirmPw) {
         console.log("Passwords do not match. Please try again.");
         continue;
@@ -72,7 +77,7 @@ async function exportConnections(
       done = true;
     } else {
       console.log(
-        "Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys)."
+        "Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).",
       );
       const proceed = await confirm({
         message: "Are you sure you want to proceed without encryption?",
@@ -88,8 +93,13 @@ async function exportConnections(
     ? encryptWithPassword(JSON.stringify(selectedServers), password)
     : selectedServers;
 
-  await saveFile(fileName, exportData);
-  console.log(`Configurations successfully exported to ${fileName}`);
+  try {
+    await saveFile(fileName, exportData);
+    console.log(`Configurations successfully exported to ${fileName}`);
+  } catch (error: any) {
+    console.error(`Failed to export configurations: ${error.message}`);
+    return ["ssh-list" as menu];
+  }
 
   // Small delay to let the user see the success message
   await new Promise((resolve) => setTimeout(resolve, 1500));

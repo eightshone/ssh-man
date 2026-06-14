@@ -1,6 +1,8 @@
 import { menu, server } from "../../utils/types";
+import { VERSION } from "../../utils/consts";
 import { setupInput } from "../../utils/tui/input";
 import {
+  ESC,
   ansi,
   ScreenBuffer,
   drawBox,
@@ -36,6 +38,47 @@ const ASCII_ART_MEDIUM = [
 ];
 
 const ASCII_ART_SMALL = ["SSHMAN"];
+
+const MATRIX_CHARS =
+  "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789";
+
+type MatrixDrop = {
+  head: number;
+  tailLen: number;
+  chars: string[];
+  delay: number;
+  speed: number;
+  ticker: number;
+};
+
+function randomMatrixChar(): string {
+  return MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+}
+
+function stepDrops(drops: MatrixDrop[], innerRows: number): void {
+  for (const drop of drops) {
+    if (drop.delay > 0) {
+      drop.delay--;
+      continue;
+    }
+
+    drop.ticker++;
+    if (drop.ticker >= drop.speed) {
+      drop.ticker = 0;
+      drop.head++;
+
+      if (drop.head >= 0 && drop.head < innerRows) {
+        drop.chars[drop.head] = randomMatrixChar();
+      }
+
+      if (drop.head - drop.tailLen >= innerRows) {
+        drop.head = -1;
+        drop.delay = 5 + Math.floor(Math.random() * 30);
+        drop.tailLen = 5 + Math.floor(Math.random() * 14);
+      }
+    }
+  }
+}
 
 let selectedIndex = -1;
 let listOffset = 0;
@@ -101,6 +144,123 @@ export default function mainMenu(
       let firstSelectable = items.findIndex((i) => i.selectable);
       selectedIndex = firstSelectable === -1 ? 0 : firstSelectable;
     }
+
+    // ── Screensaver state ──────────────────────────────────────────────────
+    let screensaverActive = false;
+    let screensaverInterval: ReturnType<typeof setInterval> | null = null;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    let drops: MatrixDrop[] = [];
+    let dropRows = 0;
+    let dropCols = 0;
+
+    const makeDrops = (innerCols: number, innerRows: number): MatrixDrop[] =>
+      Array.from({ length: Math.max(innerCols, 0) }, () => ({
+        head: -1,
+        tailLen: 5 + Math.floor(Math.random() * 14),
+        chars: Array.from({ length: Math.max(innerRows, 1) }, () =>
+          randomMatrixChar(),
+        ),
+        delay: Math.floor(Math.random() * 25),
+        speed: 1 + Math.floor(Math.random() * 2),
+        ticker: 0,
+      }));
+
+    const drawScreensaverFooter = (buf: ScreenBuffer, rows: number, cols: number): void => {
+      const verStr = ` v${VERSION}`;
+      buf.moveTo(rows, 2).write(ansi.fg("250", "Press any key"));
+      buf.moveTo(rows, cols - visibleLength(verStr)).write(ansi.dim(verStr));
+    };
+
+    const renderScreensaver = () => {
+      const { rows, cols } = getTermSize();
+      const innerRows = rows - 3;
+      const innerCols = cols - 2;
+
+      if (innerRows !== dropRows || innerCols !== dropCols) {
+        dropRows = innerRows;
+        dropCols = innerCols;
+        drops = makeDrops(innerCols, innerRows);
+        const buf = new ScreenBuffer();
+        buf.write(ansi.clear());
+        if (innerRows > 0) drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+        drawScreensaverFooter(buf, rows, cols);
+        buf.write(ansi.hideCursor());
+        buf.flush();
+        return;
+      }
+
+      if (innerRows <= 0 || innerCols <= 0) return;
+
+      stepDrops(drops, innerRows);
+
+      const buf = new ScreenBuffer();
+
+      for (let r = 0; r < innerRows; r++) {
+        buf.moveTo(2 + r, 2);
+        let rowStr = "";
+
+        for (let c = 0; c < innerCols; c++) {
+          const drop = drops[c];
+
+          if (drop.delay > 0 || drop.head < 0) {
+            rowStr += " ";
+            continue;
+          }
+
+          const dist = drop.head - r;
+
+          if (dist === 0) {
+            rowStr += `${ESC}38;5;255m${drop.chars[r]}${ESC}0m`;
+          } else if (dist > 0 && dist <= drop.tailLen) {
+            const ratio = 1 - dist / drop.tailLen;
+            const color =
+              ratio > 0.75 ? 82 : ratio > 0.5 ? 46 : ratio > 0.25 ? 34 : 22;
+            rowStr += `${ESC}38;5;${color}m${drop.chars[r]}${ESC}0m`;
+          } else {
+            rowStr += " ";
+          }
+        }
+
+        buf.write(rowStr);
+      }
+
+      drawScreensaverFooter(buf, rows, cols);
+      buf.write(ansi.hideCursor());
+      buf.flush();
+    };
+
+    const startScreensaver = () => {
+      screensaverActive = true;
+      const { rows, cols } = getTermSize();
+      const innerRows = rows - 3;
+      const innerCols = cols - 2;
+      dropRows = innerRows;
+      dropCols = innerCols;
+      drops = makeDrops(innerCols, innerRows);
+
+      const buf = new ScreenBuffer();
+      buf.write(ansi.clear());
+      if (innerRows > 0) drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+      drawScreensaverFooter(buf, rows, cols);
+      buf.write(ansi.hideCursor());
+      buf.flush();
+
+      screensaverInterval = setInterval(renderScreensaver, 80);
+    };
+
+    const stopScreensaver = () => {
+      if (screensaverInterval !== null) {
+        clearInterval(screensaverInterval);
+        screensaverInterval = null;
+      }
+      screensaverActive = false;
+    };
+
+    const resetIdleTimer = () => {
+      if (idleTimer !== null) clearTimeout(idleTimer);
+      idleTimer = setTimeout(startScreensaver, 15_000);
+    };
+    // ── End screensaver ────────────────────────────────────────────────────
 
     const render = (fullRender: boolean = false) => {
       const { rows, cols } = getTermSize();
@@ -209,6 +369,8 @@ export default function mainMenu(
     };
 
     const cleanupScreen = () => {
+      if (idleTimer !== null) clearTimeout(idleTimer);
+      if (screensaverInterval !== null) clearInterval(screensaverInterval);
       process.stdout.removeListener("resize", resizeHandler);
       cleanup();
       process.stdout.write(
@@ -217,6 +379,15 @@ export default function mainMenu(
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
+      if (screensaverActive) {
+        stopScreensaver();
+        resetIdleTimer();
+        render(true);
+        return;
+      }
+
+      resetIdleTimer();
+
       if (key === "ctrl-c" || (key === "char" && char?.toLowerCase() === "q")) {
         cleanupScreen();
         resolve(["exit", null]);
@@ -257,8 +428,22 @@ export default function mainMenu(
       }
     });
 
-    const resizeHandler = () => render(true);
+    const resizeHandler = () => {
+      if (screensaverActive) {
+        const { rows, cols } = getTermSize();
+        const buf = new ScreenBuffer();
+        buf.write(ansi.clear());
+        drawBox(buf, 1, 1, cols, rows - 1, "rounded");
+        buf.write(ansi.hideCursor());
+        buf.flush();
+        dropRows = 0; // force drop reinit on next tick
+      } else {
+        render(true);
+      }
+    };
+
     process.stdout.on("resize", resizeHandler);
     render(true);
+    resetIdleTimer();
   });
 }
