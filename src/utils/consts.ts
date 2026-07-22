@@ -7,6 +7,7 @@ export const DEFAULT_CONFIG: config = {
   servers: [],
   recentServers: [],
   debug: false,
+  shellCompletionEnabled: false,
   defaults: {
     privateKey: `${homedir()}/.ssh/id_rsa`,
     port: 22,
@@ -32,6 +33,7 @@ export const GOODBYES: string[] = [
   "Goodbye! Have a fantastic day! 🥳",
 ];
 export const CONFIG_DIR = `${homedir()}/.sshman`;
+export const NAMES_CACHE_FILE = `${CONFIG_DIR}/.names`;
 export const CONNECTION_REGEX = /^(?:([^@:]+)(?::([^@:]+))?@)?([^@:]+)(?::(\d+))?$/;
 export const UPDATE_COMMANDS = {
   yarn: "yarn global add @eightshone/sshman",

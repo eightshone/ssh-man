@@ -15,6 +15,7 @@ import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
 import telemetryCommand from "./core/commands/telemetry";
 import debugCommand from "./core/commands/debug";
+import zshPluginCommand from "./core/commands/zshPlugin";
 import { ansi } from "./utils/tui/index";
 import {
   initTelemetry,
@@ -22,6 +23,10 @@ import {
   trySync,
   TelemetryContext,
 } from "./core/telemetry/index";
+import { CONFIG_DIR } from "./utils/consts";
+import loadFile from "./utils/loadFile";
+import { config } from "./utils/types";
+import { syncNameCache } from "./core/integrations/zshPlugin";
 
 const program = new Command();
 
@@ -54,6 +59,15 @@ program.hook("postAction", async (thisCommand, actionCommand) => {
 
     await recordCommandEvent(telemetryCtx, commandName, durationMs, true);
     await trySync(telemetryCtx);
+  }
+
+  // Keep the plaintext server-name cache (used by the zsh completion plugin)
+  // in sync after any command that may have changed the config.
+  try {
+    const configObj = await loadFile<config>(`${CONFIG_DIR}/config.json`, true);
+    syncNameCache(configObj);
+  } catch {
+    // config not initialized yet — nothing to sync
   }
 });
 
@@ -122,6 +136,12 @@ program
   .argument("<action>", "enable, disable, or status")
   .description("manage advanced troubleshooting settings")
   .action(debugCommand);
+
+program
+  .command("completion")
+  .argument("<action>", "install, uninstall, or status")
+  .description("manage the Oh My Zsh completion plugin")
+  .action(zshPluginCommand);
 
 program
   .command("goodbye")

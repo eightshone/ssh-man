@@ -26,6 +26,7 @@ export type config = {
   servers: server[];
   recentServers: server[];
   debug: boolean;
+  shellCompletionEnabled?: boolean;
 };
 
 export type log = {

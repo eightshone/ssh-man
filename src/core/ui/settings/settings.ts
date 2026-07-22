@@ -13,11 +13,17 @@ import {
 import stringPadding from "../../../utils/stringPadding";
 import saveFile from "../../../utils/saveFile";
 import { CONFIG_DIR } from "../../../utils/consts";
+import {
+  getZshPluginStatus,
+  installZshPlugin,
+  uninstallZshPlugin,
+} from "../../integrations/zshPlugin";
 
-type SettingsMode = "list" | "edit_port" | "edit_key" | "edit_prefix";
+type SettingsMode = "list" | "edit_port" | "edit_key" | "edit_prefix" | "zsh_message";
 
 let selectedIndex = 0;
 let footerOffset = 0;
+let zshMessageLines: string[] = [];
 
 export default function settings(
   initialConfig: config,
@@ -46,7 +52,9 @@ export default function settings(
         label: "  Backups will be supported in future versions.",
         selectable: false,
       },
-      { id: "sep3", label: "", selectable: false },
+      { id: "sep3", label: "Shell Integration", selectable: false },
+      { id: "zsh-plugin", label: "Oh My Zsh completion", selectable: true },
+      { id: "sep4", label: "", selectable: false },
     ];
 
     const getPopupDetails = () => {
@@ -66,6 +74,8 @@ export default function settings(
             title: " Edit Autosave Prefix ",
             placeholder: activeConfig.defaults.autoSavePrefix || "",
           };
+        case "zsh_message":
+          return { title: " Oh My Zsh Plugin ", placeholder: "" };
         default:
           return { title: "", placeholder: "" };
       }
@@ -89,6 +99,8 @@ export default function settings(
           { action: "Edit/Select", key: "<enter>" },
           { action: "Back", key: "<esc>" }
         ];
+      } else if (mode === "zsh_message") {
+        keybindings = [{ action: "Dismiss", key: "any key" }];
       } else {
         keybindings = [
           { action: "Type", key: "chars" },
@@ -107,11 +119,25 @@ export default function settings(
         const item = items[i];
         let displayStr = "";
 
-        if (item.id === "port" || item.id === "key" || item.id === "prefix") {
+        if (
+          item.id === "port" ||
+          item.id === "key" ||
+          item.id === "prefix" ||
+          item.id === "zsh-plugin"
+        ) {
           let val = "";
           if (item.id === "port") val = String(activeConfig.defaults.port);
           if (item.id === "key") val = activeConfig.defaults.privateKey;
           if (item.id === "prefix") val = activeConfig.defaults.autoSavePrefix;
+          if (item.id === "zsh-plugin") {
+            const status = getZshPluginStatus();
+            val =
+              status === "installed"
+                ? "Installed"
+                : status === "omz_missing"
+                  ? "Oh My Zsh not found"
+                  : "Not installed";
+          }
 
           displayStr = `${stringPadding("  " + item.label, columnWidth - 1)} ${stringPadding(val, columnWidth, "start")}`;
         } else if (item.id.startsWith("sep") && item.label) {
@@ -134,7 +160,10 @@ export default function settings(
         }
       }
 
-      if (mode !== "list") {
+      if (mode === "zsh_message") {
+        const { title } = getPopupDetails();
+        drawPopup(buf, title, zshMessageLines, [], 0, "255", false);
+      } else if (mode !== "list") {
         const { title, placeholder } = getPopupDetails();
 
         let displayInput = inputValue;
@@ -214,6 +243,39 @@ export default function settings(
         if (key === "enter") {
           const item = items[selectedIndex];
 
+          if (item.id === "zsh-plugin") {
+            const status = getZshPluginStatus();
+
+            if (status === "omz_missing") {
+              zshMessageLines = [
+                "",
+                "  Oh My Zsh was not detected.",
+                "  Install it from https://ohmyz.sh first.",
+                "",
+              ];
+              mode = "zsh_message";
+              render(true);
+              return;
+            }
+
+            const action =
+              status === "installed"
+                ? uninstallZshPlugin(activeConfig)
+                : installZshPlugin(activeConfig);
+
+            action.then((result) => {
+              activeConfig = result.config;
+              zshMessageLines = [
+                "",
+                `  ${result.ok ? "✓" : "✖"} ${result.message}`,
+                "",
+              ];
+              mode = "zsh_message";
+              render(true);
+            });
+            return;
+          }
+
           if (item.id === "port") mode = "edit_port";
           else if (item.id === "key") mode = "edit_key";
           else if (item.id === "prefix") mode = "edit_prefix";
@@ -232,6 +294,10 @@ export default function settings(
           render();
           return;
         }
+      } else if (mode === "zsh_message") {
+        mode = "list";
+        render(true);
+        return;
       } else {
         // Popup input mode
         if (key === "escape") {
