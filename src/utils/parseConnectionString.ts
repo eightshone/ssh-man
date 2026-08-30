@@ -18,7 +18,7 @@ async function parseConnectionString(
   }
 
   if (match[2]) {
-    console.log(
+    console.error(
       colors.yellow(
         "️ Please avoid writing your passwords directly into the terminal!"
       )

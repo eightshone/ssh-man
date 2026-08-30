@@ -8,11 +8,13 @@ import compareVersions from "../../utils/compareVersions";
 async function migrate(
   config: config,
   logs: log[],
-  spinner: Spinner
+  spinner?: Spinner
 ): Promise<[config, log[]]> {
   let configObj = { ...config };
   let logsObj = [...logs];
-  spinner.text = "Migrating configs…";
+  if (spinner) {
+    spinner.text = "Migrating configs…";
+  }
 
   if (
     !configObj.version ||
@@ -54,7 +56,9 @@ async function migrate(
   configObj.version = VERSION;
   await saveFile(`${CONFIG_DIR}/config.json`, configObj, undefined, true);
   await saveFile(`${CONFIG_DIR}/logs.json`, logsObj);
-  spinner.text = "Migration complete!";
+  if (spinner) {
+    spinner.text = "Migration complete!";
+  }
 
   return [configObj, logsObj];
 }

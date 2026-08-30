@@ -1,7 +1,4 @@
-import findServer from "../../utils/findServer";
-import isConnectionString from "../../utils/isConnectionString";
-import parseConnectionString from "../../utils/parseConnectionString";
-import { server } from "../../utils/types";
+import resolveConnection from "../../utils/resolveConnection";
 import updateConfigs from "../../utils/updateConfigs";
 import validateServerName from "../../utils/validateServerName";
 import init from "../functions/init";
@@ -17,30 +14,15 @@ async function connectCommand(
   // save connection may contains the server name
   const saveConnection: string | boolean | undefined = options.save;
   const promptPassword: boolean = !!options.password;
-  let sshConfig: server | undefined;
 
-  const hasAt = creds.includes("@");
-  let isNewConnection = false;
-
-  if (hasAt) {
-    if (isConnectionString(creds)) {
-      isNewConnection = true;
-      sshConfig = await parseConnectionString(creds, promptPassword);
-    } else {
-      console.log("Invalid connection string format!");
-      return;
-    }
-  } else {
-    sshConfig = findServer(config.servers, creds);
-    if (!sshConfig) {
-      if (isConnectionString(creds)) {
-        isNewConnection = true;
-        sshConfig = await parseConnectionString(creds, promptPassword);
-      } else {
-        console.log("Server config not found!");
-        return;
-      }
-    }
+  const { sshConfig, isNewConnection, error } = await resolveConnection(
+    creds,
+    config.servers,
+    promptPassword,
+  );
+  if (!sshConfig) {
+    console.log(error);
+    return;
   }
 
   if (isNewConnection) {

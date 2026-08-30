@@ -11,6 +11,7 @@ import exportServers from "./core/commands/exportServers";
 import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
+import mcpCommand from "./core/commands/mcp";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
 import telemetryCommand from "./core/commands/telemetry";
@@ -39,8 +40,10 @@ program
 program.hook("preAction", async (thisCommand, actionCommand) => {
   const commandName = actionCommand.name();
 
-  // Skip telemetry init for telemetry subcommands (they manage config directly)
-  const skipConsent = commandName === "telemetry";
+  // Skip telemetry init for the telemetry subcommand (it manages config directly)
+  // and for mcp (stdin/stdout are reserved for the MCP protocol stream, so an
+  // interactive first-run consent prompt would corrupt it)
+  const skipConsent = commandName === "telemetry" || commandName === "mcp";
   telemetryCtx = await initTelemetry(skipConsent);
 
   commandStartTime = performance.now();
@@ -74,6 +77,16 @@ program
   .command("reconnect")
   .description("reconnect to the last session")
   .action(reconnectCommand);
+
+program
+  .command("mcp")
+  .argument(
+    "<string>",
+    "server name, or credentials in the format of username[:password]@server[:port]",
+  )
+  .option("-p, --password", "prompt for password authentication")
+  .description("start an MCP server exposing a single ssh connection")
+  .action(mcpCommand);
 
 program
   .command("logs")
