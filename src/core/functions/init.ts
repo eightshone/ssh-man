@@ -73,8 +73,8 @@ async function init(
   const problematicServers = configObj.servers.filter(
     (srv) => srv.name.includes(".") && !srv.name.startsWith("auto-save-"),
   );
-  if (problematicServers.length > 0) {
-    if (!silent && spinner) {
+  if (problematicServers.length > 0 && !silent) {
+    if (spinner) {
       spinner.info("Some saved connections have dots in their names.");
     }
 
@@ -89,7 +89,7 @@ async function init(
     });
     console.log(""); // newline
 
-    if (!silent && spinner) {
+    if (spinner) {
       spinner.start();
     }
   }
@@ -151,7 +151,9 @@ async function init(
       spinner.success("App started!");
     }
 
-    showUpdateMessage(isUptodate, manager, true);
+    if (!silent) {
+      showUpdateMessage(isUptodate, manager, true);
+    }
   } else {
     if (!silent && spinner) {
       spinner.success("App started!");

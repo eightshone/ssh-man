@@ -6,6 +6,6 @@
     "moduleResolution": "Bundler",
     "sourceMap": false,
     "outDir": "dist",
-    "lib": ["es2022"]
+    "lib": ["es2022", "dom"]
   }
 }

@@ -11,8 +11,9 @@
 - **Quick Reconnect**: Jump back into your last session with a single command.
 - **Interactive Logs**: Browse and search through your connection history with real-time filtering.
 - **Global Search**: Quickly find the server you need from your saved connections.
-- **Secure Configuration**: Your connection details are stored in an encrypted format.
-- **Import/Export**: Easily share or backup your server configurations.
+- **Encrypted Configuration**: Your connection details are stored encrypted at rest (see [Configuration Security](#configuration-security)).
+- **Import/Export**: Easily share or backup your server configurations, optionally password-protected.
+- **MCP Server**: Expose a single saved (or ad-hoc) SSH connection to any MCP-compatible AI client.
 - **Built-in Manual**: Accessible interactive help documentation within the app.
 
 ---
@@ -72,8 +73,63 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 - **Export/Import Configs**:
   ```bash
-  sshman export [servers...] [-a] [-n <filename>]
-  sshman import <config-file> [-f]
+  sshman export [servers...] [-a] [-n <filename>] [-e | -p <password>]
+  sshman import <config-file> [-f] [-p <password>]
+  ```
+  Pass `-e` (prompted) or `-p <password>` to encrypt/decrypt the exported file with its own password, independent of the local machine-derived key.
+
+- **MCP Server**:
+  ```bash
+  sshman mcp server-name
+  sshman mcp username[:password]@hostname[:port] [-p]
+  ```
+  Starts a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio for a single SSH connection, so an MCP-compatible AI client can run commands, read/write files, list directories, and drive an interactive shell on that one server. See [MCP Server](#mcp-server) below.
+
+- **Goodbye**:
+  ```bash
+  sshman goodbye
+  ```
+  Prints a random farewell message. Mostly here for fun.
+
+---
+
+## MCP Server
+
+`sshman mcp <server-name-or-connection-string>` opens a single SSH connection and exposes it as an MCP server over stdio, so it can be wired into any MCP-compatible client (e.g. Claude Code, Claude Desktop) as a tool provider scoped to that one host. It exposes:
+
+| Tool | Description |
+| :--- | :--- |
+| `run_command` | Run a shell command and return stdout, stderr, and exit code. |
+| `read_file` | Read a text file from the remote host. |
+| `write_file` | Write (overwrite) a text file on the remote host. |
+| `list_directory` | List the contents of a remote directory. |
+| `start_shell` | Start a persistent interactive shell session. |
+| `send_input` | Send input to the running interactive shell. |
+| `read_shell_output` | Read output produced by the interactive shell since the last read. |
+| `close_shell` | Close the interactive shell session. |
+
+Because stdout is reserved for the MCP JSON-RPC stream, `sshman mcp` skips the interactive first-run telemetry prompt and any other interactive output — configure telemetry via `sshman telemetry` beforehand if you have an opinion on it.
+
+---
+
+## Configuration Security
+
+Saved server configurations (hosts, usernames, passwords, private key paths) are encrypted at rest with AES-256-GCM. By default the encryption key is derived from your machine's hostname and username plus a locally-stored random salt — this protects the config file from casual inspection (e.g. someone copying the file off your disk) but is **not** a substitute for full-disk encryption or a dedicated secrets manager, since anyone with shell access to your account can derive the same key. If you need a config file that's safe to share or store elsewhere, use `sshman export -e` (or `-p <password>`) to encrypt it with your own password instead.
+
+---
+
+## Troubleshooting
+
+- **Debug mode**:
+  ```bash
+  sshman debug enable   # turn on advanced troubleshooting output
+  sshman debug disable
+  sshman debug status
+  ```
+
+- **Check for updates**:
+  ```bash
+  sshman check-updates
   ```
 
 ---
@@ -92,7 +148,13 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 ### Scripts
 - `npm run dev`: Start the project in development mode using `tsx`.
-- `npm run build`: Build the project (TypeScript compilation and obfuscation).
+- `npm run build`: Compile TypeScript to `dist/`.
+- `npm run typecheck`: Type-check the project without emitting output.
+- `npm test`: Run the test suite (Node's built-in test runner via `tsx`).
+
+A Husky pre-commit hook runs `typecheck` and `test` before every commit.
+
+---
 
 ## Telemetry
 
@@ -120,5 +182,5 @@ sshman telemetry disable # Opt-out and clear local telemetry data
 
 ---
 
-License: **MIT**  
+License: **MIT**
 Author: **EIGHTSH ONE**

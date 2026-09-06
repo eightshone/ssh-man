@@ -1,8 +1,7 @@
 {
   "name": "@eightshone/sshman",
-  "version": "0.1.20",
+  "version": "1.0.0",
   "description": "A simple cli ssh manager",
-  "main": "src/app.js",
   "repository": "git@github.com:eightshone/shhman.git",
   "author": "EIGHTSH ONE",
   "keywords": [
@@ -36,14 +35,17 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist && node scripts/update-utils.js && node scripts/inject-telemetry-endpoint.js && npx javascript-obfuscator ./dist --output ./dist --target node --compact true"
+    "postbuild": "fix-esm-import-path dist && node scripts/update-utils.js && node scripts/inject-telemetry-endpoint.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "@types/ssh2": "^1.15.4",
     "esbuild": "^0.28.0",
     "fix-esm-import-path": "^1.10.1",
-    "javascript-obfuscator": "^5.4.1",
+    "husky": "^9.1.7",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
@@ -55,12 +57,15 @@
     "@inquirer/password": "^4.0.6",
     "@inquirer/search": "^3.0.6",
     "@inquirer/select": "^4.0.5",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "clipboardy": "^4.0.0",
     "commander": "^13.0.0",
     "dayjs": "^1.11.13",
-    "nanoid": "^5.0.9",
+    "nanoid": "^5.1.16",
     "ssh2": "^1.16.0",
     "yocto-spinner": "^0.1.2",
-    "yoctocolors-cjs": "^2.1.2"
-  }
+    "yoctocolors-cjs": "^2.1.2",
+    "zod": "^4.5.4"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

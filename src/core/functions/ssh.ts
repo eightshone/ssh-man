@@ -1,8 +1,30 @@
-import { Client } from "ssh2";
+import { Client, ConnectConfig } from "ssh2";
 import yoctoSpinner from "yocto-spinner";
 import colors from "yoctocolors-cjs";
 import { server } from "../../utils/types";
 import { readFileSync } from "fs";
+
+function buildConnectConfig(sshConfig: server): ConnectConfig {
+  const config: any = { ...sshConfig };
+  if (config.usePassword === false) {
+    config.privateKey = readFileSync(config.privateKey);
+  }
+  return config;
+}
+
+// connects to a server and resolves the connected client, without touching
+// stdout — safe to use from contexts (like the MCP server) where stdout is
+// reserved for a protocol stream
+export function connectClient(sshConfig: server): Promise<Client> {
+  return new Promise((resolve, reject) => {
+    const client = new Client();
+
+    client
+      .on("error", (err) => reject(err))
+      .on("ready", () => resolve(client))
+      .connect(buildConnectConfig(sshConfig));
+  });
+}
 
 // this function creates a raw input ssh connection
 
@@ -14,10 +36,7 @@ function sshConnection(
   return new Promise((resolve, reject) => {
     const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
     const client = new Client();
-    const config: any = { ...sshConfig };
-    if (config.usePassword === false) {
-      config.privateKey = readFileSync(config.privateKey);
-    }
+    const config = buildConnectConfig(sshConfig);
 
     client
       .on("close", () => {
