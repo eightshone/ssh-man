@@ -4,6 +4,8 @@
 
 **SSHMAN** is a modern, interactive TUI (Terminal User Interface) SSH connection manager built with Node.js. It simplifies managing multiple SSH sessions with a sleek, user-friendly interface and robust CLI commands.
 
+> ⚠️ **Security Notice**: SSHMAN re-implements the SSH protocol in JavaScript (via the `ssh2` library) rather than shelling out to your system's native `ssh` binary, and does not follow standard SSH client security practices (e.g. host key verification, agent forwarding, and config conventions may differ from OpenSSH). It has not been independently security-audited. Do not treat it as a hardened or compliant SSH client — **use it at your own risk**.
+
 ## Key Features
 
 - **Interactive TUI Dashboard**: A premium terminal experience with rounded borders, ASCII art, and intuitive navigation.
