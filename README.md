@@ -8,7 +8,7 @@
 
 ## Key Features
 
-- **Interactive TUI Dashboard**: A premium terminal experience with rounded borders, ASCII art, and intuitive navigation.
+- **Interactive TUI Dashboard**: A good terminal experience with intuitive navigation.
 - **Connection Management**: Save, edit, and categorize your SSH connections for quick access.
 - **Quick Reconnect**: Jump back into your last session with a single command.
 - **Interactive Logs**: Browse and search through your connection history with real-time filtering.
@@ -26,12 +26,12 @@
 
 Install `SSHMAN` globally using your preferred package manager:
 
-| Package Manager | Command |
-| :--- | :--- |
-| **Yarn** | `yarn global add @eightshone/sshman` |
-| **NPM** | `npm install -g @eightshone/sshman` |
-| **PNPM** | `pnpm add -g @eightshone/sshman` |
-| **Bun** | `bun add -g @eightshone/sshman` |
+| Package Manager | Command                              |
+| :-------------- | :----------------------------------- |
+| **Yarn**        | `yarn global add @eightshone/sshman` |
+| **NPM**         | `npm install -g @eightshone/sshman`  |
+| **PNPM**        | `pnpm add -g @eightshone/sshman`     |
+| **Bun**         | `bun add -g @eightshone/sshman`      |
 
 ### Usage
 
@@ -47,9 +47,9 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 - **Connect to a new server**:
   ```bash
-  sshman connect username[:password]@hostname[:port] [--save [name]]
+  sshman connect username@hostname[:port] [--save [name]]
   ```
-  *Example*: `sshman connect root:password@1.2.3.4:22 -s my-server`
+  *Example*: `sshman connect root@1.2.3.4:22 -s my-server`
 
 - **Quick Reconnect**:
   ```bash
@@ -99,18 +99,16 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 `sshman mcp <server-name-or-connection-string>` opens a single SSH connection and exposes it as an MCP server over stdio, so it can be wired into any MCP-compatible client (e.g. Claude Code, Claude Desktop) as a tool provider scoped to that one host. It exposes:
 
-| Tool | Description |
-| :--- | :--- |
-| `run_command` | Run a shell command and return stdout, stderr, and exit code. |
-| `read_file` | Read a text file from the remote host. |
-| `write_file` | Write (overwrite) a text file on the remote host. |
-| `list_directory` | List the contents of a remote directory. |
-| `start_shell` | Start a persistent interactive shell session. |
-| `send_input` | Send input to the running interactive shell. |
+| Tool                | Description                                                        |
+| :------------------ | :----------------------------------------------------------------- |
+| `run_command`       | Run a shell command and return stdout, stderr, and exit code.      |
+| `read_file`         | Read a text file from the remote host.                             |
+| `write_file`        | Write (overwrite) a text file on the remote host.                  |
+| `list_directory`    | List the contents of a remote directory.                           |
+| `start_shell`       | Start a persistent interactive shell session.                      |
+| `send_input`        | Send input to the running interactive shell.                       |
 | `read_shell_output` | Read output produced by the interactive shell since the last read. |
-| `close_shell` | Close the interactive shell session. |
-
-Because stdout is reserved for the MCP JSON-RPC stream, `sshman mcp` skips the interactive first-run telemetry prompt and any other interactive output — configure telemetry via `sshman telemetry` beforehand if you have an opinion on it.
+| `close_shell`       | Close the interactive shell session.                               |
 
 ---
 
@@ -155,32 +153,6 @@ Saved server configurations (hosts, usernames, passwords, private key paths) are
 - `npm test`: Run the test suite (Node's built-in test runner via `tsx`).
 
 A Husky pre-commit hook runs `typecheck` and `test` before every commit.
-
----
-
-## Telemetry
-
-SSHMAN collects anonymous usage data to help improve the tool. This data helps us understand which features are most used and identify performance bottlenecks or common errors.
-
-**Telemetry is strictly opt-in.** You will be prompted to enable it on your first run. No personal information, connection details, or command arguments are ever collected.
-
-### What is collected?
-- **Command name**: (e.g., `connect`, `search`) — *Arguments and flags are stripped.*
-- **Performance**: Execution duration and success/failure status.
-- **Errors**: Sanitized error codes (e.g., `ECONNREFUSED`).
-- **System context**: OS, CPU architecture, Node.js version, and SSHMAN version.
-
-### Privacy First
-- **No PII**: We never collect IP addresses, usernames, hostnames, or any sensitive configuration.
-- **Transparent**: All data is stored locally before being batched and sent.
-- **Total Control**: You can change your preference at any time.
-
-### Manage Telemetry
-```bash
-sshman telemetry status  # Check current status and pending data
-sshman telemetry enable  # Opt-in to telemetry
-sshman telemetry disable # Opt-out and clear local telemetry data
-```
 
 ---
 

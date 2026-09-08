@@ -35,7 +35,7 @@
   "scripts": {
     "dev": "tsx src/app.ts",
     "build": "tsc",
-    "postbuild": "fix-esm-import-path dist && node scripts/update-utils.js && node scripts/inject-telemetry-endpoint.js",
+    "postbuild": "fix-esm-import-path dist && node scripts/update-utils.js",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "prepare": "husky"
