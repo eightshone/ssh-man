@@ -1,93 +1,79 @@
-import { Client, ConnectConfig } from "ssh2";
-import yoctoSpinner from "yocto-spinner";
+import { spawn } from "child_process";
 import colors from "yoctocolors-cjs";
 import { server } from "../../utils/types";
-import { readFileSync } from "fs";
+import buildSshArgs from "../../utils/buildSshArgs";
+import buildAskpassEnv from "./askpassEnv";
 
-function buildConnectConfig(sshConfig: server): ConnectConfig {
-  const config: any = { ...sshConfig };
-  if (config.usePassword === false) {
-    config.privateKey = readFileSync(config.privateKey);
-  }
-  return config;
-}
+export type SshTarget = {
+  args: string[];
+  env: NodeJS.ProcessEnv;
+  close: () => void;
+};
 
-// connects to a server and resolves the connected client, without touching
-// stdout — safe to use from contexts (like the MCP server) where stdout is
-// reserved for a protocol stream
-export function connectClient(sshConfig: server): Promise<Client> {
+// verifies the connection works (fails fast on bad credentials/host) and
+// returns a reusable {args, env} descriptor for exec/sftp/shell helpers to
+// shell out with.
+// ponytail: each call below spawns its own `ssh` process rather than
+// multiplexing over one socket, add ControlMaster/ControlPath if per-call
+// latency in the MCP tools becomes a problem
+export function connectClient(sshConfig: server, oneOffPassword?: string): Promise<SshTarget> {
+  const args = buildSshArgs(sshConfig);
+  const { env, cleanup } = buildAskpassEnv(sshConfig, oneOffPassword);
+
   return new Promise((resolve, reject) => {
-    const client = new Client();
+    const probe = spawn("ssh", [...args, "exit"], {
+      stdio: ["ignore", "ignore", "pipe"],
+      env,
+    });
 
-    client
-      .on("error", (err) => reject(err))
-      .on("ready", () => resolve(client))
-      .connect(buildConnectConfig(sshConfig));
+    let stderr = "";
+    probe.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf8")));
+    probe.on("error", (err) => {
+      cleanup();
+      reject(err);
+    });
+    probe.on("close", (code) => {
+      if (code === 0) {
+        resolve({ args, env, close: cleanup });
+      } else {
+        cleanup();
+        reject(new Error(stderr.trim() || `ssh exited with code ${code}`));
+      }
+    });
   });
 }
 
-// this function creates a raw input ssh connection
-
+// opens a raw, interactive ssh session. stdio is handed straight to the
+// real ssh client, so it owns the PTY, resize, and escape sequences itself
 function sshConnection(
   sshConfig: server,
-  unref: boolean = false,
+  oneOffPassword?: string,
   isTUI: boolean = false,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const spinner = yoctoSpinner({ text: "Connecting to server…" }).start();
-    const client = new Client();
-    const config = buildConnectConfig(sshConfig);
+    console.log(
+      colors.cyan(`Connecting to ${sshConfig.name || sshConfig.host}…`),
+    );
 
-    client
-      .on("close", () => {
-        resolve(); // resolve the promise when the connection closes
-      })
-      .on("error", (err) => {
-        spinner.error(colors.red("Connection error!"));
-        if (isTUI) {
-          reject(err);
-        } else {
-          console.log("Error details", err.message);
-          resolve();
-        }
-      })
-      .on("ready", function () {
-        spinner.success(colors.green("Connection ready!"));
-        this.shell(
-          {
-            term: process.env.TERM ?? "xterm-256color",
-            rows: process.stdout.rows,
-            cols: process.stdout.columns,
-          },
-          (err, stream) => {
-            if (err) {
-              reject(err); // reject the promise if shell creation fails
-              return;
-            }
+    const args = buildSshArgs(sshConfig);
+    const { env, cleanup } = buildAskpassEnv(sshConfig, oneOffPassword);
 
-            stream.on("close", () => {
-              if (unref) {
-                process.stdin.unref(); // unless it is specified for a certain usecase, this line will terminate the whole application
-              }
-              this.end(); // close the connection
-            });
+    const child = spawn("ssh", args, { stdio: "inherit", env });
 
-            process.stdin.setRawMode(true);
-            process.stdin.pipe(stream);
-            stream.pipe(process.stdout);
+    child.on("error", (err) => {
+      cleanup();
+      console.log(colors.red("Connection error!"), err.message);
+      if (isTUI) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
 
-            process.stdout.on("resize", () => {
-              stream.setWindow(
-                process.stdout.rows,
-                process.stdout.columns,
-                0,
-                0,
-              );
-            });
-          },
-        );
-      })
-      .connect(config);
+    child.on("close", () => {
+      cleanup();
+      resolve();
+    });
   });
 }
 

@@ -2,8 +2,7 @@ import number from "@inquirer/number";
 import string from "@inquirer/input";
 import { config, editDefaultOptions, menu } from "../../../utils/types";
 import validateServerName from "../../../utils/validateServerName";
-import saveFile from "../../../utils/saveFile";
-import { CONFIG_DIR } from "../../../utils/consts";
+import saveConfig from "../../../utils/saveConfig";
 
 async function editDefault(
   options: editDefaultOptions,
@@ -30,7 +29,7 @@ async function editDefault(
     });
   }
 
-  await saveFile(`${CONFIG_DIR}/config.json`, innerConfig, undefined, true);
+  await saveConfig(innerConfig);
 
   return ["settings", innerConfig];
 }

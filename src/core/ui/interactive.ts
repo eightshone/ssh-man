@@ -48,10 +48,12 @@ async function interactive(
 
     if (currentMenu === "ssh-connect") {
       process.stdout.write(ansi.altScreenExit());
+      const payload = JSON.parse(options[0]);
       [currentMenu, config, logs, options] = await sshConnect(
         config,
         logs,
-        JSON.parse(options[0]),
+        payload.server,
+        payload.password,
         options[1] === "true",
       );
       process.stdout.write(ansi.altScreenEnter());

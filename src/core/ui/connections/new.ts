@@ -12,6 +12,7 @@ import {
   drawFooter,
 } from "../../../utils/tui/index";
 import validateServerName from "../../../utils/validateServerName";
+import { checkAliasAvailable } from "../../../utils/sshConfigFile";
 import { nanoid } from "nanoid";
 import sshConnection from "../../functions/ssh";
 import updateConfigs from "../../../utils/updateConfigs";
@@ -76,8 +77,17 @@ export default function newConnection(
         condition: (data: any) => data.saveConnection,
         default: (cfg: Config, data: any) =>
           `${cfg.defaults.autoSavePrefix || "srv"}-${data.username}-${data.host}`,
-        validate: (val: string, cfg: Config) =>
-          validateServerName(val, cfg.servers),
+        validate: (val: string, cfg: Config): true | string | Promise<true | string> => {
+          const nameCheck = validateServerName(val, cfg.servers);
+          if (nameCheck !== true) {
+            return typeof nameCheck === "string" ? nameCheck : "Invalid input.";
+          }
+          return checkAliasAvailable(val).then((available) =>
+            available
+              ? true
+              : `"${val}" already resolves to something in your ~/.ssh/config. Pick a different name.`,
+          );
+        },
       },
     ];
 
@@ -89,6 +99,7 @@ export default function newConnection(
     let cursorPos = 0;
     let selectedIndex = 0;
     let error = "";
+    let checking = false;
     let showAbortConfirm = false;
     let abortSelectedIndex = 1; // Default to No (index 1)
 
@@ -177,13 +188,19 @@ export default function newConnection(
         username: data.username,
         port: Number(data.port),
         ...(data.usePassword
-          ? { usePassword: true, password: data.auth }
+          ? { usePassword: true }
           : { usePassword: false, privateKey: data.auth }),
       };
 
       resolve([
         "ssh-connect",
-        [JSON.stringify(sshConfig), data.saveConnection ? "true" : "false"],
+        [
+          JSON.stringify({
+            server: sshConfig,
+            password: data.usePassword ? data.auth : undefined,
+          }),
+          data.saveConnection ? "true" : "false",
+        ],
       ] as any);
     };
 
@@ -294,7 +311,11 @@ export default function newConnection(
         }
       }
 
-      if (error) {
+      if (checking) {
+        buf
+          .moveTo(rows - 2, 3)
+          .write(ansi.dim(padOrTruncate(">> Checking name availability…", contentWidth)));
+      } else if (error) {
         buf
           .moveTo(rows - 2, 3)
           .write(ansi.fg("160", padOrTruncate(`>> ${error}`, contentWidth)));
@@ -318,6 +339,10 @@ export default function newConnection(
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
+      if (checking) {
+        return;
+      }
+
       if (showAbortConfirm) {
         if (
           key === "left" ||
@@ -414,6 +439,23 @@ export default function newConnection(
 
           if (activeStep.validate) {
             const validation = activeStep.validate(val, config);
+            if (validation instanceof Promise) {
+              checking = true;
+              error = "";
+              render();
+              validation.then((resolved) => {
+                checking = false;
+                if (resolved !== true) {
+                  error = typeof resolved === "string" ? resolved : "Invalid input.";
+                  render();
+                  return;
+                }
+                capturedData[activeStep.id] = val;
+                nextStep();
+                render();
+              });
+              return;
+            }
             if (validation !== true) {
               error =
                 typeof validation === "string" ? validation : "Invalid input.";

@@ -75,15 +75,15 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 - **Export/Import Configs**:
   ```bash
-  sshman export [servers...] [-a] [-n <filename>] [-e | -p <password>]
+  sshman export [servers...] [-a] [-n <filename>] [-p <password>]
   sshman import <config-file> [-f] [-p <password>]
   ```
-  Pass `-e` (prompted) or `-p <password>` to encrypt/decrypt the exported file with its own password, independent of the local machine-derived key.
+  Export files are always encrypted: pass `-p <password>` or you'll be prompted for one. Import requires that same password and refuses unencrypted files.
 
 - **MCP Server**:
   ```bash
   sshman mcp server-name
-  sshman mcp username[:password]@hostname[:port] [-p]
+  sshman mcp username@hostname[:port] [-p]
   ```
   Starts a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio for a single SSH connection, so an MCP-compatible AI client can run commands, read/write files, list directories, and drive an interactive shell on that one server. See [MCP Server](#mcp-server) below.
 

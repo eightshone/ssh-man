@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
-    "@types/ssh2": "^1.15.4",
     "esbuild": "^0.28.0",
     "fix-esm-import-path": "^1.10.1",
     "husky": "^9.1.7",
@@ -58,11 +57,11 @@
     "@inquirer/search": "^3.0.6",
     "@inquirer/select": "^4.0.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@napi-rs/keyring": "^2.0.0",
     "clipboardy": "^4.0.0",
     "commander": "^13.0.0",
     "dayjs": "^1.11.13",
     "nanoid": "^5.1.16",
-    "ssh2": "^1.16.0",
     "yocto-spinner": "^0.1.2",
     "yoctocolors-cjs": "^2.1.2",
     "zod": "^4.5.4"

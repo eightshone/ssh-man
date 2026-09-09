@@ -1,6 +1,7 @@
 import resolveConnection from "../../utils/resolveConnection";
 import updateConfigs from "../../utils/updateConfigs";
 import validateServerName from "../../utils/validateServerName";
+import { setServerPassword } from "../../utils/secret";
 import init from "../functions/init";
 import sshConnection from "../functions/ssh";
 
@@ -15,7 +16,7 @@ async function connectCommand(
   const saveConnection: string | boolean | undefined = options.save;
   const promptPassword: boolean = !!options.password;
 
-  const { sshConfig, isNewConnection, error } = await resolveConnection(
+  const { sshConfig, password, isNewConnection, error } = await resolveConnection(
     creds,
     config.servers,
     promptPassword,
@@ -49,14 +50,15 @@ async function connectCommand(
     }
   }
 
-  [config, logs] = await updateConfigs(
-    config,
-    logs,
-    sshConfig,
-    !!saveConnection && isNewConnection,
-  );
+  const shouldSave = !!saveConnection && isNewConnection;
 
-  await sshConnection(sshConfig);
+  if (shouldSave && sshConfig.usePassword && password) {
+    await setServerPassword(sshConfig.id, password);
+  }
+
+  [config, logs] = await updateConfigs(config, logs, sshConfig, shouldSave);
+
+  await sshConnection(sshConfig, shouldSave ? undefined : password);
 }
 
 export default connectCommand;

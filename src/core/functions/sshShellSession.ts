@@ -1,46 +1,47 @@
-import { Client, ClientChannel } from "ssh2";
+import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import { SshTarget } from "./ssh";
 
 class ShellSession {
-  private channel: ClientChannel | null = null;
+  private child: ChildProcessWithoutNullStreams | null = null;
   private buffer = "";
 
   isOpen(): boolean {
-    return this.channel !== null;
+    return this.child !== null;
   }
 
-  start(client: Client): Promise<void> {
-    if (this.channel) {
+  start(target: SshTarget): Promise<void> {
+    if (this.child) {
       return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
-      client.shell({ term: "xterm-256color", rows: 30, cols: 100 }, (err, stream) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        this.channel = stream;
-        stream.on("data", (chunk: Buffer) => {
-          this.buffer += chunk.toString("utf8");
-        });
-        stream.stderr.on("data", (chunk: Buffer) => {
-          this.buffer += chunk.toString("utf8");
-        });
-        stream.on("close", () => {
-          this.channel = null;
-        });
-
-        resolve();
+      // -tt forces a pseudo-tty even though stdio is piped, matching the
+      // interactive shell ssh2's client.shell() used to allocate
+      const child = spawn("ssh", ["-tt", ...target.args], {
+        stdio: ["pipe", "pipe", "pipe"],
+        env: target.env,
       });
+
+      this.child = child;
+      child.stdout.on("data", (chunk: Buffer) => (this.buffer += chunk.toString("utf8")));
+      child.stderr.on("data", (chunk: Buffer) => (this.buffer += chunk.toString("utf8")));
+      child.on("close", () => {
+        this.child = null;
+      });
+      child.on("error", (err) => {
+        this.child = null;
+        reject(err);
+      });
+
+      resolve();
     });
   }
 
   write(input: string): void {
-    if (!this.channel) {
+    if (!this.child) {
       throw new Error("Shell session is not open. Call start_shell first.");
     }
-    this.channel.write(input);
+    this.child.stdin.write(input);
   }
 
   readOutput(): string {
@@ -50,9 +51,9 @@ class ShellSession {
   }
 
   close(): void {
-    if (this.channel) {
-      this.channel.end();
-      this.channel = null;
+    if (this.child) {
+      this.child.kill();
+      this.child = null;
     }
   }
 }

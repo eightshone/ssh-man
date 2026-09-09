@@ -1,7 +1,6 @@
 type connectivity =
   | {
       usePassword: true;
-      password: string;
     }
   | {
       usePassword: false;
@@ -15,6 +14,10 @@ export type server = {
   port: number;
   username: string;
 } & connectivity;
+
+// wire format for export/import files, carries the plaintext password so a
+// bundle is portable. Never part of config.json (that only holds `server`).
+export type exportedServer = server & { password?: string };
 
 export type config = {
   version?: string;

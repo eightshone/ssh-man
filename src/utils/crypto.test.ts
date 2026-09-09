@@ -1,34 +1,6 @@
-import { test, before, after } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import type * as CryptoModule from "./crypto";
-
-// crypto.ts derives its config directory from the home directory at import
-// time, so point HOME at a throwaway directory before importing it — this
-// keeps the test from touching the real ~/.sshman on the developer's machine.
-let fakeHome: string;
-let crypto: typeof CryptoModule;
-
-before(async () => {
-  fakeHome = mkdtempSync(join(tmpdir(), "sshman-crypto-test-"));
-  const originalHome = process.env.HOME;
-  process.env.HOME = fakeHome;
-  crypto = await import("./crypto");
-  process.env.HOME = originalHome;
-});
-
-after(() => {
-  rmSync(fakeHome, { recursive: true, force: true });
-});
-
-test("encrypt/decrypt round-trips with the machine-derived key", () => {
-  const plaintext = "super secret ssh password";
-  const ciphertext = crypto.encrypt(plaintext);
-  assert.notEqual(ciphertext, plaintext);
-  assert.equal(crypto.decrypt(ciphertext), plaintext);
-});
+import * as crypto from "./crypto";
 
 test("encryptWithPassword/decryptWithPassword round-trips", () => {
   const plaintext = '{"servers":[]}';

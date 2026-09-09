@@ -1,8 +1,8 @@
-import { Client } from "ssh2";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { VERSION } from "../../utils/consts";
 import { server as serverConfig } from "../../utils/types";
+import { SshTarget } from "../functions/ssh";
 import execCommand from "../functions/sshExec";
 import {
   readRemoteFile,
@@ -20,7 +20,7 @@ function errorResult(err: unknown) {
   return { content: [{ type: "text" as const, text: message }], isError: true };
 }
 
-function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
+function buildMcpServer(target: SshTarget, sshConfig: serverConfig): McpServer {
   const mcp = new McpServer({ name: "sshman", version: VERSION });
   const shellSession = new ShellSession();
 
@@ -54,7 +54,7 @@ function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
     },
     async ({ command, cwd }) => {
       try {
-        const result = await execCommand(client, command, { cwd });
+        const result = await execCommand(target, command, { cwd });
         return textResult(JSON.stringify(result));
       } catch (err) {
         return errorResult(err);
@@ -72,7 +72,7 @@ function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
     },
     async ({ path }) => {
       try {
-        const content = await readRemoteFile(client, path);
+        const content = await readRemoteFile(target, path);
         return textResult(content);
       } catch (err) {
         return errorResult(err);
@@ -91,7 +91,7 @@ function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
     },
     async ({ path, content }) => {
       try {
-        await writeRemoteFile(client, path, content);
+        await writeRemoteFile(target, path, content);
         return textResult(`Wrote ${content.length} bytes to ${path}`);
       } catch (err) {
         return errorResult(err);
@@ -109,7 +109,7 @@ function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
     },
     async ({ path }) => {
       try {
-        const entries = await listRemoteDirectory(client, path);
+        const entries = await listRemoteDirectory(target, path);
         return textResult(JSON.stringify(entries));
       } catch (err) {
         return errorResult(err);
@@ -124,7 +124,7 @@ function buildMcpServer(client: Client, sshConfig: serverConfig): McpServer {
     },
     async () => {
       try {
-        await shellSession.start(client);
+        await shellSession.start(target);
         return textResult("Shell session started.");
       } catch (err) {
         return errorResult(err);

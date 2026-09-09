@@ -30,9 +30,9 @@ program
   .command("connect")
   .argument(
     "<string>",
-    "credentials in the format of username[:password]@server[:port]",
+    "credentials in the format of username@server[:port]",
   )
-  .option("-p, --password")
+  .option("-p, --password", "prompt for password authentication")
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(connectCommand);
@@ -46,7 +46,7 @@ program
   .command("mcp")
   .argument(
     "<string>",
-    "server name, or credentials in the format of username[:password]@server[:port]",
+    "server name, or credentials in the format of username@server[:port]",
   )
   .option("-p, --password", "prompt for password authentication")
   .description("start an MCP server exposing a single ssh connection")
@@ -70,11 +70,7 @@ program
   .option("-f, --force", "replace existing file")
   .option(
     "-p, --password <password>",
-    "password to encrypt the exported config file",
-  )
-  .option(
-    "-e, --encrypt",
-    "prompt for a password to encrypt the exported config file",
+    "password to encrypt the exported config file (prompted if omitted)",
   )
   .description("exports server configurations")
   .action(exportServers);

@@ -11,9 +11,12 @@ import {
   drawFooter,
 } from "../../../utils/tui/index";
 import validateServerName from "../../../utils/validateServerName";
+import { checkAliasAvailable } from "../../../utils/sshConfigFile";
 import saveFile from "../../../utils/saveFile";
+import saveConfig from "../../../utils/saveConfig";
 import { CONFIG_DIR } from "../../../utils/consts";
 import { homedir } from "os";
+import { setServerPassword, deleteServerPassword } from "../../../utils/secret";
 
 export default function editConnection(
   initialConfig: Config,
@@ -31,9 +34,17 @@ export default function editConnection(
         prompt: "Server name:",
         type: "input",
         required: true,
-        validate: (val: string, cfg: Config) => {
+        validate: (val: string, cfg: Config): true | string | Promise<true | string> => {
           if (val === sshConfig.name) return true; // unchanged is fine
-          return validateServerName(val, cfg.servers);
+          const nameCheck = validateServerName(val, cfg.servers);
+          if (nameCheck !== true) {
+            return typeof nameCheck === "string" ? nameCheck : "Invalid input.";
+          }
+          return checkAliasAvailable(val).then((available) =>
+            available
+              ? true
+              : `"${val}" already resolves to something in your ~/.ssh/config. Pick a different name.`,
+          );
         },
         default: () => sshConfig.name,
       },
@@ -112,6 +123,7 @@ export default function editConnection(
     let cursorPos = 0;
     let selectedIndex = 0;
     let error = "";
+    let checking = false;
     let showAbortConfirm = false;
     let abortSelectedIndex = 1;
 
@@ -207,10 +219,13 @@ export default function editConnection(
         return;
       }
 
-      // Determine final auth value
+      // determine the final auth value, unchanged password or key auth
+      // keeps its existing entry
+      const authUnchanged =
+        data.usePassword === sshConfig.usePassword && data.updateAuth === false;
       let auth = data.auth;
-      if (data.usePassword === sshConfig.usePassword && data.updateAuth === false) {
-        auth = sshConfig.usePassword ? (sshConfig as any).password : (sshConfig as any).privateKey;
+      if (authUnchanged && sshConfig.usePassword === false) {
+        auth = sshConfig.privateKey;
       }
 
       const updatedSshConfig: server = {
@@ -220,12 +235,21 @@ export default function editConnection(
         username: data.username,
         port: Number(data.port),
         ...(data.usePassword
-          ? { usePassword: true, password: auth }
+          ? { usePassword: true }
           : { usePassword: false, privateKey: auth }),
       };
 
+      if (data.usePassword) {
+        if (!authUnchanged) {
+          await setServerPassword(sshConfig.id, auth);
+        }
+      } else if (sshConfig.usePassword === true) {
+        // switched away from password auth, drop the now-unused secret
+        await deleteServerPassword(sshConfig.id);
+      }
+
       config.servers[index] = updatedSshConfig;
-      await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
+      await saveConfig(config);
 
       if (updatedSshConfig.name !== sshConfig.name) {
         logs = logs.map((currentLog) => {
@@ -316,7 +340,9 @@ export default function editConnection(
         }
       }
 
-      if (error) {
+      if (checking) {
+        buf.moveTo(rows - 2, 3).write(ansi.dim(padOrTruncate(">> Checking name availability…", contentWidth)));
+      } else if (error) {
         buf.moveTo(rows - 2, 3).write(ansi.fg("160", padOrTruncate(`>> ${error}`, contentWidth)));
       }
 
@@ -328,6 +354,10 @@ export default function editConnection(
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {
+      if (checking) {
+        return;
+      }
+
       if (showAbortConfirm) {
         if (key === "left" || key === "right" || key === "up" || key === "down" || key === "tab") {
           abortSelectedIndex = abortSelectedIndex === 0 ? 1 : 0;
@@ -405,6 +435,23 @@ export default function editConnection(
           }
           if (activeStep.validate) {
             const validation = activeStep.validate(val, config);
+            if (validation instanceof Promise) {
+              checking = true;
+              error = "";
+              render();
+              validation.then((resolved) => {
+                checking = false;
+                if (resolved !== true) {
+                  error = typeof resolved === "string" ? resolved : "Invalid input.";
+                  render();
+                  return;
+                }
+                capturedData[activeStep.id] = val;
+                nextStep();
+                render();
+              });
+              return;
+            }
             if (validation !== true) {
               error = typeof validation === "string" ? validation : "Invalid input.";
               render();

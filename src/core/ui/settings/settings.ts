@@ -11,8 +11,7 @@ import {
   drawPopup,
 } from "../../../utils/tui/index";
 import stringPadding from "../../../utils/stringPadding";
-import saveFile from "../../../utils/saveFile";
-import { CONFIG_DIR } from "../../../utils/consts";
+import saveConfig from "../../../utils/saveConfig";
 
 type SettingsMode = "list" | "edit_port" | "edit_key" | "edit_prefix";
 
@@ -171,12 +170,7 @@ export default function settings(
     };
 
     const saveSettings = async () => {
-      await saveFile(
-        `${CONFIG_DIR}/config.json`,
-        activeConfig,
-        undefined,
-        true,
-      );
+      await saveConfig(activeConfig);
     };
 
     const { stdin, cleanup } = setupInput((key, char) => {

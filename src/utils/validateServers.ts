@@ -1,6 +1,9 @@
-import { server } from "./types";
+import { exportedServer } from "./types";
 
-function validateServers(value: unknown): value is server[] {
+// validates the wire format used by export/import files, which (unlike the
+// live `server` type) carries a plaintext `password` for password-auth
+// entries
+function validateServers(value: unknown): value is exportedServer[] {
   if (!Array.isArray(value)) return false;
 
   return value.every((item) => {

@@ -5,10 +5,11 @@ async function readConfigFile<T = unknown>(filePath: string, password?: string):
   const data = await fs.readFile(filePath, "utf-8");
 
   if (isPlainJSON(data)) {
-    return JSON.parse(data) as T;
+    const error = new Error("This file is not encrypted and can no longer be imported") as any;
+    error.code = "ERR_UNENCRYPTED_FILE";
+    throw error;
   }
 
-  // It is encrypted
   if (!password) {
     const error = new Error("File is encrypted") as any;
     error.code = "ERR_ENCRYPTED_FILE";

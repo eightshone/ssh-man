@@ -11,7 +11,7 @@ async function mcpCommand(
   // stdout is reserved for the MCP JSON-RPC stream, so init must stay silent
   const { config } = await init({ silent: true });
 
-  const { sshConfig, error } = await resolveConnection(
+  const { sshConfig, password, error } = await resolveConnection(
     creds,
     config.servers,
     !!options.password,
@@ -22,9 +22,9 @@ async function mcpCommand(
     return;
   }
 
-  let client;
+  let target;
   try {
-    client = await connectClient(sshConfig);
+    target = await connectClient(sshConfig, password);
   } catch (err) {
     console.error(
       `Failed to connect to ${sshConfig.host}: ${err instanceof Error ? err.message : err}`,
@@ -33,7 +33,7 @@ async function mcpCommand(
     return;
   }
 
-  const mcp = buildMcpServer(client, sshConfig);
+  const mcp = buildMcpServer(target, sshConfig);
   const transport = new StdioServerTransport();
 
   let shuttingDown = false;
@@ -41,15 +41,10 @@ async function mcpCommand(
     if (shuttingDown) return;
     shuttingDown = true;
     await mcp.close().catch(() => {});
-    client.end();
+    target.close();
     process.exit(0);
   };
 
-  client.on("close", shutdown);
-  client.on("error", (err) => {
-    console.error(`SSH connection error: ${err.message}`);
-    shutdown();
-  });
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 

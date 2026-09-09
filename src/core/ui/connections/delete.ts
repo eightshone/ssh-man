@@ -1,11 +1,19 @@
 import select from "@inquirer/select";
-import { CONFIG_DIR } from "../../../utils/consts";
-import saveFile from "../../../utils/saveFile";
+import saveConfig from "../../../utils/saveConfig";
+import { deleteServerPassword } from "../../../utils/secret";
 import { config, menu, server } from "../../../utils/types";
 
 export async function performDelete(initialConfig: config, serverIndex: number | number[]) {
   const config: config = { ...initialConfig };
   let { servers } = initialConfig;
+
+  const indices = Array.isArray(serverIndex) ? serverIndex : [serverIndex];
+  await Promise.all(
+    indices.map((idx) => {
+      const srv = servers[idx];
+      return srv?.usePassword ? deleteServerPassword(srv.id) : Promise.resolve();
+    }),
+  );
 
   if (Array.isArray(serverIndex)) {
     // Collect specific indices to remove
@@ -14,10 +22,10 @@ export async function performDelete(initialConfig: config, serverIndex: number |
   } else {
     servers.splice(serverIndex, 1);
   }
-  
+
   config.servers = servers;
 
-  await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
+  await saveConfig(config);
   return config;
 }
 

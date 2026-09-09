@@ -5,6 +5,7 @@ import { server } from "./types";
 
 export type resolvedConnection = {
   sshConfig?: server;
+  password?: string;
   isNewConnection: boolean;
   error?: string;
 };
@@ -22,10 +23,12 @@ async function resolveConnection(
 
   if (hasAt) {
     if (isConnectionString(creds)) {
-      return {
-        isNewConnection: true,
-        sshConfig: await parseConnectionString(creds, promptPassword),
-      };
+      try {
+        const parsed = await parseConnectionString(creds, promptPassword);
+        return { isNewConnection: true, sshConfig: parsed.server, password: parsed.password };
+      } catch (err) {
+        return { isNewConnection: false, error: err instanceof Error ? err.message : String(err) };
+      }
     }
     return { isNewConnection: false, error: "Invalid connection string format!" };
   }
@@ -36,10 +39,12 @@ async function resolveConnection(
   }
 
   if (isConnectionString(creds)) {
-    return {
-      isNewConnection: true,
-      sshConfig: await parseConnectionString(creds, promptPassword),
-    };
+    try {
+      const parsed = await parseConnectionString(creds, promptPassword);
+      return { isNewConnection: true, sshConfig: parsed.server, password: parsed.password };
+    } catch (err) {
+      return { isNewConnection: false, error: err instanceof Error ? err.message : String(err) };
+    }
   }
 
   return { isNewConnection: false, error: "Server config not found!" };

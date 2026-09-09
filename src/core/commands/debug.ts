@@ -1,8 +1,6 @@
 import colors from "yoctocolors-cjs";
-import { CONFIG_DIR } from "../../utils/consts";
-import loadFile from "../../utils/loadFile";
-import saveFile from "../../utils/saveFile";
-import { config } from "../../utils/types";
+import saveConfig from "../../utils/saveConfig";
+import init from "../functions/init";
 
 /**
  * Handles `sshman debug <action>` subcommands.
@@ -12,7 +10,6 @@ import { config } from "../../utils/types";
  */
 async function debugCommand(action: string) {
   const validActions = ["enable", "disable", "status"];
-  const configFile = `${CONFIG_DIR}/config.json`;
 
   if (!validActions.includes(action)) {
     console.log(colors.red(`Unknown action: "${action}"`));
@@ -20,12 +17,13 @@ async function debugCommand(action: string) {
     return;
   }
 
-  const configObj: config = await loadFile(configFile, true);
+  // goes through init() so a legacy encrypted config.json is migrated first
+  const { config: configObj } = await init({ silent: true });
 
   switch (action) {
     case "enable": {
       configObj.debug = true;
-      await saveFile(configFile, configObj, undefined, true);
+      await saveConfig(configObj);
       console.log(colors.green("✓ Debug mode enabled."));
       console.log(
         colors.dim("  Advanced troubleshooting features are now available."),
@@ -35,7 +33,7 @@ async function debugCommand(action: string) {
 
     case "disable": {
       configObj.debug = false;
-      await saveFile(configFile, configObj, undefined, true);
+      await saveConfig(configObj);
       console.log(colors.green("✓ Debug mode disabled."));
       break;
     }

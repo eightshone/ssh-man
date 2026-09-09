@@ -1,4 +1,6 @@
-import { Client } from "ssh2";
+import { spawn } from "child_process";
+import execCommand from "./sshExec";
+import { SshTarget } from "./ssh";
 
 export type directoryEntry = {
   name: string;
@@ -7,79 +9,75 @@ export type directoryEntry = {
   mtime: number;
 };
 
-function getSftp(client: Client) {
-  return new Promise<import("ssh2").SFTPWrapper>((resolve, reject) => {
-    client.sftp((err, sftp) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(sftp);
-    });
-  });
-}
-
 export async function readRemoteFile(
-  client: Client,
+  target: SshTarget,
   path: string,
 ): Promise<string> {
-  const sftp = await getSftp(client);
-  return new Promise((resolve, reject) => {
-    sftp.readFile(path, "utf8" as any, (err, handle) => {
-      sftp.end();
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(handle.toString());
-    });
-  });
+  const { stdout, stderr, exitCode } = await execCommand(
+    target,
+    `cat -- ${JSON.stringify(path)}`,
+  );
+  if (exitCode !== 0) {
+    throw new Error(stderr.trim() || `cat exited with code ${exitCode}`);
+  }
+  return stdout;
 }
 
-export async function writeRemoteFile(
-  client: Client,
+export function writeRemoteFile(
+  target: SshTarget,
   path: string,
   content: string,
 ): Promise<void> {
-  const sftp = await getSftp(client);
   return new Promise((resolve, reject) => {
-    sftp.writeFile(path, content, (err) => {
-      sftp.end();
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
+    const child = spawn("ssh", [...target.args, `cat > ${JSON.stringify(path)}`], {
+      stdio: ["pipe", "ignore", "pipe"],
+      env: target.env,
     });
+
+    let stderr = "";
+    child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf8")));
+    child.on("error", reject);
+    child.on("close", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(stderr.trim() || `write failed with code ${code}`)),
+    );
+    child.stdin.end(content, "utf8");
   });
 }
 
+// ponytail: uses GNU find's -printf for structured output instead of a raw
+// SFTP stat, assumes a Linux/GNU-findutils remote
 export async function listRemoteDirectory(
-  client: Client,
+  target: SshTarget,
   path: string,
 ): Promise<directoryEntry[]> {
-  const sftp = await getSftp(client);
-  return new Promise((resolve, reject) => {
-    sftp.readdir(path, (err, list) => {
-      sftp.end();
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(
-        list.map((entry) => ({
-          name: entry.filename,
-          type: entry.attrs.isDirectory()
+  const format = "%f\\t%y\\t%s\\t%T@";
+  const { stdout, stderr, exitCode } = await execCommand(
+    target,
+    `find ${JSON.stringify(path)} -mindepth 1 -maxdepth 1 -printf '${format}\\n'`,
+  );
+  if (exitCode !== 0) {
+    throw new Error(stderr.trim() || `find exited with code ${exitCode}`);
+  }
+
+  return stdout
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const [name, type, size, mtime] = line.split("\t");
+      return {
+        name,
+        type:
+          type === "d"
             ? "directory"
-            : entry.attrs.isSymbolicLink()
+            : type === "l"
               ? "symlink"
-              : entry.attrs.isFile()
+              : type === "f"
                 ? "file"
                 : "other",
-          size: entry.attrs.size,
-          mtime: entry.attrs.mtime,
-        })),
-      );
+        size: Number(size),
+        mtime: Math.floor(Number(mtime)),
+      };
     });
-  });
 }
