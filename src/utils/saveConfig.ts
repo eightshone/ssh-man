@@ -17,10 +17,11 @@ function slimServer(srv: server) {
 }
 
 // a server flagged `conflict: true` (name collision, see
-// migrateSshConfigStorage) is left alone, with no Host block and no
-// slimming, until a later migration clears the flag
+// migrateSshConfigStorage), or one with no host at all (never leave a
+// blank Host block behind), is left alone: no Host block, no slimming,
+// until it's fixed
 function isConflicted(srv: any): boolean {
-  return srv.conflict === true;
+  return srv.conflict === true || !srv.host;
 }
 
 // the single write path for config.json: regenerates ~/.sshman/ssh_config

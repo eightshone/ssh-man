@@ -20,24 +20,38 @@ export type ManagedHost = {
 };
 
 // sshman fully owns this file, always regenerated wholesale from the given
-// map, never hand-edited, so no incremental patching or markers are needed
+// map, never hand-edited, so no incremental patching or markers are needed.
+// This is the single point every caller writes through, so it's also the
+// last line of defense against ever emitting invalid ssh_config syntax: one
+// bad entry here breaks ssh parsing for every host, not just its own,
+// since the whole file is Include'd as a unit.
 export async function writeManagedHosts(
   hosts: Record<string, ManagedHost>,
 ): Promise<void> {
   const header =
     "# Managed by sshman, do not edit by hand: it is regenerated on every save.\n";
-  const blocks = Object.entries(hosts).map(([name, h]) => {
-    const lines = [
-      `Host ${name}`,
-      `    HostName ${h.host}`,
-      `    Port ${h.port}`,
-      `    User ${h.username}`,
-    ];
-    if (h.privateKey) {
-      lines.push(`    IdentityFile ${h.privateKey}`);
-    }
-    return lines.join("\n");
-  });
+  const blocks = Object.entries(hosts)
+    .filter(([name, h]) => {
+      if (!h.host) {
+        console.warn(`sshman: skipping "${name}" in ~/.ssh/config, it has no host set`);
+        return false;
+      }
+      return true;
+    })
+    .map(([name, h]) => {
+      const lines = [
+        `Host ${name}`,
+        `    HostName ${h.host}`,
+        `    Port ${h.port || 22}`,
+      ];
+      if (h.username) {
+        lines.push(`    User ${h.username}`);
+      }
+      if (h.privateKey) {
+        lines.push(`    IdentityFile ${h.privateKey}`);
+      }
+      return lines.join("\n");
+    });
 
   const content =
     header + (blocks.length ? "\n" + blocks.join("\n\n") + "\n" : "");
@@ -110,11 +124,15 @@ export async function ensureSshConfigIncludes(): Promise<{ added: boolean }> {
   }
 
   const includeLine = `Include ${SSH_MANAGED_CONFIG_PATH}`;
-  const alreadyIncluded = content
-    .split("\n")
-    .some((line) => line.trim().toLowerCase() === includeLine.toLowerCase());
+  // also matches a commented-out copy (`# Include ...`): if the user
+  // deliberately disabled it, respect that instead of appending a
+  // duplicate on every run
+  const alreadyPresent = content.split("\n").some((line) => {
+    const trimmed = line.trim().replace(/^#\s*/, "");
+    return trimmed.toLowerCase() === includeLine.toLowerCase();
+  });
 
-  if (alreadyIncluded) {
+  if (alreadyPresent) {
     return { added: false };
   }
 
