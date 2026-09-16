@@ -24,8 +24,9 @@ function isConflicted(srv: any): boolean {
   return srv.conflict === true || !srv.host;
 }
 
-// the single write path for config.json: regenerates ~/.sshman/ssh_config
-// from the full server list, then writes config.json with each
+// the single write path for config.json: regenerates sshman's managed
+// section of ~/.ssh/config from the full server list, then writes
+// config.json with each
 // non-conflicted server slimmed to {id, name, usePassword}
 async function saveConfig(config: config): Promise<void> {
   const hosts: Record<string, ManagedHost> = {};

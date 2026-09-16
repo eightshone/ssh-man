@@ -15,7 +15,7 @@ import showUpdateMessage from "./showUpdateMessage";
 import { isPlainJSON } from "../../utils/crypto";
 import { legacyDecrypt, removeLegacySalt } from "../../utils/legacyCrypto";
 import saveFile from "../../utils/saveFile";
-import { ensureSshConfigIncludes, readManagedHosts, hydrateServer } from "../../utils/sshConfigFile";
+import { migrateLegacyManagedFile, readManagedHosts, hydrateServer } from "../../utils/sshConfigFile";
 
 type options = {
   silent?: boolean;
@@ -98,14 +98,15 @@ async function init(
     configObj = await migrateSshConfigStorage(configObj);
   }
 
-  // self-healing: make sure ~/.ssh/config still includes sshman's managed
-  // file even if the line was removed since last run
-  await ensureSshConfigIncludes();
+  // one-time: fold an older install's separate ~/.sshman/ssh_config +
+  // Include line into the marked section sshman now manages directly
+  // inside ~/.ssh/config
+  await migrateLegacyManagedFile();
 
-  // reconstitute full server objects from the managed ssh_config file. From
-  // here on, config.servers/recentServers are the full {id,name,host,port,
-  // username,usePassword,privateKey?} shape every other part of the app
-  // expects, exactly as before this feature existed.
+  // reconstitute full server objects from sshman's managed section of
+  // ~/.ssh/config. From here on, config.servers/recentServers are the full
+  // {id,name,host,port,username,usePassword,privateKey?} shape every other
+  // part of the app expects, exactly as before this feature existed.
   const managedHosts = await readManagedHosts();
   configObj.servers = configObj.servers.map((srv: any) => hydrateServer(srv, managedHosts));
   configObj.recentServers = configObj.recentServers.map((srv: any) =>

@@ -9,7 +9,6 @@ import {
   ManagedHost,
   readManagedHosts,
   writeManagedHosts,
-  ensureSshConfigIncludes,
   checkAliasAvailable,
 } from "../../utils/sshConfigFile";
 
@@ -78,13 +77,9 @@ async function migrateSshConfigStorage(configObj: config): Promise<config> {
   }
 
   await writeManagedHosts(hosts);
-  const { added } = await ensureSshConfigIncludes();
 
-  if (migratedRefs.size > 0 || added) {
+  if (migratedRefs.size > 0) {
     console.log(colors.cyan(`\nMigrated ${migratedRefs.size} server(s) to ~/.ssh/config.`));
-    if (added) {
-      console.log(colors.dim(`Added an "Include" line for ~/.sshman/ssh_config to ~/.ssh/config.`));
-    }
   }
   if (conflictNames.length > 0) {
     console.log(
@@ -102,7 +97,7 @@ async function migrateSshConfigStorage(configObj: config): Promise<config> {
     );
     console.log(colors.yellow(`Edit these servers in sshman to set a host, then restart sshman.`));
   }
-  if (migratedRefs.size > 0 || added || conflictNames.length > 0 || missingHostNames.length > 0) {
+  if (migratedRefs.size > 0 || conflictNames.length > 0 || missingHostNames.length > 0) {
     console.log("");
   }
 
