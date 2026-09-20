@@ -11,7 +11,6 @@ import exportServers from "./core/commands/exportServers";
 import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
-import mcpCommand from "./core/commands/mcp";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
 import debugCommand from "./core/commands/debug";
@@ -41,16 +40,6 @@ program
   .command("reconnect")
   .description("reconnect to the last session")
   .action(reconnectCommand);
-
-program
-  .command("mcp")
-  .argument(
-    "<string>",
-    "server name, or credentials in the format of username@server[:port]",
-  )
-  .option("-p, --password", "prompt for password authentication")
-  .description("start an MCP server exposing a single ssh connection")
-  .action(mcpCommand);
 
 program
   .command("logs")

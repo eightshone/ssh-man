@@ -11,7 +11,7 @@ export type resolvedConnection = {
 };
 
 // resolves a `<name>` or `<connection-string>` argument (as accepted by the
-// `connect` and `mcp` commands) into a server config, without performing any
+// `connect` command) into a server config, without performing any
 // I/O — callers decide how to surface the error case (check `sshConfig` for
 // presence, and fall back to `error` when it's missing)
 async function resolveConnection(
