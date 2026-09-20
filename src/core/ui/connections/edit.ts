@@ -11,6 +11,7 @@ import {
   drawFooter,
 } from "../../../utils/tui/index";
 import validateServerName from "../../../utils/validateServerName";
+import validateConfigValue from "../../../utils/validateConfigValue";
 import { checkAliasAvailable } from "../../../utils/sshConfigFile";
 import saveFile from "../../../utils/saveFile";
 import saveConfig from "../../../utils/saveConfig";
@@ -54,6 +55,7 @@ export default function editConnection(
         type: "input",
         required: true,
         default: () => sshConfig.host,
+        validate: validateConfigValue,
       },
       {
         id: "username",
@@ -61,6 +63,7 @@ export default function editConnection(
         type: "input",
         required: true,
         default: () => sshConfig.username,
+        validate: validateConfigValue,
       },
       {
         id: "port",
@@ -96,6 +99,8 @@ export default function editConnection(
           data.usePassword !== sshConfig.usePassword || data.updateAuth === true,
         default: (cfg: Config, data: any) =>
           data.usePassword ? "" : cfg.defaults.privateKey || `${homedir()}/.ssh/id_rsa`,
+        validate: (val: string) =>
+          capturedData.usePassword ? true : validateConfigValue(val),
       },
       {
         id: "confirm",

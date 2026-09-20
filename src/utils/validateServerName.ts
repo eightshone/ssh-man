@@ -2,15 +2,16 @@ import findServer from "./findServer";
 import normalizeServerName from "./normalizeServerName";
 import { server } from "./types";
 
+// also relied on to keep imported server names safe to use as a literal
+// `Host <name>` line in ~/.ssh/config
+export const SERVER_NAME_PATTERN: RegExp = /^[a-zA-Z0-9 :_\-]*$/;
+
 function validateServerName(
   serverName: string,
   servers: server[]
 ): boolean | string {
-  // regex for allowed characters
-  const allowedPattern: RegExp = /^[a-zA-Z0-9 :_\-]*$/;
-
   // check for allowed characters
-  if (!allowedPattern.test(serverName)) {
+  if (!SERVER_NAME_PATTERN.test(serverName)) {
     return "The string contains invalid characters. (Note: dots are no longer allowed)";
   }
 

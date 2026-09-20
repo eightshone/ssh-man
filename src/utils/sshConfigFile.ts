@@ -30,11 +30,30 @@ export type ManagedHost = {
   privateKey?: string;
 };
 
+// a line break (or NUL) in any value would let it start injecting its own
+// ssh_config directives (e.g. ProxyCommand) into the real ~/.ssh/config, so
+// this is the last line of defense against that regardless of which caller
+// (TUI, import, connection string) let it through
+const UNSAFE_CONFIG_VALUE = /[\r\n\0]/;
+
+function hasUnsafeValue(h: ManagedHost, name: string): boolean {
+  return (
+    UNSAFE_CONFIG_VALUE.test(name) ||
+    UNSAFE_CONFIG_VALUE.test(h.host) ||
+    UNSAFE_CONFIG_VALUE.test(h.username) ||
+    (h.privateKey !== undefined && UNSAFE_CONFIG_VALUE.test(h.privateKey))
+  );
+}
+
 function buildHostBlocks(hosts: Record<string, ManagedHost>): string[] {
   return Object.entries(hosts)
     .filter(([name, h]) => {
       if (!h.host) {
         console.warn(`sshman: skipping "${name}" in ~/.ssh/config, it has no host set`);
+        return false;
+      }
+      if (hasUnsafeValue(h, name)) {
+        console.warn(`sshman: skipping "${name}" in ~/.ssh/config, it contains invalid characters`);
         return false;
       }
       return true;

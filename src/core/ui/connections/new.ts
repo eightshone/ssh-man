@@ -12,6 +12,7 @@ import {
   drawFooter,
 } from "../../../utils/tui/index";
 import validateServerName from "../../../utils/validateServerName";
+import validateConfigValue from "../../../utils/validateConfigValue";
 import { checkAliasAvailable } from "../../../utils/sshConfigFile";
 import { nanoid } from "nanoid";
 import sshConnection from "../../functions/ssh";
@@ -41,12 +42,14 @@ export default function newConnection(
         prompt: "Hostname:",
         type: "input",
         required: true,
+        validate: validateConfigValue,
       },
       {
         id: "username",
         prompt: "Username:",
         type: "input",
         required: true,
+        validate: validateConfigValue,
       },
       {
         id: "port",
@@ -69,6 +72,8 @@ export default function newConnection(
         type: (data: any) => (data.usePassword ? "password" : "input"),
         default: (cfg: Config, data: any) =>
           data.usePassword ? "" : cfg.defaults.privateKey || "",
+        validate: (val: string) =>
+          capturedData.usePassword ? true : validateConfigValue(val),
       },
       {
         id: "name",

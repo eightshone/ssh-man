@@ -3,6 +3,7 @@ import password from "@inquirer/password";
 import { nanoid } from "nanoid";
 import { server } from "./types";
 import { CONNECTION_REGEX } from "./consts";
+import validateConfigValue from "./validateConfigValue";
 
 export type parsedConnection = {
   server: server;
@@ -30,6 +31,10 @@ async function parseConnectionString(
   const username = match[1] || userInfo().username;
   const host = match[3];
   const usePassword = promptPassword;
+
+  if (validateConfigValue(username) !== true || validateConfigValue(host) !== true) {
+    throw new Error("Invalid connection string format. Expected format: [username@]host[:port]");
+  }
 
   const plainPassword = usePassword
     ? await password({ message: "Password:" })
