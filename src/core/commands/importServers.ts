@@ -2,11 +2,11 @@ import select from "@inquirer/select";
 import passwordPrompt from "@inquirer/password";
 import normalizeServerName from "../../utils/normalizeServerName";
 import readConfigFile from "../../utils/readConfigFile";
-import { server } from "../../utils/types";
+import { exportedServer, server } from "../../utils/types";
 import validateServers from "../../utils/validateServers";
+import persistImportedServers from "../../utils/persistImportedServers";
 import init from "../functions/init";
-import saveFile from "../../utils/saveFile";
-import { CONFIG_DIR } from "../../utils/consts";
+import saveConfig from "../../utils/saveConfig";
 
 async function importServers(
   configFile: string,
@@ -16,12 +16,12 @@ async function importServers(
   let { config } = await init();
   const existingServers = [...config.servers];
 
-  let content: server[];
+  let rawContent: exportedServer[];
   let password = options.password;
 
   while (true) {
     try {
-      content = await readConfigFile<server[]>(configFile, password);
+      rawContent = await readConfigFile<exportedServer[]>(configFile, password);
       break;
     } catch (err: any) {
       if (err.code === "ERR_ENCRYPTED_FILE") {
@@ -41,6 +41,11 @@ async function importServers(
           console.log("Decryption password is required. Import aborted.");
           return;
         }
+      } else if (err.code === "ERR_UNENCRYPTED_FILE") {
+        console.log(
+          "This file is not encrypted and can no longer be imported. Only password-protected export files are supported.",
+        );
+        return;
       } else if (err.code === "ENOENT") {
         console.log(`Error: File not found: ${configFile}`);
         return;
@@ -52,12 +57,14 @@ async function importServers(
   }
 
   // validate config file format
-  if (!validateServers(content)) {
+  if (!validateServers(rawContent)) {
     console.log(
       "The file you are trying to import is not a valid config file!",
     );
     return;
   }
+
+  const content: server[] = await persistImportedServers(rawContent);
 
   const newServerNames = content.map((s) => normalizeServerName(s.name));
   const hasExistingServers = existingServers.some((s) =>
@@ -129,7 +136,7 @@ async function importServers(
   config.servers = updatedServers;
 
   try {
-    await saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true);
+    await saveConfig(config);
     console.log("All server configs have been imported");
   } catch (error: any) {
     console.error(`Failed to save config file: ${error.message}`);

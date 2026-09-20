@@ -11,54 +11,17 @@ import exportServers from "./core/commands/exportServers";
 import isSameVersion from "./core/functions/isSameVersion";
 import showUpdateMessage from "./core/functions/showUpdateMessage";
 import reconnectCommand from "./core/commands/reconnect";
-import mcpCommand from "./core/commands/mcp";
 import importServers from "./core/commands/importServers";
 import searchCommand from "./core/commands/search";
-import telemetryCommand from "./core/commands/telemetry";
 import debugCommand from "./core/commands/debug";
 import { ansi } from "./utils/tui/index";
-import {
-  initTelemetry,
-  recordCommandEvent,
-  trySync,
-  TelemetryContext,
-} from "./core/telemetry/index";
 
 const program = new Command();
-
-// Shared telemetry context — initialized before any command runs
-let telemetryCtx: TelemetryContext;
-let commandStartTime: number;
 
 program
   .name("sshman")
   .description("A simple terminmal based SSH manager created in Node.js")
   .version(VERSION, "-v, --version", "output the version number");
-
-// Initialize telemetry before any command executes.
-// This handles the first-run consent prompt and loads the config.
-program.hook("preAction", async (thisCommand, actionCommand) => {
-  const commandName = actionCommand.name();
-
-  // Skip telemetry init for the telemetry subcommand (it manages config directly)
-  // and for mcp (stdin/stdout are reserved for the MCP protocol stream, so an
-  // interactive first-run consent prompt would corrupt it)
-  const skipConsent = commandName === "telemetry" || commandName === "mcp";
-  telemetryCtx = await initTelemetry(skipConsent);
-
-  commandStartTime = performance.now();
-});
-
-// Record telemetry events and attempt sync after each command.
-program.hook("postAction", async (thisCommand, actionCommand) => {
-  if (telemetryCtx) {
-    const durationMs = performance.now() - commandStartTime;
-    const commandName = actionCommand.name() || "interactive";
-
-    await recordCommandEvent(telemetryCtx, commandName, durationMs, true);
-    await trySync(telemetryCtx);
-  }
-});
 
 program.action(app);
 
@@ -66,9 +29,9 @@ program
   .command("connect")
   .argument(
     "<string>",
-    "credentials in the format of username[:password]@server[:port]",
+    "credentials in the format of username@server[:port]",
   )
-  .option("-p, --password")
+  .option("-p, --password", "prompt for password authentication")
   .option("-s, --save [name]")
   .description("connect to a new session")
   .action(connectCommand);
@@ -77,16 +40,6 @@ program
   .command("reconnect")
   .description("reconnect to the last session")
   .action(reconnectCommand);
-
-program
-  .command("mcp")
-  .argument(
-    "<string>",
-    "server name, or credentials in the format of username[:password]@server[:port]",
-  )
-  .option("-p, --password", "prompt for password authentication")
-  .description("start an MCP server exposing a single ssh connection")
-  .action(mcpCommand);
 
 program
   .command("logs")
@@ -104,8 +57,10 @@ program
   )
   .option("-n, --name <file name>", "custom name for output file")
   .option("-f, --force", "replace existing file")
-  .option("-p, --password <password>", "password to encrypt the exported config file")
-  .option("-e, --encrypt", "prompt for a password to encrypt the exported config file")
+  .option(
+    "-p, --password <password>",
+    "password to encrypt the exported config file (prompted if omitted)",
+  )
   .description("exports server configurations")
   .action(exportServers);
 
@@ -113,7 +68,10 @@ program
   .command("import")
   .argument("<config file>", "config file containing server configs")
   .option("-f, --force", "replace configs with the same name")
-  .option("-p, --password <password>", "password to decrypt the imported config file")
+  .option(
+    "-p, --password <password>",
+    "password to decrypt the imported config file",
+  )
   .description("import server configurations")
   .action(importServers);
 
@@ -123,12 +81,6 @@ program
   .option("-f, --fuzzy", "make a fuzzy search")
   .description("search for a server config")
   .action(searchCommand);
-
-program
-  .command("telemetry")
-  .argument("<action>", "enable, disable, or status")
-  .description("manage anonymous telemetry settings")
-  .action(telemetryCommand);
 
 program
   .command("debug")
@@ -168,21 +120,6 @@ process.on("uncaughtException", (error) => {
     process.exit(0);
   } else {
     process.stdout.write(ansi.altScreenExit());
-
-    // Record the error in telemetry before rethrowing
-    if (telemetryCtx?.active) {
-      const durationMs = performance.now() - commandStartTime;
-      const errorType =
-        error instanceof Error ? error.constructor.name : "UnknownError";
-      recordCommandEvent(
-        telemetryCtx,
-        "uncaughtException",
-        durationMs,
-        false,
-        errorType,
-      ).catch(() => {});
-    }
-
     // Rethrow unknown errors
     throw error;
   }

@@ -2,6 +2,7 @@ import { Spinner } from "yocto-spinner";
 import { config, log } from "../../utils/types";
 import { CONFIG_DIR, DEFAULT_CONFIG, VERSION } from "../../utils/consts";
 import saveFile from "../../utils/saveFile";
+import saveConfig from "../../utils/saveConfig";
 import { nanoid } from "nanoid";
 import compareVersions from "../../utils/compareVersions";
 
@@ -54,7 +55,7 @@ async function migrate(
     configObj.defaults = DEFAULT_CONFIG.defaults;
   }
   configObj.version = VERSION;
-  await saveFile(`${CONFIG_DIR}/config.json`, configObj, undefined, true);
+  await saveConfig(configObj);
   await saveFile(`${CONFIG_DIR}/logs.json`, logsObj);
   if (spinner) {
     spinner.text = "Migration complete!";

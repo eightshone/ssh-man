@@ -7,6 +7,7 @@ import passwordPrompt from "@inquirer/password";
 import { existsSync } from "fs";
 import saveFile from "../../../utils/saveFile";
 import { encryptWithPassword } from "../../../utils/crypto";
+import buildExportedServers from "../../../utils/buildExportedServers";
 import dayjs from "dayjs";
 
 async function exportConnections(
@@ -50,48 +51,28 @@ async function exportConnections(
     }
   }
 
-  // Password-based encryption flow
+  // exports are always encrypted
   let password: string | undefined;
-  let done = false;
-  while (!done) {
-    const encrypt = await confirm({
-      message: "Would you like to encrypt this file with a password?",
-      default: true,
+  while (!password) {
+    const pw = await passwordPrompt({
+      message: "Enter encryption password:",
     });
-    if (encrypt) {
-      const pw = await passwordPrompt({
-        message: "Enter encryption password:",
-      });
-      if (!pw) {
-        console.log("Password cannot be empty.");
-        continue;
-      }
-      const confirmPw = await passwordPrompt({
-        message: "Confirm encryption password:",
-      });
-      if (pw !== confirmPw) {
-        console.log("Passwords do not match. Please try again.");
-        continue;
-      }
-      password = pw;
-      done = true;
-    } else {
-      console.log(
-        "Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).",
-      );
-      const proceed = await confirm({
-        message: "Are you sure you want to proceed without encryption?",
-        default: false,
-      });
-      if (proceed) {
-        done = true;
-      }
+    if (!pw) {
+      console.log("A password is required. Exports are always encrypted.");
+      continue;
     }
+    const confirmPw = await passwordPrompt({
+      message: "Confirm encryption password:",
+    });
+    if (pw !== confirmPw) {
+      console.log("Passwords do not match. Please try again.");
+      continue;
+    }
+    password = pw;
   }
 
-  const exportData = password
-    ? encryptWithPassword(JSON.stringify(selectedServers), password)
-    : selectedServers;
+  const exportableServers = await buildExportedServers(selectedServers);
+  const exportData = encryptWithPassword(JSON.stringify(exportableServers), password);
 
   try {
     await saveFile(fileName, exportData);

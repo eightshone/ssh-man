@@ -103,7 +103,7 @@ export default function mainMenu(
           name: `${idx + 1} - ${srv.name}`,
           value: "ssh-connect" as menu,
           selectable: true,
-          options: [JSON.stringify(srv)],
+          options: [JSON.stringify({ server: srv })],
         });
       });
     } else {

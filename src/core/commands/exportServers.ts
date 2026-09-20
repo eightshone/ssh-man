@@ -5,10 +5,10 @@ import init from "../functions/init";
 import { existsSync } from "fs";
 import saveFile from "../../utils/saveFile";
 import passwordPrompt from "@inquirer/password";
-import confirmPrompt from "@inquirer/confirm";
 import { encryptWithPassword } from "../../utils/crypto";
+import buildExportedServers from "../../utils/buildExportedServers";
 
-async function exportServers(servers: string[] = [], options: { all?: boolean; name?: string; force?: boolean; password?: string; encrypt?: boolean }) {
+async function exportServers(servers: string[] = [], options: { all?: boolean; name?: string; force?: boolean; password?: string }) {
   // get or generate output filename
   const fileName = options.name?.length
     ? options.name
@@ -37,31 +37,16 @@ async function exportServers(servers: string[] = [], options: { all?: boolean; n
   }
 
   let password = options.password;
-  if (!password && options.encrypt) {
-    password = await passwordPrompt({ message: "Enter encryption password:" });
-    if (!password) {
-      console.log("Encryption password cannot be empty. Export aborted.");
-      process.exit(1);
-    }
-  }
-
   if (!password) {
-    console.log(
-      "Warning: Exporting configurations without encryption exposes sensitive data (like passwords/private keys).",
-    );
-    const proceed = await confirmPrompt({
-      message: "Are you sure you want to proceed without encryption?",
-      default: false,
-    });
-    if (!proceed) {
-      console.log("Export aborted.");
-      process.exit(0);
-    }
+    password = await passwordPrompt({ message: "Enter encryption password:" });
+  }
+  if (!password) {
+    console.log("A password is required to export. Exports are always encrypted.");
+    process.exit(1);
   }
 
-  const exportData = password
-    ? encryptWithPassword(JSON.stringify(serverConfigs), password)
-    : serverConfigs;
+  const exportableServers = await buildExportedServers(serverConfigs);
+  const exportData = encryptWithPassword(JSON.stringify(exportableServers), password);
 
   try {
     await saveFile(fileName, exportData);

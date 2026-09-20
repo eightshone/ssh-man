@@ -1,5 +1,5 @@
 import colors from "yoctocolors-cjs";
-import { menu, server, config as Config } from "../../../utils/types";
+import { menu, server, exportedServer, config as Config } from "../../../utils/types";
 import { setupInput } from "../../../utils/tui/input";
 import {
   ansi,
@@ -20,13 +20,16 @@ import stringPadding from "../../../utils/stringPadding";
 import fs from "fs";
 import path from "path";
 import saveFile from "../../../utils/saveFile";
+import saveConfig from "../../../utils/saveConfig";
 import clipboard from "clipboardy";
 import { performDelete } from "./delete";
 import { encryptWithPassword } from "../../../utils/crypto";
 import readConfigFile from "../../../utils/readConfigFile";
 import validateServers from "../../../utils/validateServers";
+import persistImportedServers from "../../../utils/persistImportedServers";
+import buildExportedServers from "../../../utils/buildExportedServers";
+import { getServerPassword } from "../../../utils/secret";
 import normalizeServerName from "../../../utils/normalizeServerName";
-import { CONFIG_DIR } from "../../../utils/consts";
 
 // ── Module-level state (persists across navigations) ──────────────────────────
 let searchInput = "";
@@ -92,6 +95,8 @@ export default function listConnections(
     let detailsSelectedIndex    = 0;
     let showPassword            = false;
     let passwordCopied          = false;
+    let revealedPassword        : string | null = null;
+    let passwordLoading         = false;
 
     // ── Handle initial options (e.g. return from Edit) ───────────────────────
     if (initialOptions && initialOptions[0]) {
@@ -179,11 +184,11 @@ export default function listConnections(
         case "password": {
           const lines = [
             "Set an encryption password.",
-            ansi.dim("Leave empty for no encryption."),
             "",
             `  > ${inputLine(exportPasswordInput, exportPasswordCursor, true)}`,
             "",
           ];
+          if (exportPasswordError) { lines.push(ansi.fg("160", `  ${exportPasswordError}`)); lines.push(""); }
           drawPopup(buf, " Set Password ", lines, [], 0, "255");
           break;
         }
@@ -529,7 +534,9 @@ export default function listConnections(
     }
     function buildDetailsLines(srv: (typeof filtered)[number]) {
       const passwordDisplay = srv.usePassword
-        ? (showPassword ? srv.password : "********")
+        ? showPassword
+          ? (revealedPassword ?? (passwordLoading ? "Loading…" : "(unavailable)"))
+          : "********"
         : colors.dim("(Using Key)");
       const keyDisplay = srv.usePassword === false ? srv.privateKey : colors.dim("(Using Password)");
       return [
@@ -560,8 +567,8 @@ export default function listConnections(
     // ─────────────────────────────────────────────────────────────────────────
 
     const attemptImport = (pwd?: string) => {
-      readConfigFile<server[]>(importSelectedFile, pwd)
-        .then((content) => {
+      readConfigFile<exportedServer[]>(importSelectedFile, pwd)
+        .then(async (content) => {
           if (!validateServers(content)) {
             importResultSuccess = false;
             importResultMessage = "The selected file is not a valid config file.";
@@ -569,7 +576,7 @@ export default function listConnections(
             render(true);
             return;
           }
-          importedServers = content;
+          importedServers = await persistImportedServers(content);
 
           const newNames      = importedServers.map((s) => normalizeServerName(s.name));
           const hasConflict   = config.servers.some((s) =>
@@ -582,7 +589,7 @@ export default function listConnections(
             render(true);
           } else {
             config.servers = [...config.servers, ...importedServers];
-            saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true)
+            saveConfig(config)
               .then(() => {
                 importResultSuccess = true;
                 importResultMessage = `Successfully imported ${importedServers.length} server(s).`;
@@ -713,6 +720,11 @@ export default function listConnections(
             return;
           }
           if (key === "enter") {
+            if (!exportPasswordInput.length) {
+              exportPasswordError = "A password is required. Exports are always encrypted.";
+              render(false, true);
+              return;
+            }
             exportStep           = "confirm_password";
             exportConfirmInput   = "";
             exportPasswordCursor = 0;
@@ -758,10 +770,11 @@ export default function listConnections(
               return;
             }
             const password   = exportPasswordInput;
-            const exportData = password.length > 0
-              ? encryptWithPassword(JSON.stringify(exportServersToExport), password)
-              : exportServersToExport;
-            saveFile(exportFilenameInput, exportData)
+            buildExportedServers(exportServersToExport)
+              .then((exportableServers) => {
+                const exportData = encryptWithPassword(JSON.stringify(exportableServers), password);
+                return saveFile(exportFilenameInput, exportData);
+              })
               .then(() => {
                 exportResultSuccess = true;
                 exportResultMessage = `Exported ${exportServersToExport.length} server(s) to ${exportFilenameInput}.`;
@@ -924,7 +937,7 @@ export default function listConnections(
                 ];
               }
               config.servers = updated;
-              saveFile(`${CONFIG_DIR}/config.json`, config, undefined, true)
+              saveConfig(config)
                 .then(() => {
                   importResultSuccess = true;
                   importResultMessage = `Successfully imported ${importedServers.length} server(s).`;
@@ -999,12 +1012,38 @@ export default function listConnections(
           const action = choices[detailsSelectedIndex];
           if (action === "Connect") {
             cleanupScreen();
-            resolve(["ssh-connect", [JSON.stringify(srv), "false"]]);
+            resolve(["ssh-connect", [JSON.stringify({ server: srv }), "false"]]);
           } else if (action === "Show password" || action === "Hide password") {
-            showPassword = !showPassword;
-            render(false, true);
+            if (!showPassword && revealedPassword === null && !passwordLoading) {
+              passwordLoading = true;
+              render(false, true);
+              getServerPassword(srv.id).then((result) => {
+                passwordLoading = false;
+                revealedPassword = result.ok ? result.password : null;
+                showPassword = true;
+                render(false, true);
+              });
+            } else {
+              showPassword = !showPassword;
+              render(false, true);
+            }
           } else if (action === "Copy password to clipboard" || action === "Password copied") {
-            if (srv.usePassword) { clipboard.writeSync(srv.password); passwordCopied = true; render(false, true); }
+            if (srv.usePassword) {
+              if (revealedPassword !== null) {
+                clipboard.writeSync(revealedPassword);
+                passwordCopied = true;
+                render(false, true);
+              } else {
+                getServerPassword(srv.id).then((result) => {
+                  if (result.ok && result.password) {
+                    revealedPassword = result.password;
+                    clipboard.writeSync(result.password);
+                    passwordCopied = true;
+                    render(false, true);
+                  }
+                });
+              }
+            }
           } else if (action === "Edit") {
             cleanupScreen();
             resolve(["ssh-edit", [JSON.stringify(srv), String(srv.originalIndex)]]);
@@ -1126,7 +1165,15 @@ export default function listConnections(
       }
 
       if (key === "enter") {
-        if (filtered.length > 0) { showDetailsPopup = true; detailsSelectedIndex = 0; showPassword = false; passwordCopied = false; render(); }
+        if (filtered.length > 0) {
+          showDetailsPopup = true;
+          detailsSelectedIndex = 0;
+          showPassword = false;
+          passwordCopied = false;
+          revealedPassword = null;
+          passwordLoading = false;
+          render();
+        }
         return;
       }
 
