@@ -95,7 +95,7 @@ async function init(
     if (!silent && spinner) {
       spinner.text = "Moving connection details to ~/.ssh/config…";
     }
-    configObj = await migrateSshConfigStorage(configObj);
+    configObj = await migrateSshConfigStorage(configObj, spinner);
   }
 
   // one-time: fold an older install's separate ~/.sshman/ssh_config +

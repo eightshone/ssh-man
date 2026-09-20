@@ -1,5 +1,6 @@
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
+import { Spinner } from "yocto-spinner";
 import colors from "yoctocolors-cjs";
 import confirm from "@inquirer/confirm";
 import { nanoid } from "nanoid";
@@ -25,7 +26,12 @@ function findAvailableBackupPath(basePath: string): string {
 // the old full shape. A server that can't be migrated (name collision,
 // duplicate name, or no host set) is left untouched until resolved, so a
 // later run picks it up.
-async function migrateSshConfigStorage(configObj: config): Promise<config> {
+async function migrateSshConfigStorage(configObj: config, spinner?: Spinner): Promise<config> {
+  // the spinner keeps redrawing its own line while we print or prompt below,
+  // which garbles both; stop it for the duration and resume after
+  const spinnerWasSpinning = !!spinner?.isSpinning;
+  if (spinnerWasSpinning) spinner!.stop();
+
   const hosts: Record<string, ManagedHost> = await readManagedHosts();
 
   // every full-shape server gets its own slot here, tracked by array
@@ -130,9 +136,12 @@ async function migrateSshConfigStorage(configObj: config): Promise<config> {
 
   // offer a backup of the pre-migration config.json, in case a bug in this
   // step loses data. Declined by default: it's a plaintext copy of every
-  // saved host/username, so it shouldn't be left lying around
+  // saved host/username, so it shouldn't be left lying around. Only asked
+  // when this run actually moved something - a run that only re-reports
+  // leftover conflicts/missing-hosts has nothing new to back up, and asking
+  // every startup for those is exactly the noise this is meant to avoid.
   const configFile = `${CONFIG_DIR}/config.json`;
-  if (existsSync(configFile)) {
+  if (migratedRefs.size > 0 && existsSync(configFile)) {
     const raw = await readFile(configFile, "utf8");
     const keepBackup = await confirm({
       message:
@@ -151,6 +160,8 @@ async function migrateSshConfigStorage(configObj: config): Promise<config> {
   }
 
   await saveFile(configFile, migrated);
+
+  if (spinnerWasSpinning) spinner!.start();
 
   return migrated;
 }
