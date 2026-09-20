@@ -1,6 +1,7 @@
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import colors from "yoctocolors-cjs";
+import confirm from "@inquirer/confirm";
 import { nanoid } from "nanoid";
 import { CONFIG_DIR } from "../../utils/consts";
 import { config } from "../../utils/types";
@@ -11,6 +12,13 @@ import {
   writeManagedHosts,
   checkAliasAvailable,
 } from "../../utils/sshConfigFile";
+
+function findAvailableBackupPath(basePath: string): string {
+  if (!existsSync(basePath)) return basePath;
+  let suffix = 2;
+  while (existsSync(`${basePath}-${suffix}`)) suffix++;
+  return `${basePath}-${suffix}`;
+}
 
 // one-time, self-healing migration: moves host/port/username/privateKey out
 // of config.json and into ~/.ssh/config. Runs whenever a server is still in
@@ -120,13 +128,26 @@ async function migrateSshConfigStorage(configObj: config): Promise<config> {
     recentServers: slim(configObj.recentServers),
   };
 
-  // back up the pre-migration config.json once, so a bug in this step is
-  // always recoverable
+  // offer a backup of the pre-migration config.json, in case a bug in this
+  // step loses data. Declined by default: it's a plaintext copy of every
+  // saved host/username, so it shouldn't be left lying around
   const configFile = `${CONFIG_DIR}/config.json`;
-  const backupFile = `${configFile}.pre-ssh-config-migration-backup`;
-  if (existsSync(configFile) && !existsSync(backupFile)) {
+  if (existsSync(configFile)) {
     const raw = await readFile(configFile, "utf8");
-    await saveFile(backupFile, raw);
+    const keepBackup = await confirm({
+      message:
+        "Keep a backup copy of your old config.json before migrating? It's stored unencrypted, so this isn't safe to leave around - only keep it if you need to double check the migration, and delete it as soon as you're done.",
+      default: false,
+    });
+    if (keepBackup) {
+      const backupFile = findAvailableBackupPath(`${configFile}.pre-ssh-config-migration-backup`);
+      await saveFile(backupFile, raw);
+      console.log(
+        colors.yellow(
+          `Backup saved to ${backupFile}. This file is unencrypted, delete it as soon as possible.`,
+        ),
+      );
+    }
   }
 
   await saveFile(configFile, migrated);
