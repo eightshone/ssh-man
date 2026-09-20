@@ -4,7 +4,7 @@
 
 **SSHMAN** is a modern, interactive TUI (Terminal User Interface) SSH connection manager built with Node.js. It simplifies managing multiple SSH sessions with a sleek, user-friendly interface and robust CLI commands.
 
-> ⚠️ **Security Notice**: SSHMAN re-implements the SSH protocol in JavaScript (via the `ssh2` library) rather than shelling out to your system's native `ssh` binary, and does not follow standard SSH client security practices (e.g. host key verification, agent forwarding, and config conventions may differ from OpenSSH). It has not been independently security-audited. Do not treat it as a hardened or compliant SSH client — **use it at your own risk**.
+> ⚠️ **Security Notice**: SSHMAN shells out to your system's native `ssh` binary and manages your real `~/.ssh/config`, so connections go through OpenSSH's own host-key verification and config handling. It has not been independently security-audited. Do not treat it as a hardened or compliant SSH client — **use it at your own risk**.
 
 ## Key Features
 
@@ -14,8 +14,7 @@
 - **Interactive Logs**: Browse and search through your connection history with real-time filtering.
 - **Global Search**: Quickly find the server you need from your saved connections.
 - **Encrypted Configuration**: Your connection details are stored encrypted at rest (see [Configuration Security](#configuration-security)).
-- **Import/Export**: Easily share or backup your server configurations, optionally password-protected.
-- **MCP Server**: Expose a single saved (or ad-hoc) SSH connection to any MCP-compatible AI client.
+- **Import/Export**: Easily share or backup your server configurations, always password-protected.
 - **Built-in Manual**: Accessible interactive help documentation within the app.
 
 ---
@@ -80,13 +79,6 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
   ```
   Export files are always encrypted: pass `-p <password>` or you'll be prompted for one. Import requires that same password and refuses unencrypted files.
 
-- **MCP Server**:
-  ```bash
-  sshman mcp server-name
-  sshman mcp username@hostname[:port] [-p]
-  ```
-  Starts a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio for a single SSH connection, so an MCP-compatible AI client can run commands, read/write files, list directories, and drive an interactive shell on that one server. See [MCP Server](#mcp-server) below.
-
 - **Goodbye**:
   ```bash
   sshman goodbye
@@ -95,26 +87,9 @@ SSHMAN also provides a powerful set of CLI commands for direct access:
 
 ---
 
-## MCP Server
-
-`sshman mcp <server-name-or-connection-string>` opens a single SSH connection and exposes it as an MCP server over stdio, so it can be wired into any MCP-compatible client (e.g. Claude Code, Claude Desktop) as a tool provider scoped to that one host. It exposes:
-
-| Tool                | Description                                                        |
-| :------------------ | :----------------------------------------------------------------- |
-| `run_command`       | Run a shell command and return stdout, stderr, and exit code.      |
-| `read_file`         | Read a text file from the remote host.                             |
-| `write_file`        | Write (overwrite) a text file on the remote host.                  |
-| `list_directory`    | List the contents of a remote directory.                           |
-| `start_shell`       | Start a persistent interactive shell session.                      |
-| `send_input`        | Send input to the running interactive shell.                       |
-| `read_shell_output` | Read output produced by the interactive shell since the last read. |
-| `close_shell`       | Close the interactive shell session.                               |
-
----
-
 ## Configuration Security
 
-Saved server configurations (hosts, usernames, passwords, private key paths) are encrypted at rest with AES-256-GCM. By default the encryption key is derived from your machine's hostname and username plus a locally-stored random salt — this protects the config file from casual inspection (e.g. someone copying the file off your disk) but is **not** a substitute for full-disk encryption or a dedicated secrets manager, since anyone with shell access to your account can derive the same key. If you need a config file that's safe to share or store elsewhere, use `sshman export -e` (or `-p <password>`) to encrypt it with your own password instead.
+Sshman stores connection metadata in two places: `host`/`port`/`username`/`privateKey` live directly in your real `~/.ssh/config` (in a marked section sshman manages, exactly like any other `Host` entry you'd write by hand), and `config.json` only holds bookkeeping (`id`, `name`, `usePassword`). Saved passwords are never written to disk in either file — they're stored in your OS keychain (via `@napi-rs/keyring`). Export files are the one place secrets leave the keychain: they're always encrypted with AES-256-GCM under a password you choose (`sshman export -p <password>`), and import refuses unencrypted files.
 
 ---
 
