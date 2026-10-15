@@ -97,6 +97,7 @@ export default function listConnections(
     let passwordCopied          = false;
     let revealedPassword        : string | null = null;
     let passwordLoading         = false;
+    let keyringDown             = false;
 
     // ── Handle initial options (e.g. return from Edit) ───────────────────────
     if (initialOptions && initialOptions[0]) {
@@ -535,7 +536,7 @@ export default function listConnections(
     function buildDetailsLines(srv: (typeof filtered)[number]) {
       const passwordDisplay = srv.usePassword
         ? showPassword
-          ? (revealedPassword ?? (passwordLoading ? "Loading…" : "(unavailable)"))
+          ? (revealedPassword ?? (passwordLoading ? "Loading…" : keyringDown ? "(keyring unavailable)" : "(not saved)"))
           : "********"
         : colors.dim("(Using Key)");
       const keyDisplay = srv.usePassword === false ? srv.privateKey : colors.dim("(Using Password)");
@@ -1020,6 +1021,7 @@ export default function listConnections(
               getServerPassword(srv.id).then((result) => {
                 passwordLoading = false;
                 revealedPassword = result.ok ? result.password : null;
+                keyringDown = !result.ok;
                 showPassword = true;
                 render(false, true);
               });

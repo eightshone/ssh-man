@@ -13,6 +13,7 @@ import migrateSshConfigStorage from "./migrateSshConfigStorage";
 import isSameVersion from "./isSameVersion";
 import showUpdateMessage from "./showUpdateMessage";
 import { isPlainJSON } from "../../utils/crypto";
+import { isKeyringAvailable } from "../../utils/secret";
 import { legacyDecrypt, removeLegacySalt } from "../../utils/legacyCrypto";
 import saveFile from "../../utils/saveFile";
 import { migrateLegacyManagedFile, readManagedHosts, hydrateServer } from "../../utils/sshConfigFile";
@@ -151,6 +152,19 @@ async function init(
     if (spinner) {
       spinner.start();
     }
+  }
+
+  if (!silent && !(await isKeyringAvailable())) {
+    spinner?.warning("OS keyring unavailable: saved passwords can't be read or stored.");
+    console.log(
+      colors.yellow(
+        process.platform === "linux"
+          ? "Start a Secret Service (e.g. gnome-keyring) on a D-Bus session bus. You'll be asked for the password or an SSH key when connecting."
+          : "You'll be asked for the password or an SSH key when connecting.",
+      ),
+    );
+    console.log("");
+    spinner?.start();
   }
 
   if (!silent && spinner) {

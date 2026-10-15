@@ -11,8 +11,10 @@ async function sshConnect(
   shouldSave: boolean = false,
 ): Promise<[menu, config, log[], string[]?]> {
   try {
+    // false when the keyring is unavailable: hand the password to ssh directly
+    let saved = false;
     if (shouldSave && sshConfig.usePassword && password) {
-      await setServerPassword(sshConfig.id, password);
+      saved = await setServerPassword(sshConfig.id, password);
     }
 
     const [updatedConfig, updatedLogs] = await updateConfigs(
@@ -22,7 +24,7 @@ async function sshConnect(
       shouldSave,
     );
 
-    await sshConnection(sshConfig, shouldSave ? undefined : password, true);
+    await sshConnection(sshConfig, saved ? undefined : password, true);
 
     return ["main", updatedConfig, updatedLogs];
   } catch (error: any) {
