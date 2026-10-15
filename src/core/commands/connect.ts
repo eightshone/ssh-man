@@ -52,13 +52,16 @@ async function connectCommand(
 
   const shouldSave = !!saveConnection && isNewConnection;
 
+  // false when the keyring is unavailable: hand the password to ssh directly
+  let saved = false;
+
   if (shouldSave && sshConfig.usePassword && password) {
-    await setServerPassword(sshConfig.id, password);
+    saved = await setServerPassword(sshConfig.id, password);
   }
 
   [config, logs] = await updateConfigs(config, logs, sshConfig, shouldSave);
 
-  await sshConnection(sshConfig, shouldSave ? undefined : password);
+  await sshConnection(sshConfig, saved ? undefined : password);
 }
 
 export default connectCommand;
